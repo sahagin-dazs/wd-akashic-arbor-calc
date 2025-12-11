@@ -15,7 +15,12 @@ export function avatarKey(heroId?: string | null, heroName?: string) {
   return sanitizeKey(raw);
 }
 
+const baseUrl =
+  typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
+
 export function avatarUrl(heroId?: string | null, heroName?: string) {
   const key = avatarKey(heroId, heroName);
-  return key ? `/avatars/${key}.png` : "";
+  if (!key) return "";
+  const separator = baseUrl.endsWith("/") ? "" : "/";
+  return `${baseUrl}${separator}avatars/${key}.png`;
 }
