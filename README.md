@@ -52,6 +52,17 @@ The repo ships with a `docker-compose.yml` that exposes both the dev server and 
   # open http://localhost:8080
   ```
 
+### Deploying to GitHub Pages
+The repository includes a workflow (`.github/workflows/deploy.yml`) that builds the app and publishes the `dist/` folder to GitHub Pages.
+
+1. Push the project to a GitHub repository (default branch `main`).
+2. In the repository settings, enable “GitHub Pages” and select “GitHub Actions” as the source.
+3. On the next push to `main` (or via the **Run workflow** button), the action will:
+   - Install dependencies via `npm ci`
+   - Run `npm run build` with `GITHUB_PAGES=true` so Vite uses the `/wd-akashic-arbor-calc/` base path
+   - Upload and deploy the artifact to Pages
+4. Your site will be available at `https://<username>.github.io/wd-akashic-arbor-calc/`.
+
 ### Using the App
 1. Visit the Hero Collection section and set each dropdown to the proper star level or Not Owned. The summary displays how many entries still need attention.
 2. Use the role, element, rarity, and ownership chips plus the search input to narrow down the list. All choices persist in `localStorage`.

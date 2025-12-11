@@ -507,12 +507,15 @@ function setOwnershipFilter(value: OwnershipFilter) {
           Tool created by Sahagin Dazs.
         </span>
         <span>Last updated {{ lastUpdated }}</span>
+        <span class="footer-support-note">
+          Hosting and development are funded out of pocket. If this tool helps you, please consider supporting the costs to keep it online.
+        </span>
       </div>
       <div class="footer-actions">
         <a class="btn btn-sm btn-secondary" href="https://github.com/sahagin-dazs/wd-akashic-arbor-calc" target="_blank" rel="noreferrer">
           View Source on GitHub
         </a>
-        <a class="btn btn-sm btn-support" href="https://www.buymeacoffee.com/sahagin-dazs" target="_blank" rel="noreferrer">
+        <a class="btn btn-sm btn-support" href="https://www.buymeacoffee.com/sahagin" target="_blank" rel="noreferrer">
           Support This Tool
         </a>
       </div>
