@@ -714,8 +714,13 @@ body {
 }
 
 @media (max-width: 720px) {
+  .lineup-row {
+    flex-direction: column;
+  }
+
   .lineup-slot {
-    min-width: 180px;
+    width: 100%;
+    min-width: 0;
     max-width: 100%;
   }
 }
