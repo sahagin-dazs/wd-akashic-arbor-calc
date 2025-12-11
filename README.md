@@ -4,6 +4,15 @@ Akashic Arbor Calculator helps Wittle Defenders players squeeze every last perce
 
 **Live app:** https://sahagin-dazs.github.io/wd-akashic-arbor-calc/
 
+### Analytics (optional)
+If you want to track usage with Google Analytics 4, set your measurement ID before building:
+
+1. Create a `.env` file in the project root with:
+   ```
+   VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+   ```
+2. Restart `npm run dev` (if it was running) or run `npm run build`. The app automatically loads GA when the env variable is defined.
+
 ### What is the Akashic Arbor?
 - In Wittle Defenders, the Akashic Arbor unlocks once your account reaches level 35 and is at least eight days old. The tool surfaces that info in-app so new players know when to expect it.
 - Every node on the tree represents either a role or an element and contains up to three slots. A hero can only occupy one slot at a time (role *or* element).
