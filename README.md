@@ -2,6 +2,16 @@
 
 Akashic Arbor Calculator helps Wittle Defenders players squeeze every last percent out of their hero pool. You can record every hero you own, flag the ones you do not have, build a five hero lineup, and let the optimizer assign heroes to role or element nodes based on real slot unlock thresholds.
 
+**Live app:** https://sahagin-dazs.github.io/wd-akashic-arbor-calc/
+
+### What is the Akashic Arbor?
+- In Wittle Defenders, the Akashic Arbor unlocks once your account reaches level 35 and is at least eight days old. The tool surfaces that info in-app so new players know when to expect it.
+- Every node on the tree represents either a role or an element and contains up to three slots. A hero can only occupy one slot at a time (role *or* element).
+- Slotting a hero grants ATK/DEF/HP bonuses based on the value printed in-game: lineup heroes that match the node receive **3×** the listed percentage while all other heroes receive **1×** that value. Stacking multiple nodes multiplies the effect.
+- Nightmare progress controls how many slots are available for each node - this calculator mirrors those thresholds so you never plan for a slot you have not unlocked yet.
+
+[Example Akashic Arbor](./public/images/arbor.jpg)
+
 ### Feature Highlights
 1. Track every hero with a single dropdown that supports real star, moon, diamond, and rainbow levels plus a dedicated Not Owned state that greys out the card.
 2. Lineup cards mirror the in game presentation with element based gradients, avatar art from `public/avatars`, and a quick toggle for priority targets.

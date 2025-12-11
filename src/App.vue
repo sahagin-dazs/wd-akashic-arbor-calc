@@ -21,6 +21,11 @@ const HERO_STORAGE_KEY = "wd-akashic-owned-heroes";
 const NIGHTMARE_STORAGE_KEY = "wd-akashic-nightmare-level";
 const LINEUP_STORAGE_KEY = "wd-akashic-lineup";
 const OWNERSHIP_FILTER_STORAGE_KEY = "wd-akashic-ownership-filter";
+const INTRO_STORAGE_KEY = "wd-akashic-intro-hidden";
+const BASE_URL =
+  typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
+const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
+const ARBOR_IMAGE_SRC = `${NORMALIZED_BASE}images/arbor.jpg`;
 
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 
@@ -129,6 +134,11 @@ function loadOwnershipFilter(): OwnershipFilter {
   return "all";
 }
 
+function loadIntroHidden(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(INTRO_STORAGE_KEY) === "true";
+}
+
 const ownedHeroes = ref<OwnedHero[]>(loadOwnedHeroes());
 
 watch(
@@ -172,10 +182,16 @@ const elementFilters = ref<Element[]>([]);
 const rarityFilters = ref<Rarity[]>([]);
 const searchQuery = ref("");
 const ownershipFilter = ref<OwnershipFilter>(loadOwnershipFilter());
+const introHidden = ref(loadIntroHidden());
 
 watch(ownershipFilter, (value) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(OWNERSHIP_FILTER_STORAGE_KEY, value);
+});
+
+watch(introHidden, (value) => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(INTRO_STORAGE_KEY, value ? "true" : "false");
 });
 
 const untrackedHeroesCount = computed(
@@ -439,6 +455,16 @@ onBeforeUnmount(() => {
 function toggleFiltersPanel() {
   filtersCollapsed.value = !filtersCollapsed.value;
 }
+
+const isIntroImageOpen = ref(false);
+
+function openIntroImage() {
+  isIntroImageOpen.value = true;
+}
+
+function closeIntroImage() {
+  isIntroImageOpen.value = false;
+}
 </script>
 
 <template>
@@ -452,6 +478,43 @@ function toggleFiltersPanel() {
     </header>
 
     <main class="app-main">
+      <button
+        v-if="introHidden"
+        class="btn btn-sm btn-secondary intro-toggle"
+        type="button"
+        @click="introHidden = false"
+      >
+        Show Akashic Arbor intro
+      </button>
+      <section v-else class="panel intro-panel">
+        <div class="panel-header">
+          <div class="panel-title">What is the Akashic Arbor?</div>
+          <button class="btn btn-sm btn-ghost" type="button" @click="introHidden = true">
+            Hide
+          </button>
+        </div>
+        <div class="panel-body intro-body">
+          <p>
+            Akashic Arbor unlocks for Wittle Defenders players at account level 35, eight days after
+            the account is created. Each role and element node contains up to three slots. A hero can
+            be placed in either its role node or its element node, and every slot grants stat bonuses
+            to the lineup: matching heroes receive <strong>3×</strong> the listed ATK/DEF/HP %, while
+            all other heroes receive <strong>1×</strong> the same value.
+          </p>
+          <ul>
+            <li>Heroes can only occupy one slot at a time, so trading a hero between role and element nodes matters.</li>
+            <li>Slot unlocks depend on your Nightmare progress - this tool tracks those thresholds and only optimizes available slots.</li>
+            <li>The calculator stores hero levels, lineup, and preference for priority targets so the best buffs are recomputed instantly.</li>
+          </ul>
+          <div class="intro-actions">
+            <a class="link-btn" href="#hero-collection">Track heroes now</a>
+            <button class="btn btn-sm btn-secondary" type="button" @click="openIntroImage">
+              View Example Arbor
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section class="panel lineup-panel">
         <div class="panel-body">
           <LineupPanel
@@ -587,5 +650,19 @@ function toggleFiltersPanel() {
         </a>
       </div>
     </footer>
+    <div
+      v-if="isIntroImageOpen"
+      class="intro-modal-backdrop"
+      role="presentation"
+      @click="closeIntroImage"
+    >
+      <div class="intro-modal" role="dialog" aria-modal="true" aria-label="Example Akashic Arbor" @click.stop>
+        <img :src="ARBOR_IMAGE_SRC" alt="Example Akashic Arbor" />
+        <p>Example Akashic Arbor</p>
+        <button class="btn btn-sm btn-secondary" type="button" @click="closeIntroImage">
+          Close
+        </button>
+      </div>
+    </div>
   </div>
 </template>

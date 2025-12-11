@@ -65,6 +65,62 @@ body {
   gap: 16px;
 }
 
+.intro-toggle {
+  align-self: flex-start;
+}
+
+.intro-panel ul {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.intro-body p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.intro-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.intro-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.intro-modal {
+  background: #0b1020;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.intro-modal img {
+  max-width: 80vw;
+  max-height: 70vh;
+  border-radius: 16px;
+  object-fit: contain;
+}
+
 .panel {
   background: radial-gradient(circle at top left, #111827 0, #020617 60%);
   border-radius: var(--radius-xl);
