@@ -150,6 +150,12 @@ body {
   }
 }
 
+@media (max-width: 600px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .hero-card {
   background: linear-gradient(to bottom right, #10172a, #050816);
   border-radius: 18px;
