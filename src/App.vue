@@ -470,7 +470,7 @@ function closeIntroImage() {
 <template>
   <div class="app-shell">
     <header class="app-header">
-      <div class="app-title">Akashic Arbor Optimizer</div>
+      <div class="app-title">Wittle Defenders Akashic Arbor Optimizer</div>
       <div class="app-subtitle">
         Save hero levels, pick your lineup from the collection, set nightmare
         level, then optimize the tree for your priority units.
