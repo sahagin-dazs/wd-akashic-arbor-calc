@@ -201,6 +201,7 @@ function elementMeta(heroId: string | null) {
     <p class="lineup-hint">
       Select heroes below to fill your lineup. You can adjust priorities or remove
       heroes here.
+      <a href="#hero-collection" class="inline-link">Jump to hero collection</a>
     </p>
     <div class="lineup-row">
       <div
@@ -282,7 +283,10 @@ function elementMeta(heroId: string | null) {
           </label>
         </template>
         <div v-else class="lineup-slot-empty">
-          Select a hero from the collection to fill this slot.
+          <a href="#hero-collection" class="empty-slot-link">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            <span>Select a hero from the collection</span>
+          </a>
         </div>
       </div>
     </div>

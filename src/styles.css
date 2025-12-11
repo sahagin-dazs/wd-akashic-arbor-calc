@@ -507,6 +507,15 @@ body {
   font-size: 12px;
   color: var(--text-muted);
   margin: 0 0 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.inline-link {
+  color: var(--accent);
+  text-decoration: underline;
+  font-weight: 500;
 }
 
 .lineup-slot {
@@ -532,9 +541,29 @@ body {
 }
 
 .lineup-slot-empty {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
   margin: auto;
   font-size: 13px;
+  border: 2px dotted rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+  padding: 16px;
+  width: 100%;
+}
+
+.empty-slot-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.empty-slot-link i {
+  font-size: 20px;
 }
 
 .lineup-avatar {

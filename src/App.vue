@@ -409,9 +409,6 @@ function setOwnershipFilter(value: OwnershipFilter) {
 
     <main class="app-main">
       <section class="panel lineup-panel">
-        <div class="panel-header">
-          <div class="panel-title">Lineup</div>
-        </div>
         <div class="panel-body">
           <LineupPanel
             :heroes="HEROES"
@@ -472,7 +469,7 @@ function setOwnershipFilter(value: OwnershipFilter) {
         </div>
       </section>
 
-      <section class="panel hero-panel">
+      <section class="panel hero-panel" id="hero-collection">
         <div class="panel-header">
           <div class="panel-title">Hero Collection</div>
         </div>
