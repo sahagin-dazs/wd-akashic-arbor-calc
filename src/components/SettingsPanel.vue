@@ -13,6 +13,7 @@ const props = defineProps<{
   lineupReady?: boolean;
   allClassified?: boolean;
   isCalculating?: boolean;
+  untrackedCount?: number;
 }>();
 
 const emit = defineEmits<{
@@ -36,6 +37,12 @@ function statusFor(key: ReturnType<typeof nodeKeyId>) {
 function slotArray(unlocked: number) {
   return Array.from({ length: 3 }, (_, idx) => idx < unlocked);
 }
+
+const untrackedSummary = computed(() => {
+  const count = props.untrackedCount ?? 0;
+  const plural = count === 1 ? "" : "es";
+  return `${count} hero${plural}`;
+});
 </script>
 
 <template>
@@ -69,8 +76,13 @@ function slotArray(unlocked: number) {
           <span>Calculating...</span>
         </div>
         <div class="settings-hint">
-          <p v-if="!props.allClassified">
-            Set every hero to a star level or mark them as not owned to enable optimization.
+          <p v-if="!props.allClassified" class="settings-hint-line">
+            <span>
+              {{ untrackedSummary }} still need a star level or ownership setting.
+            </span>
+            <a class="hint-link" href="#hero-collection">
+              Jump to hero collection
+            </a>
           </p>
           <p v-else-if="!props.lineupReady">
             Fill all five lineup slots to optimize the arbor.

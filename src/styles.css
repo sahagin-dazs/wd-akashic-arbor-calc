@@ -174,6 +174,14 @@ body {
 
 .hero-card.is-unassigned {
   border-style: dashed;
+  border-color: rgba(251, 191, 36, 0.7);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(5, 8, 22, 0.9));
+  position: relative;
+}
+
+.hero-card.is-unassigned .level-placeholder {
+  color: #fcd34d;
+  font-weight: 600;
 }
 
 .hero-card.rarity-sublime {
@@ -194,6 +202,19 @@ body {
 
 .hero-card.rarity-common {
   border-color: rgba(59, 130, 246, 0.9);
+}
+
+.untracked-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fcd34d;
+  font-weight: 600;
 }
 
 .hero-empty {
@@ -351,6 +372,36 @@ body {
 .collection-progress {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.collection-untracked {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #fcd34d;
+  font-weight: 600;
+}
+
+.collection-warning {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(251, 191, 36, 0.6);
+  background: rgba(251, 191, 36, 0.08);
+  font-size: 13px;
+  color: #fcd34d;
+  margin-bottom: 8px;
+}
+
+.collection-warning .warning-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .collection-actions {
@@ -748,6 +799,22 @@ body {
 
 .settings-hint p {
   margin: 0;
+}
+
+.settings-hint-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hint-link {
+  color: #93c5fd;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hint-link:hover {
+  text-decoration: underline;
 }
 
 .nightmare-control {

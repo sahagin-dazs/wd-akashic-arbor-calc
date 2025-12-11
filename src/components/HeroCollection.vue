@@ -4,7 +4,7 @@ import type { HeroDef, OwnedHero, Level, Rarity } from "../models/types";
 import { NOT_OWNED_LEVEL_INDEX } from "../models/types";
 import { avatarKey, avatarUrl } from "../utils/avatar";
 
-type OwnershipFilter = "all" | "owned" | "not-owned" | "lineup";
+type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 
 const props = defineProps<{
   heroes: HeroDef[];
@@ -87,6 +87,12 @@ const completedCount = computed(() =>
   props.owned.filter((owned) => owned.levelIndex !== null).length
 );
 
+const untrackedCount = computed(() =>
+  props.owned.filter((owned) => owned.levelIndex === null).length
+);
+
+const hasUntracked = computed(() => untrackedCount.value > 0);
+
 function buildLevelOption(level: Level, index: number): LevelOption {
   return {
     value: index,
@@ -161,7 +167,7 @@ function getLevelOptionByIndex(levelIndex: number): LevelOption | null {
 function getLevelVisual(heroId: string) {
   const levelIndex = getLevelIndex(heroId);
   if (levelIndex == null) {
-    return { label: "Select star level", tokens: [] as LevelToken[] };
+    return { label: "Level not tracked", tokens: [] as LevelToken[] };
   }
   if (levelIndex === NOT_OWNED_LEVEL_INDEX) {
     return { label: "Not Owned", tokens: [] as LevelToken[] };
@@ -278,6 +284,10 @@ function heroAvatarUrl(hero: HeroDef) {
   return avatarUrl(hero.id, hero.name);
 }
 
+function isHeroUntracked(heroId: string) {
+  return getLevelIndex(heroId) === null;
+}
+
 function showAvatarImage(hero: HeroDef) {
   const key = heroAvatarKey(hero);
   if (!key) return false;
@@ -304,6 +314,10 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
       <span>Showing <strong>{{ shownCount }}</strong> of {{ totalCount }} heroes</span>
       <span class="collection-progress">
         Tracked <strong>{{ completedCount }}</strong>/{{ totalCount }}
+      </span>
+      <span v-if="hasUntracked" class="collection-untracked">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        {{ untrackedCount }} untracked
       </span>
       <div class="collection-actions" v-if="hasSearch || hasActiveFilters">
         <button
@@ -334,6 +348,21 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
       />
     </label>
   </div>
+  <div v-if="hasUntracked" class="collection-warning">
+    <div class="warning-text">
+      <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+      <span>
+        {{ untrackedCount }} hero<span v-if="untrackedCount !== 1">es</span> still need star levels.
+      </span>
+    </div>
+    <button
+      type="button"
+      class="link-btn"
+      @click="onOwnershipFilterChange('untracked')"
+    >
+      Show untracked heroes
+    </button>
+  </div>
   <div class="ownership-filter">
     <span class="ownership-filter-label">Show</span>
     <div class="ownership-filter-buttons">
@@ -360,6 +389,14 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
       </button>
       <button
         type="button"
+        v-if="hasUntracked"
+        :class="['ownership-chip', { active: ownershipFilter === 'untracked' }]"
+        @click="onOwnershipFilterChange('untracked')"
+      >
+        Untracked
+      </button>
+      <button
+        type="button"
         :class="['ownership-chip', { active: ownershipFilter === 'not-owned' }]"
         @click="onOwnershipFilterChange('not-owned')"
       >
@@ -373,6 +410,10 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
       :key="hero.id"
       :class="heroCardClasses(hero)"
     >
+      <div v-if="isHeroUntracked(hero.id)" class="untracked-flag">
+        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+        Level not tracked
+      </div>
       <div class="hero-header">
         <div class="hero-avatar-sm">
           <img

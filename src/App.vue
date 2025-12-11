@@ -22,7 +22,7 @@ const NIGHTMARE_STORAGE_KEY = "wd-akashic-nightmare-level";
 const LINEUP_STORAGE_KEY = "wd-akashic-lineup";
 const OWNERSHIP_FILTER_STORAGE_KEY = "wd-akashic-ownership-filter";
 
-type OwnershipFilter = "all" | "owned" | "not-owned" | "lineup";
+type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 
 const ZERO_STAR_INDEX = LEVELS.indexOf("0S");
 
@@ -120,6 +120,7 @@ function loadOwnershipFilter(): OwnershipFilter {
   if (
     stored === "owned" ||
     stored === "not-owned" ||
+    stored === "untracked" ||
     stored === "all" ||
     stored === "lineup"
   ) {
@@ -175,6 +176,16 @@ const ownershipFilter = ref<OwnershipFilter>(loadOwnershipFilter());
 watch(ownershipFilter, (value) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(OWNERSHIP_FILTER_STORAGE_KEY, value);
+});
+
+const untrackedHeroesCount = computed(
+  () => ownedHeroes.value.filter((hero) => hero.levelIndex === null).length
+);
+
+watch(untrackedHeroesCount, (count) => {
+  if (count === 0 && ownershipFilter.value === "untracked") {
+    ownershipFilter.value = "all";
+  }
 });
 
 function describeLevel(level: Level | "NONE") {
@@ -265,10 +276,12 @@ function matchesOwnershipFilter(heroId: string) {
   const status = getHeroOwnershipStatus(heroId);
   if (ownershipFilter.value === "all") return true;
   if (ownershipFilter.value === "owned") return status === "owned";
+  if (ownershipFilter.value === "untracked") return status === "unassigned";
+  if (ownershipFilter.value === "not-owned") return status === "not-owned";
   if (ownershipFilter.value === "lineup") {
     return lineupHeroIds.value.has(heroId);
   }
-  return status !== "owned"; // includes not-owned + unassigned
+  return status !== "owned";
 }
 
 function updateOwned(heroId: string, levelIndex: number | null) {
@@ -426,6 +439,7 @@ function setOwnershipFilter(value: OwnershipFilter) {
           :optimize-disabled="!canOptimize || isCalculating"
           :lineup-ready="isLineupFull"
           :all-classified="allHeroesClassified"
+          :untracked-count="untrackedHeroesCount"
           :is-calculating="isCalculating"
           @optimize="optimize"
         />
