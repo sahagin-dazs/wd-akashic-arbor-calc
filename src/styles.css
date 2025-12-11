@@ -1328,6 +1328,32 @@ body {
   gap: 12px;
 }
 
+.filters-panel .filters-header-actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.filters-panel .collapse-toggle {
+  border-color: rgba(148, 163, 184, 0.4);
+  color: var(--text-main);
+  gap: 4px;
+}
+
+.filters-panel .collapse-toggle i {
+  font-size: 10px;
+}
+
+.filters-panel.collapsed {
+  padding-bottom: 12px;
+}
+
+.filters-panel.collapsed .panel-body {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .settings-row {
     flex-direction: column;

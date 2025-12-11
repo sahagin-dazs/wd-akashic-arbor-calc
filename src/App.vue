@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { HEROES } from "./models/heroes";
 import type {
   OwnedHero,
@@ -408,6 +408,37 @@ function optimize() {
 function setOwnershipFilter(value: OwnershipFilter) {
   ownershipFilter.value = value;
 }
+
+const isMobileFilters = ref(false);
+const filtersCollapsed = ref(false);
+let filtersMediaQuery: MediaQueryList | null = null;
+let filtersMediaListener: ((event: MediaQueryListEvent) => void) | null = null;
+
+function applyFiltersMediaState(matches: boolean) {
+  isMobileFilters.value = matches;
+  filtersCollapsed.value = matches;
+}
+
+onMounted(() => {
+  if (typeof window === "undefined") return;
+  filtersMediaQuery = window.matchMedia("(max-width: 820px)");
+  applyFiltersMediaState(filtersMediaQuery.matches);
+  filtersMediaListener = (event) => {
+    isMobileFilters.value = event.matches;
+    filtersCollapsed.value = event.matches;
+  };
+  filtersMediaQuery.addEventListener("change", filtersMediaListener);
+});
+
+onBeforeUnmount(() => {
+  if (filtersMediaQuery && filtersMediaListener) {
+    filtersMediaQuery.removeEventListener("change", filtersMediaListener);
+  }
+});
+
+function toggleFiltersPanel() {
+  filtersCollapsed.value = !filtersCollapsed.value;
+}
 </script>
 
 <template>
@@ -464,14 +495,38 @@ function setOwnershipFilter(value: OwnershipFilter) {
         </div>
       </section>
 
-      <section class="panel filters-panel">
-        <div class="panel-header">
+      <section
+        class="panel filters-panel"
+        :class="{
+          'is-collapsible': isMobileFilters,
+          collapsed: isMobileFilters && filtersCollapsed
+        }"
+      >
+        <div class="panel-header filters-header">
           <div class="panel-title">Filter Heroes</div>
-          <button class="btn btn-sm btn-ghost" @click="clearFilters" :disabled="!hasActiveFilters">
-            Clear
-          </button>
+          <div class="filters-header-actions">
+            <button class="btn btn-sm btn-ghost" @click="clearFilters" :disabled="!hasActiveFilters">
+              Clear
+            </button>
+            <button
+              v-if="isMobileFilters"
+              class="btn btn-sm btn-ghost collapse-toggle"
+              type="button"
+              @click="toggleFiltersPanel"
+              :aria-expanded="!filtersCollapsed"
+            >
+              <i
+                :class="[
+                  'fa-solid',
+                  filtersCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'
+                ]"
+                aria-hidden="true"
+              ></i>
+              {{ filtersCollapsed ? "Show Filters" : "Hide Filters" }}
+            </button>
+          </div>
         </div>
-        <div class="panel-body">
+        <div class="panel-body" v-if="!isMobileFilters || !filtersCollapsed">
           <HeroFilters
             :selected-roles="roleFilters"
             :selected-elements="elementFilters"
