@@ -6,6 +6,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 declare global {
   interface Window {
     dataLayer: unknown[];
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -24,11 +25,13 @@ function initAnalytics() {
   }
 
   window.dataLayer = window.dataLayer || [];
-  function gtag(...args: unknown[]) {
-    window.dataLayer.push(args);
-  }
-  gtag("js", new Date());
-  gtag("config", measurementId);
+  window.gtag =
+    window.gtag ||
+    function gtag(...args: unknown[]) {
+      window.dataLayer.push(args);
+    };
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId);
 }
 
 initAnalytics();
