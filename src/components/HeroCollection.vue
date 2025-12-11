@@ -201,6 +201,16 @@ function heroLevelOptions(hero: HeroDef): LevelOption[] {
   return levelOptions.value;
 }
 
+function firstLevelValue(hero: HeroDef) {
+  const options = heroLevelOptions(hero);
+  return options.length ? options[0].value : null;
+}
+
+function lastLevelValue(hero: HeroDef) {
+  const options = heroLevelOptions(hero);
+  return options.length ? options[options.length - 1].value : null;
+}
+
 function onLevelSelect(heroId: string, value: string) {
   if (value === "") {
     emit("update-owned", heroId, null);
@@ -208,6 +218,30 @@ function onLevelSelect(heroId: string, value: string) {
   }
   const parsed = Number(value);
   emit("update-owned", heroId, Number.isNaN(parsed) ? null : parsed);
+}
+
+function nextLevelIndex(
+  hero: HeroDef,
+  currentIndex: number | null,
+  delta: number
+) {
+  const options = heroLevelOptions(hero);
+  if (!options.length) return currentIndex;
+  const indexes = options.map((opt) => opt.value);
+  const currentPos = currentIndex != null ? indexes.indexOf(currentIndex) : -1;
+  const nextPos = Math.min(
+    indexes.length - 1,
+    Math.max(0, currentPos + delta)
+  );
+  return indexes[nextPos];
+}
+
+function adjustLevel(hero: HeroDef, delta: number) {
+  const current = getLevelIndex(hero.id);
+  const nextIndex = nextLevelIndex(hero, current, delta);
+  if (typeof nextIndex === "number") {
+    emit("update-owned", hero.id, nextIndex);
+  }
 }
 
 function onLineupToggle(heroId: string, checked: boolean) {
@@ -464,33 +498,53 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
           :disabled="lineupToggleDisabled(hero.id)"
           @change="onLineupToggle(hero.id, ($event.target as HTMLInputElement).checked)"
         />
-        {{ isHeroInLineup(hero.id) ? "In lineup" : "Add to lineup" }}
+        <span>{{ isHeroInLineup(hero.id) ? "In lineup" : "Add to lineup" }}</span>
         <span v-if="lineupToggleDisabled(hero.id) && !isHeroInLineup(hero.id)" class="toggle-hint">
           {{ lineupHint(hero.id) }}
         </span>
       </label>
       <div class="level-control-row">
-        <div
-          class="level-visual"
-          :aria-label="getLevelVisual(hero.id).label"
-        >
-          <template v-if="getLevelVisual(hero.id).tokens.length">
-            <template
-              v-for="token in getLevelVisual(hero.id).tokens"
-              :key="`${hero.id}-${token.type}`"
-            >
-              <i
-                v-for="countIndex in token.count"
-                :key="`${hero.id}-${token.type}-${countIndex}`"
-                class="level-icon"
-                :class="iconClass(token.type)"
-                aria-hidden="true"
-              ></i>
+        <div class="level-adjust-row">
+          <button
+            type="button"
+            class="stepper-btn stepper-btn-sm"
+            @click="adjustLevel(hero, -1)"
+            :disabled="getLevelIndex(hero.id) === firstLevelValue(hero)"
+            aria-label="Decrease hero level"
+          >
+            <i class="fa-solid fa-minus" aria-hidden="true"></i>
+          </button>
+          <div
+            class="level-visual"
+            :aria-label="getLevelVisual(hero.id).label"
+          >
+            <template v-if="getLevelVisual(hero.id).tokens.length">
+              <template
+                v-for="token in getLevelVisual(hero.id).tokens"
+                :key="`${hero.id}-${token.type}`"
+              >
+                <i
+                  v-for="countIndex in token.count"
+                  :key="`${hero.id}-${token.type}-${countIndex}`"
+                  class="level-icon"
+                  :class="iconClass(token.type)"
+                  aria-hidden="true"
+                ></i>
+              </template>
             </template>
-          </template>
-          <span v-else class="level-placeholder">
-            {{ getLevelVisual(hero.id).label }}
-          </span>
+            <span v-else class="level-placeholder">
+              {{ getLevelVisual(hero.id).label }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="stepper-btn stepper-btn-sm"
+            @click="adjustLevel(hero, 1)"
+            :disabled="getLevelIndex(hero.id) === lastLevelValue(hero)"
+            aria-label="Increase hero level"
+          >
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+          </button>
         </div>
         <select
           class="level-select"
