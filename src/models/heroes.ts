@@ -227,7 +227,7 @@ export const HEROES: HeroDef[] = [
   },
   {
     id: "DS",
-    name: "Demon Slayer",
+    name: "Demon Spawn",
     rarity: "Mythic",
     role: "Fighter",
     element: "Fire",

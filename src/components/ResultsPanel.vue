@@ -276,7 +276,6 @@ function nextUnlockLabel(node: NodeKey) {
         </div>
       </div>
     </div>
-
     <div class="results-tree-panel">
       <div class="node-tree">
         <div
@@ -376,5 +375,21 @@ function nextUnlockLabel(node: NodeKey) {
         </div>
       </div>
     </div>
+          <div class="support-banner">
+        <div class="support-message">
+          <i class="fa-solid fa-heart support-heart" aria-hidden="true"></i>
+          <span>
+            Is this tool helping you? Your support keeps the project up to date for the whole Wittle Defenders community.
+          </span>
+        </div>
+        <a
+          class="btn btn-sm btn-support"
+          href="https://www.buymeacoffee.com/sahagin"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Support the Project
+        </a>
+      </div>
   </div>
 </template>
