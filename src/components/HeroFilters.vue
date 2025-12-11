@@ -97,31 +97,26 @@ function onElementToggle(element: Element) {
   emit("toggle-element", element);
 }
 
-const rarityOptions: Array<{ id: Rarity; label: string; background: string }> = [
+const rarityOptions: Array<{ id: Rarity; label: string }> = [
   {
     id: "Sublime",
-    label: "Sublime",
-    background: "linear-gradient(130deg, #22d3ee, #c084fc)"
+    label: "Sublime"
   },
   {
     id: "Mythic",
-    label: "Mythic",
-    background: "#e11d48"
+    label: "Mythic"
   },
   {
     id: "Legendary",
-    label: "Legendary",
-    background: "#facc15"
+    label: "Legendary"
   },
   {
     id: "Epic",
-    label: "Epic",
-    background: "#a855f7"
+    label: "Epic"
   },
   {
     id: "Common",
-    label: "Common",
-    background: "#38bdf8"
+    label: "Common"
   }
 ];
 
@@ -183,9 +178,11 @@ function isRarityActive(rarity: Rarity) {
           v-for="option in rarityOptions"
           :key="option.id"
           type="button"
-          class="filter-chip"
-          :class="{ active: isRarityActive(option.id) }"
-          :style="isRarityActive(option.id) ? { background: option.background, borderColor: 'transparent' } : {}"
+          class="filter-chip rarity-chip"
+          :class="[
+            `rarity-${option.id.toLowerCase()}`,
+            { active: isRarityActive(option.id) }
+          ]"
           @click="onRarityToggle(option.id)"
         >
           <span>{{ option.label }}</span>

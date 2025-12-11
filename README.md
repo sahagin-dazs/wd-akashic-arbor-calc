@@ -74,6 +74,4 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that builds 
 Avatar PNGs live in `public/avatars/`. Each file should be named after the hero abbreviation with punctuation removed, for example `SR.png` for Scarlet Reaper or `UnyieldingLancer.png` for Unyielding Lancer. Transparent 100x100 circles look best.
 
 ### Support This Tool
-If the calculator saves you time, consider supporting its development: [Support this tool](https://www.buymeacoffee.com/sahagindazs). Contributions help cover maintenance and future feature work.
-
-Source code: [github.com/sahagindazs/wd-akashic-arbor-calc](https://github.com/sahagindazs/wd-akashic-arbor-calc)
+If the calculator saves you time, consider supporting its development: [Support this tool](https://www.buymeacoffee.com/sahagin). Contributions help cover maintenance and future feature work.

@@ -398,11 +398,12 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
     </button>
   </div>
   <div class="ownership-filter">
-    <span class="ownership-filter-label">Show</span>
+    <span class="ownership-filter-label">Filter Heroes</span>
     <div class="ownership-filter-buttons">
       <button
         type="button"
         :class="['ownership-chip', { active: ownershipFilter === 'all' }]"
+        data-rarity="All"
         @click="onOwnershipFilterChange('all')"
       >
         All
@@ -410,6 +411,7 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
       <button
         type="button"
         :class="['ownership-chip', { active: ownershipFilter === 'owned' }]"
+        data-rarity="Owned"
         @click="onOwnershipFilterChange('owned')"
       >
         Owned
@@ -417,14 +419,16 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
       <button
         type="button"
         :class="['ownership-chip', { active: ownershipFilter === 'lineup' }]"
+        data-rarity="Lineup"
         @click="onOwnershipFilterChange('lineup')"
       >
-        Lineup
+        In Lineup
       </button>
       <button
         type="button"
         v-if="hasUntracked"
         :class="['ownership-chip', { active: ownershipFilter === 'untracked' }]"
+        data-rarity="Untracked"
         @click="onOwnershipFilterChange('untracked')"
       >
         Untracked
@@ -432,6 +436,7 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
       <button
         type="button"
         :class="['ownership-chip', { active: ownershipFilter === 'not-owned' }]"
+        data-rarity="NotOwned"
         @click="onOwnershipFilterChange('not-owned')"
       >
         Not Owned
@@ -491,7 +496,7 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
           In lineup
         </span>
       </div>
-      <label class="lineup-toggle">
+      <label class="lineup-toggle" :class="{ 'in-lineup': isHeroInLineup(hero.id) }">
         <input
           type="checkbox"
           :checked="isHeroInLineup(hero.id)"
@@ -503,8 +508,8 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
           {{ lineupHint(hero.id) }}
         </span>
       </label>
-      <div class="level-control-row">
-        <div class="level-adjust-row">
+        <div class="level-control-row">
+          <div class="level-adjust-row">
           <button
             type="button"
             class="stepper-btn stepper-btn-sm"
@@ -514,10 +519,14 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
           >
             <i class="fa-solid fa-minus" aria-hidden="true"></i>
           </button>
-          <div
-            class="level-visual"
-            :aria-label="getLevelVisual(hero.id).label"
-          >
+          <div class="level-visual-shell">
+            <span class="level-status-label">
+              {{ isHeroUntracked(hero.id) ? "Level not tracked" : "Star Level" }}
+            </span>
+            <div
+              class="level-visual"
+              :aria-label="getLevelVisual(hero.id).label"
+            >
             <template v-if="getLevelVisual(hero.id).tokens.length">
               <template
                 v-for="token in getLevelVisual(hero.id).tokens"
@@ -532,9 +541,10 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
                 ></i>
               </template>
             </template>
-            <span v-else class="level-placeholder">
-              {{ getLevelVisual(hero.id).label }}
-            </span>
+              <span v-else class="level-placeholder">
+                {{ getLevelVisual(hero.id).label }}
+              </span>
+            </div>
           </div>
           <button
             type="button"

@@ -18,7 +18,10 @@ export function avatarKey(heroId?: string | null, heroName?: string) {
 const baseUrl =
   typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
 
-export function avatarUrl(heroId?: string | null, heroName?: string) {
+export function avatarUrl(
+  heroId?: string | null,
+  heroName?: string
+) {
   const key = avatarKey(heroId, heroName);
   if (!key) return "";
   const separator = baseUrl.endsWith("/") ? "" : "/";

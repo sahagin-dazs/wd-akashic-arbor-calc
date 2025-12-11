@@ -349,6 +349,31 @@ body {
   transition: all 0.2s ease;
 }
 
+.ownership-chip[data-rarity="Sublime"] {
+  border-color: rgba(34, 211, 238, 0.9);
+  color: #a5f3fc;
+}
+
+.ownership-chip[data-rarity="Mythic"] {
+  border-color: rgba(225, 29, 72, 0.9);
+  color: #fecdd3;
+}
+
+.ownership-chip[data-rarity="Legendary"] {
+  border-color: rgba(250, 204, 21, 0.9);
+  color: #fef3c7;
+}
+
+.ownership-chip[data-rarity="Epic"] {
+  border-color: rgba(168, 85, 247, 0.9);
+  color: #ede9fe;
+}
+
+.ownership-chip[data-rarity="Common"] {
+  border-color: rgba(59, 130, 246, 0.9);
+  color: #dbeafe;
+}
+
 .ownership-chip.active {
   background: rgba(99, 102, 241, 0.2);
   border-color: #818cf8;
@@ -469,9 +494,11 @@ body {
 }
 
 .badge-sublime {
-  border-color: transparent;
-  background: linear-gradient(130deg, #22d3ee, #c084fc);
-  color: #0f172a;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#050816, #050816) padding-box,
+    linear-gradient(130deg, #22d3ee, #c084fc) border-box;
+  color: #a5f3fc;
   font-weight: 600;
 }
 
@@ -481,6 +508,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.level-visual-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.level-status-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 }
 
 .level-adjust-row {
@@ -500,6 +541,10 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 12px;
   background: rgba(15, 23, 42, 0.6);
+}
+
+.level-visual-shell {
+  min-height: 52px;
 }
 
 .level-placeholder {
@@ -522,6 +567,7 @@ body {
   height: 36px;
   border-radius: 12px;
   flex: 0 0 auto;
+  touch-action: manipulation;
 }
 
 .level-icon {
@@ -612,10 +658,10 @@ body {
 }
 
 .lineup-slot {
-  flex: 1 1 240px;
+  /* flex: 0 0 240px; */
   min-width: 240px;
   max-width: 320px;
-  min-height: 200px;
+  min-height: 308px;
   border-radius: 16px;
   border: 1px dashed var(--border-soft);
   background: rgba(15, 23, 42, 0.6);
@@ -677,6 +723,7 @@ body {
 .lineup-avatar {
   width: 100px;
   height: 100px;
+  flex: 0 0 100px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.18);
   padding: 4px;
@@ -692,8 +739,8 @@ body {
 .lineup-avatar-img {
   width: 100%;
   height: 100%;
-  border-radius: 14px;
-  object-fit: contain;
+  border-radius: 18px;
+  object-fit: cover;
 }
 
 .lineup-name {
@@ -803,15 +850,32 @@ body {
 }
 
 .priority-toggle {
-  font-size: 12px;
+  font-size: 13px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.6);
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .priority-toggle input {
   margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.priority-toggle input:checked + span {
+  color: #22d3ee;
+}
+
+.priority-toggle span {
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Settings and results */
@@ -1445,6 +1509,65 @@ body {
 
 .filters-panel .panel-body {
   gap: 12px;
+}
+
+.rarity-chip {
+  border-width: 2px;
+}
+
+.rarity-chip.rarity-sublime {
+  border-color: rgba(34, 211, 238, 0.9);
+  color: #a5f3fc;
+}
+
+.rarity-chip.rarity-sublime.active {
+  background: linear-gradient(130deg, #22d3ee, #c084fc);
+  color: #0f172a;
+  border-color: transparent;
+}
+
+.rarity-chip.rarity-mythic {
+  border-color: rgba(225, 29, 72, 0.9);
+  color: #fecdd3;
+}
+
+.rarity-chip.rarity-mythic.active {
+  background: rgba(225, 29, 72, 0.8);
+  color: #fff;
+  border-color: rgba(225, 29, 72, 0.8);
+}
+
+.rarity-chip.rarity-legendary {
+  border-color: rgba(250, 204, 21, 0.9);
+  color: #fef9c3;
+}
+
+.rarity-chip.rarity-legendary.active {
+  background: rgba(250, 204, 21, 0.85);
+  color: #0f172a;
+  border-color: rgba(250, 204, 21, 0.85);
+}
+
+.rarity-chip.rarity-epic {
+  border-color: rgba(168, 85, 247, 0.9);
+  color: #ede9fe;
+}
+
+.rarity-chip.rarity-epic.active {
+  background: rgba(168, 85, 247, 0.85);
+  color: #fff;
+  border-color: rgba(168, 85, 247, 0.85);
+}
+
+.rarity-chip.rarity-common {
+  border-color: rgba(59, 130, 246, 0.9);
+  color: #dbeafe;
+}
+
+.rarity-chip.rarity-common.active {
+  background: rgba(59, 130, 246, 0.85);
+  color: #fff;
+  border-color: rgba(59, 130, 246, 0.85);
 }
 
 .filters-panel .filters-header-actions {

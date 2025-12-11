@@ -292,7 +292,7 @@ function elementMeta(heroId: string | null) {
               :checked="slot.isPriority"
               @change="emit('toggle-priority', idx)"
             />
-            Priority Target
+            <span>Priority Target</span>
           </label>
         </template>
         <div v-else class="lineup-slot-empty">
