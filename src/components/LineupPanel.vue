@@ -9,6 +9,7 @@ const props = defineProps<{
   heroes: HeroDef[];
   lineup: Lineup;
   owned: OwnedHero[];
+  untrackedCount?: number;
 }>();
 
 const emit = defineEmits<{
@@ -198,6 +199,18 @@ function elementMeta(heroId: string | null) {
     <div class="panel-header">
       <div class="panel-title">Lineup</div>
     </div>
+    <div
+      v-if="(props.untrackedCount ?? 0) > 0"
+      class="collection-warning lineup-warning"
+    >
+      <div class="warning-text">
+        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+        <span>
+          {{ props.untrackedCount }} hero<span v-if="(props.untrackedCount ?? 0) !== 1">es</span> still need star levels.
+        </span>
+      </div>
+      <a href="#hero-collection" class="link-btn">Track heroes</a>
+    </div>
     <p class="lineup-hint">
       Select heroes below to fill your lineup. You can adjust priorities or remove
       heroes here.
@@ -208,7 +221,7 @@ function elementMeta(heroId: string | null) {
         v-for="(slot, idx) in lineup.slots"
         :key="idx"
         class="lineup-slot"
-        :class="{ filled: !!slot.heroId }"
+        :class="{ filled: !!slot.heroId, 'slot-empty-shell': !slot.heroId }"
         :style="slotStyle(slot.heroId)"
       >
         <template v-if="slot.heroId">

@@ -43,6 +43,12 @@ const untrackedSummary = computed(() => {
   const plural = count === 1 ? "" : "es";
   return `${count} hero${plural}`;
 });
+
+function adjustNightmareLevel(delta: number) {
+  const next = props.nightmareLevel + delta;
+  const clamped = Math.max(0, Math.min(999, next));
+  emit("update:nightmareLevel", clamped);
+}
 </script>
 
 <template>
@@ -59,14 +65,32 @@ const untrackedSummary = computed(() => {
       <div class="nightmare-column">
         <label class="nightmare-control">
           <span>Nightmare Level</span>
-          <input
-            class="nightmare-input"
-            type="number"
-            min="0"
-            max="999"
-            :value="nightmareLevel"
-            @input="onChange"
-          />
+          <div class="nightmare-input-wrap">
+            <button
+              type="button"
+              class="stepper-btn"
+              @click="adjustNightmareLevel(-1)"
+              aria-label="Decrease nightmare level"
+            >
+              <i class="fa-solid fa-minus" aria-hidden="true"></i>
+            </button>
+            <input
+              class="nightmare-input"
+              type="number"
+              min="0"
+              max="999"
+              :value="nightmareLevel"
+              @input="onChange"
+            />
+            <button
+              type="button"
+              class="stepper-btn"
+              @click="adjustNightmareLevel(1)"
+              aria-label="Increase nightmare level"
+            >
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
         </label>
         <button class="btn btn-lg optimize-btn" :disabled="props.optimizeDisabled" @click="emit('optimize')">
           Optimize Arbor

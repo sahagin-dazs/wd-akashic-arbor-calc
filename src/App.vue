@@ -458,6 +458,7 @@ function toggleFiltersPanel() {
             :heroes="HEROES"
             :lineup="lineup"
             :owned="ownedHeroes"
+            :untracked-count="untrackedHeroesCount"
             @toggle-priority="togglePriority"
             @clear-slot="clearLineupSlot"
           />
