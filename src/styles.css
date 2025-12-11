@@ -1329,10 +1329,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .hero-grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  }
-
   .settings-row {
     flex-direction: column;
     align-items: flex-start;
