@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onBeforeUnmount } from "vue";
 import {
   getNodeStatuses,
   NODE_TREE_LAYOUT,
@@ -49,6 +49,56 @@ function adjustNightmareLevel(delta: number) {
   const clamped = Math.max(0, Math.min(999, next));
   emit("update:nightmareLevel", clamped);
 }
+
+let stepperTimeout: number | null = null;
+let stepperInterval: number | null = null;
+let suppressClick = false;
+
+function clearSteppers() {
+  if (stepperTimeout !== null) {
+    window.clearTimeout(stepperTimeout);
+    stepperTimeout = null;
+  }
+  if (stepperInterval !== null) {
+    window.clearInterval(stepperInterval);
+    stepperInterval = null;
+  }
+}
+
+function startStepper(delta: number, event: PointerEvent) {
+  event.preventDefault();
+  suppressClick = true;
+  adjustNightmareLevel(delta);
+  clearSteppers();
+  stepperTimeout = window.setTimeout(() => {
+    stepperInterval = window.setInterval(() => {
+      adjustNightmareLevel(delta);
+    }, 200);
+  }, 350);
+}
+
+function stopStepper() {
+  clearSteppers();
+  if (suppressClick) {
+    window.setTimeout(() => {
+      suppressClick = false;
+    }, 0);
+  }
+}
+
+function onStepperClick(delta: number, event: MouseEvent) {
+  if (suppressClick) {
+    suppressClick = false;
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
+  adjustNightmareLevel(delta);
+}
+
+onBeforeUnmount(() => {
+  clearSteppers();
+});
 </script>
 
 <template>
@@ -69,7 +119,11 @@ function adjustNightmareLevel(delta: number) {
             <button
               type="button"
               class="stepper-btn"
-              @click="adjustNightmareLevel(-1)"
+              @pointerdown="startStepper(-1, $event)"
+              @pointerup="stopStepper"
+              @pointercancel="stopStepper"
+              @pointerleave="stopStepper"
+              @click="onStepperClick(-1, $event)"
               aria-label="Decrease nightmare level"
             >
               <i class="fa-solid fa-minus" aria-hidden="true"></i>
@@ -85,7 +139,11 @@ function adjustNightmareLevel(delta: number) {
             <button
               type="button"
               class="stepper-btn"
-              @click="adjustNightmareLevel(1)"
+              @pointerdown="startStepper(1, $event)"
+              @pointerup="stopStepper"
+              @pointercancel="stopStepper"
+              @pointerleave="stopStepper"
+              @click="onStepperClick(1, $event)"
               aria-label="Increase nightmare level"
             >
               <i class="fa-solid fa-plus" aria-hidden="true"></i>

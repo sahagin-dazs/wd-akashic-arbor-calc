@@ -561,7 +561,7 @@ body {
 .lineup-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .lineup-hint {
@@ -583,7 +583,7 @@ body {
   flex: 1 1 240px;
   min-width: 240px;
   max-width: 320px;
-  min-height: 220px;
+  min-height: 200px;
   border-radius: 16px;
   border: 1px dashed var(--border-soft);
   background: rgba(15, 23, 42, 0.6);
@@ -601,14 +601,29 @@ body {
   border-style: solid;
 }
 
+.lineup-slot.slot-empty-shell {
+  background: transparent;
+  border: none;
+  padding: 0;
+  min-height: 0;
+  display: flex;
+}
+
 .lineup-slot-empty {
   color: rgba(255, 255, 255, 0.8);
-  margin: auto;
+  margin: 0;
   font-size: 13px;
   border: 2px dotted rgba(255, 255, 255, 0.4);
   border-radius: 14px;
   padding: 16px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 100%;
 }
 
 .empty-slot-link {
@@ -719,11 +734,21 @@ body {
 
 @media (max-width: 820px) {
   .settings-row {
-    gap: 12px;
+    gap: 10px;
+    flex-direction: column;
   }
 
   .slot-summary-panel {
     width: 100%;
+    min-width: 0;
+  }
+
+  .nightmare-column {
+    width: 100%;
+  }
+
+  .lineup-slot {
+    min-height: 170px;
   }
 }
 
@@ -736,14 +761,7 @@ body {
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    min-height: 190px;
-  }
-
-  .lineup-slot.slot-empty-shell {
-    background: transparent;
-    border: none;
-    padding: 0;
-    min-height: 0;
+    min-height: 160px;
   }
 
   .lineup-slot-empty {
@@ -793,7 +811,7 @@ body {
 }
 
 .nightmare-column {
-  flex: 1 1 260px;
+  flex: 1 1 200px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -823,10 +841,16 @@ body {
 }
 
 .settings-hint {
-  flex: 1 1 240px;
+  flex: 0 1 10px;
   font-size: 12px;
   color: var(--text-muted);
-  text-align: center;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: auto;
+  max-width: 420px;
+  align-items: flex-start;
 }
 
 .settings-hint p {
@@ -887,6 +911,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  touch-action: manipulation;
 }
 
 .stepper-btn i {
@@ -905,6 +930,11 @@ body {
   .nightmare-input {
     width: 100%;
     min-width: 0;
+  }
+
+  .settings-hint {
+    width: 100%;
+    max-width: 100%;
   }
 
   .slot-summary-panel {
