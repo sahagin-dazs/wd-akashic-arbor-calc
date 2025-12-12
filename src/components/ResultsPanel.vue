@@ -26,6 +26,10 @@ const props = defineProps<{
   nightmareLevel: number;
 }>();
 
+const emit = defineEmits<{
+  (event: "optimize-again"): void;
+}>();
+
 function formatPercent(val: number | undefined) {
   if (!val || val <= 0) return "0.00%";
   const formatted = `${(val * 100).toFixed(2)}%`;
@@ -238,9 +242,7 @@ function nextUnlockDelta(node: NodeKey) {
 <template>
   <div class="results-panel">
     <div class="buff-list">
-      <div class="panel-title">
-        Lineup Buff Summary
-      </div>
+      <div class="panel-title">Lineup Buff Summary</div>
       <div class="buff-row highlight">
         <span>Total priority buff</span>
         <span class="totals-value totals-large">
@@ -251,11 +253,7 @@ function nextUnlockDelta(node: NodeKey) {
         All increases apply equally to ATK%, HP%, and DEF%.
       </div>
       <div class="lineup-mini-grid">
-        <div
-          v-for="(slot, idx) in lineup.slots"
-          :key="idx"
-          class="lineup-mini-card"
-        >
+        <div v-for="(slot, idx) in lineup.slots" :key="idx" class="lineup-mini-card">
           <template v-if="slot.heroId">
             <div class="lineup-mini-avatar">
               <img
@@ -269,9 +267,7 @@ function nextUnlockDelta(node: NodeKey) {
               <span v-else>{{ avatarFallback(slot.heroId) }}</span>
             </div>
             <div class="lineup-mini-info">
-              <div class="lineup-mini-name">
-                {{ heroName(slot.heroId) }}
-              </div>
+              <div class="lineup-mini-name">{{ heroName(slot.heroId) }}</div>
               <div class="lineup-mini-buff">
                 {{ lineupBuff(slot.heroId) }}
               </div>
@@ -284,6 +280,7 @@ function nextUnlockDelta(node: NodeKey) {
         </div>
       </div>
     </div>
+
     <div class="results-tree-panel">
       <div class="node-tree">
         <div
@@ -395,21 +392,28 @@ function nextUnlockDelta(node: NodeKey) {
         </div>
       </div>
     </div>
-          <div class="support-banner">
-        <div class="support-message">
-          <i class="fa-solid fa-heart support-heart" aria-hidden="true"></i>
-          <span>
-            Is this tool helping you? Your support keeps the project up to date for the whole Wittle Defenders community.
-          </span>
-        </div>
-        <a
-          class="btn btn-sm btn-support"
-          href="https://www.buymeacoffee.com/sahagin"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Support the Project
-        </a>
+
+    <div class="results-repeat">
+      <div class="results-repeat-text">Ready to run the calculator again?</div>
+      <button class="btn btn-lg optimize-repeat-btn" type="button" @click="emit('optimize-again')">
+        Optimize Arbor
+      </button>
+      <div class="results-repeat-hint">
+        Tweak hero levels, priority targets, or nightmare progress above, then rerun the optimizer anytime.
       </div>
+    </div>
+
+    <div class="support-banner">
+      <div class="support-message">
+        <i class="fa-solid fa-heart support-heart" aria-hidden="true"></i>
+        <span>
+          Is this tool helping you? Your support keeps the project up to date for the whole Wittle Defenders community.
+        </span>
+      </div>
+      <a class="btn btn-sm btn-support" href="https://www.buymeacoffee.com/sahagin" target="_blank" rel="noreferrer">
+        Support the Project
+      </a>
+    </div>
   </div>
 </template>
+

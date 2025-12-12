@@ -407,6 +407,12 @@ const lastUpdated = new Date().toLocaleDateString(undefined, {
   day: "numeric"
 });
 
+function scrollResultsIntoView() {
+  if (resultsRef.value) {
+    resultsRef.value.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 function optimize() {
   if (!canOptimize.value || isCalculating.value) return;
   isCalculating.value = true;
@@ -419,10 +425,13 @@ function optimize() {
     );
     lastResult.value = result;
     isCalculating.value = false;
-    if (resultsRef.value) {
-      resultsRef.value.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    scrollResultsIntoView();
   }, 0);
+}
+
+function optimizeFromResults() {
+  scrollResultsIntoView();
+  optimize();
 }
 
 function setOwnershipFilter(value: OwnershipFilter) {
@@ -559,6 +568,7 @@ function closeIntroImage() {
             :heroes="HEROES"
             :owned="ownedHeroes"
             :nightmare-level="nightmareLevel"
+            @optimize-again="optimizeFromResults"
           />
         </div>
       </section>
