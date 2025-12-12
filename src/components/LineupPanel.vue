@@ -33,7 +33,7 @@ const ELEMENT_BACKGROUNDS: Record<
     background: "linear-gradient(145deg, rgba(52,211,153,0.85), rgba(16,185,129,0.9))",
     border: "rgba(134,239,172,0.5)"
   },
-  Electric: {
+  Electro: {
     background: "linear-gradient(145deg, rgba(250,204,21,0.85), rgba(202,138,4,0.9))",
     border: "rgba(253,224,71,0.6)"
   },
@@ -54,7 +54,7 @@ const ELEMENT_META = {
   Fire: { icon: "fa-solid fa-fire", color: "#fff" },
   Ice: { icon: "fa-solid fa-snowflake", color: "#fff" },
   Wind: { icon: "fa-solid fa-wind", color: "#fff" },
-  Electric: { icon: "fa-solid fa-bolt", color: "#fff" },
+  Electro: { icon: "fa-solid fa-bolt", color: "#fff" },
   Xeno: { icon: "fa-solid fa-star-of-david", color: "#0f172a" }
 } as const;
 

@@ -45,7 +45,7 @@ const ROLE_THRESHOLDS: Record<
 const ELEMENT_THRESHOLDS: Record<Element, [number, number, number]> = {
   Fire: [0, 24, 48],
   Ice: [8, 32, 56],
-  Electric: [11, 35, 59],
+  Electro: [11, 35, 59],
   Wind: [14, 38, 62],
   Xeno: [29, 53, 77]
 };

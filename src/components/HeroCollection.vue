@@ -61,7 +61,7 @@ const ELEMENT_META = {
   Fire: { icon: "fa-solid fa-fire", color: "#ef4444" },
   Ice: { icon: "fa-solid fa-snowflake", color: "#60a5fa" },
   Wind: { icon: "fa-solid fa-wind", color: "#34d399" },
-  Electric: { icon: "fa-solid fa-bolt", color: "#facc15" },
+  Electro: { icon: "fa-solid fa-bolt", color: "#facc15" },
   Xeno: { icon: "fa-solid fa-star-of-david", color: "#22d3ee" }
 } as const;
 

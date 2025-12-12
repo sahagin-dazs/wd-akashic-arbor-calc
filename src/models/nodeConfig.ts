@@ -20,7 +20,7 @@ export const NODE_CONFIGS: ThresholdConfig[] = [
   { key: elementKey("Xeno"), thresholds: [29, 53, 77], label: "Xeno" },
   { key: elementKey("Ice"), thresholds: [8, 32, 56], label: "Ice" },
   { key: elementKey("Fire"), thresholds: [0, 24, 48], label: "Fire" },
-  { key: elementKey("Electric"), thresholds: [11, 35, 59], label: "Lightning" },
+  { key: elementKey("Electro"), thresholds: [11, 35, 59], label: "Electro" },
   { key: elementKey("Wind"), thresholds: [14, 38, 62], label: "Wind" },
   { key: roleKey("Fighter"), thresholds: [17, 41, 65], label: "Fighter" },
   { key: roleKey("Mage"), thresholds: [20, 44, 68], label: "Mage" },
@@ -31,7 +31,7 @@ export const NODE_CONFIGS: ThresholdConfig[] = [
 export const NODE_TREE_LAYOUT: NodeKey[][] = [
   [elementKey("Xeno")],
   [elementKey("Ice"), elementKey("Fire")],
-  [elementKey("Electric"), elementKey("Wind")],
+  [elementKey("Electro"), elementKey("Wind")],
   [roleKey("Fighter"), roleKey("Mage")],
   [roleKey("Ranger"), roleKey("Support")]
 ];

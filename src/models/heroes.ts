@@ -76,7 +76,7 @@ export const HEROES: HeroDef[] = [
     name: "Archon Armor",
     rarity: "Mythic",
     role: "Support",
-    element: "Electric",
+    element: "Electro",
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
@@ -175,7 +175,7 @@ export const HEROES: HeroDef[] = [
     name: "God Ruler Odin",
     rarity: "Mythic",
     role: "Fighter",
-    element: "Electric",
+    element: "Electro",
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
@@ -208,7 +208,7 @@ export const HEROES: HeroDef[] = [
     name: "Thunder Pharaoh",
     rarity: "Mythic",
     role: "Mage",
-    element: "Electric",
+    element: "Electro",
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
@@ -241,7 +241,7 @@ export const HEROES: HeroDef[] = [
     name: "Robot",
     rarity: "Mythic",
     role: "Fighter",
-    element: "Electric",
+    element: "Electro",
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
@@ -252,7 +252,7 @@ export const HEROES: HeroDef[] = [
     name: "Seraph",
     rarity: "Legendary",
     role: "Support",
-    element: "Electric",
+    element: "Electro",
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
@@ -307,7 +307,7 @@ export const HEROES: HeroDef[] = [
     name: "High Priest",
     rarity: "Legendary",
     role: "Mage",
-    element: "Electric",
+    element: "Electro",
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
@@ -348,7 +348,7 @@ export const HEROES: HeroDef[] = [
     name: "Novice Priest",
     rarity: "Epic",
     role: "Support",
-    element: "Electric",
+    element: "Electro",
     percents: { "0S": 0.2 }
   },
   {
@@ -380,7 +380,7 @@ export const HEROES: HeroDef[] = [
     name: "Frankenstein",
     rarity: "Common",
     role: "Mage",
-    element: "Electric",
+    element: "Electro",
     percents: { "0S": 0.1 }
   },
   {

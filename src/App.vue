@@ -172,6 +172,7 @@ const lastResult = ref(
   null as ReturnType<typeof runOptimization> | null
 );
 const isCalculating = ref(false);
+const resultsRef = ref<HTMLElement | null>(null);
 
 const lineupHeroIds = computed(() =>
   new Set(lineup.value.slots.map((s) => s.heroId).filter(Boolean) as string[])
@@ -418,6 +419,9 @@ function optimize() {
     );
     lastResult.value = result;
     isCalculating.value = false;
+    if (resultsRef.value) {
+      resultsRef.value.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }, 0);
 }
 
@@ -539,7 +543,7 @@ function closeIntroImage() {
           @optimize="optimize"
         />
       </section>
-      <section class="panel" v-if="lastResult || isCalculating">
+      <section class="panel" v-if="lastResult || isCalculating" ref="resultsRef">
         <div class="panel-header">
           <div class="panel-title">Results</div>
         </div>

@@ -6,6 +6,7 @@ import {
   nodeKeyId,
   formatNodeLabel
 } from "../models/nodeConfig";
+import { nodeImageSrc } from "../utils/nodeImages";
 
 const props = defineProps<{
   nightmareLevel: number;
@@ -35,7 +36,7 @@ function statusFor(key: ReturnType<typeof nodeKeyId>) {
 }
 
 function slotArray(unlocked: number) {
-  return Array.from({ length: 3 }, (_, idx) => idx < unlocked);
+  return Array.from({ length: 3 }, (_, idx) => idx);
 }
 
 const untrackedSummary = computed(() => {
@@ -99,6 +100,30 @@ function onStepperClick(delta: number, event: MouseEvent) {
 onBeforeUnmount(() => {
   clearSteppers();
 });
+
+function nextUnlockDelta(status?: ReturnType<typeof statusFor>) {
+  if (!status || status.nextUnlock == null) return null;
+  const delta = status.nextUnlock - props.nightmareLevel;
+  return delta > 0 ? delta : null;
+}
+
+const nextUnlockNode = computed(() => {
+  let best: { key: string; delta: number } | null = null;
+  nodeStatuses.value.forEach((status) => {
+    const delta = nextUnlockDelta(status);
+    if (delta == null) return;
+    if (!best || delta < best.delta) {
+      best = { key: nodeKeyId(status.key), delta };
+    }
+  });
+  return best;
+});
+
+function upcomingDelta(node: NodeKey) {
+  const info = nextUnlockNode.value;
+  if (!info) return null;
+  return info.key === nodeKeyId(node) ? info.delta : null;
+}
 </script>
 
 <template>
@@ -187,26 +212,53 @@ onBeforeUnmount(() => {
               :key="nodeKeyId(node)"
               class="node-status-card"
             >
-              <div class="node-status-header">
-                {{ formatNodeLabel(node) }}
-              </div>
-              <div class="node-slots" v-if="statusFor(nodeKeyId(node))">
-                <span
-                  v-for="(isUnlocked, idx) in slotArray(
-                    statusFor(nodeKeyId(node))!.unlocked
-                  )"
-                  :key="idx"
-                  :class="['slot-dot', { unlocked: isUnlocked }]"
-                ></span>
-              </div>
-              <div class="node-status-meta" v-if="statusFor(nodeKeyId(node))">
-                <template v-if="statusFor(nodeKeyId(node))!.nextUnlock !== null">
-                  Slot {{ statusFor(nodeKeyId(node))!.unlocked + 1 }} at
-                  Nightmare {{ statusFor(nodeKeyId(node))!.nextUnlock }}
-                </template>
-                <template v-else>
-                  All slots unlocked
-                </template>
+              <div class="node-card-layout">
+                <img
+                  v-if="nodeImageSrc(node)"
+                  class="node-card-icon node-card-icon-large"
+                  :src="nodeImageSrc(node)!"
+                  :alt="formatNodeLabel(node)"
+                  width="75"
+                  height="75"
+                />
+                <div class="node-card-content">
+                  <div class="node-status-header">
+                    {{ formatNodeLabel(node) }}
+                  </div>
+                  <div class="node-slots" v-if="statusFor(nodeKeyId(node))">
+                    <span
+                      v-for="idx in slotArray(
+                        statusFor(nodeKeyId(node))!.unlocked
+                      )"
+                      :key="idx"
+                      :class="[
+                        'slot-dot',
+                        { unlocked: idx < statusFor(nodeKeyId(node))!.unlocked,
+                          pending: idx === statusFor(nodeKeyId(node))!.unlocked && upcomingDelta(node) !== null }
+                      ]"
+                    ></span>
+                  </div>
+                  <div class="node-status-meta" v-if="statusFor(nodeKeyId(node))">
+                    <template v-if="statusFor(nodeKeyId(node))!.nextUnlock !== null">
+                      Slot {{ statusFor(nodeKeyId(node))!.unlocked + 1 }} at
+                      Nightmare {{ statusFor(nodeKeyId(node))!.nextUnlock }}
+                      <span
+                        v-if="upcomingDelta(node) !== null"
+                        class="slot-next-badge"
+                      >
+                        Unlocks in
+                        {{ upcomingDelta(node) }}
+                        level<span
+                          v-if="upcomingDelta(node) !== 1"
+                          >s</span
+                        >
+                      </span>
+                    </template>
+                    <template v-else>
+                      All slots unlocked
+                    </template>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

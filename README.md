@@ -86,7 +86,7 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that builds 
 1. Visit the Hero Collection section and set each dropdown to the proper star level or Not Owned. The summary displays how many entries still need attention.
 2. Use the role, element, rarity, and ownership chips plus the search input to narrow down the list. All choices persist in `localStorage`.
 3. Check the Add to lineup box on any owned hero to place it into one of the five slots. Each lineup card exposes a Priority Target checkbox and an X button to clear the slot.
-4. Enter your current nightmare level. Slot counts for every node update according to this table: Fire (0/24/48), Ice (8/32/56), Electric (11/35/59), Wind (14/38/62), Fighter (17/41/65), Mage (20/44/68), Ranger (23/47/71), Support (26/50/74), Xeno (29/53/77).
+4. Enter your current nightmare level. Slot counts for every node update according to this table: Fire (0/24/48), Ice (8/32/56), Electro (11/35/59), Wind (14/38/62), Fighter (17/41/65), Mage (20/44/68), Ranger (23/47/71), Support (26/50/74), Xeno (29/53/77).
 5. The Optimize Arbor button remains disabled until all five lineup slots are filled and every hero is marked as owned or not owned. Once enabled, clicking it calculates the ideal node assignment and a buff summary for your priority heroes.
 
 ### Hero Art

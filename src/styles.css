@@ -1124,9 +1124,60 @@ body {
   gap: 6px;
 }
 
+.node-card-layout {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.node-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.node-status-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.node-status-icon {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+  border-radius: 16px;
+}
+
+.node-card-icon {
+  border-radius: 16px;
+  object-fit: contain;
+}
+
+.node-card-icon-large {
+  width: 50px;
+  height: 50px;
+}
+
+.node-card-icon-small {
+  width: 32px;
+  height: 32px;
+}
+
 .node-status-header {
   font-size: 13px;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.node-header-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .node-slots {
@@ -1146,9 +1197,23 @@ body {
   box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
 }
 
+.slot-dot.pending {
+  background: rgba(251, 191, 36, 0.35);
+  box-shadow: 0 0 4px rgba(251, 191, 36, 0.4);
+}
+
 .node-status-meta {
   font-size: 11px;
   color: var(--text-muted);
+}
+
+.slot-next-badge {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.18);
+  color: #fbbf24;
+  font-weight: 600;
 }
 
 .result-card {

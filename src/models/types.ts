@@ -1,5 +1,5 @@
 export type Role = "Fighter" | "Mage" | "Ranger" | "Support";
-export type Element = "Fire" | "Ice" | "Wind" | "Electric" | "Xeno";
+export type Element = "Fire" | "Ice" | "Wind" | "Electro" | "Xeno";
 
 export const LEVELS = [
   "0S",

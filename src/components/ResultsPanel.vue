@@ -16,6 +16,7 @@ import {
   formatNodeLabel,
   getNodeStatuses
 } from "../models/nodeConfig";
+import { nodeImageSrc } from "../utils/nodeImages";
 
 const props = defineProps<{
   result: OptimizationResult;
@@ -166,7 +167,7 @@ function lineupBuff(heroId: string) {
 const ELEMENT_COLORS: Record<string, string> = {
   Fire: "#ef4444",
   Ice: "#60a5fa",
-  Electric: "#facc15",
+  Electro: "#facc15",
   Wind: "#34d399",
   Xeno: "linear-gradient(135deg, #22d3ee, #c084fc)"
 };
@@ -224,6 +225,13 @@ function lockedPlaceholders(node: NodeKey) {
 function nextUnlockLabel(node: NodeKey) {
   const status = getNodeStatus(node);
   return status?.nextUnlock != null ? `Unlocks at Nightmare ${status.nextUnlock}` : "All slots unlocked";
+}
+
+function nextUnlockDelta(node: NodeKey) {
+  const status = getNodeStatus(node);
+  if (!status || status.nextUnlock == null) return null;
+  const delta = status.nextUnlock - props.nightmareLevel;
+  return delta > 0 ? delta : null;
 }
 </script>
 
@@ -289,84 +297,96 @@ function nextUnlockLabel(node: NodeKey) {
             class="node-status-card result-card"
             :style="nodeStyle(node)"
           >
-            <div class="node-status-header">
-              {{ formatNodeLabel(node) }}
-            </div>
-            <div class="node-result-totals">
-              <div>
-                <span class="totals-label">{{ bonusLabel(node) }}</span>
-                <span class="totals-value">
-                  {{ formatPercent(getNodeSummary(node).matchTotal) }}
-                </span>
-              </div>
-              <div>
-                <span class="totals-label">All Heroes Bonus</span>
-                <span class="totals-value">
-                  {{ formatPercent(getNodeSummary(node).otherTotal) }}
-                </span>
-              </div>
-            </div>
-            <div class="node-result-heroes">
-              <div
-                v-for="hero in getNodeSummary(node).heroes"
-                :key="hero.heroId"
-                class="node-hero-row"
-              >
-                <div class="node-hero-avatar">
+            <div class="node-card-layout">
+              <div class="node-card-content">
+                <div class="node-status-header">
                   <img
-                    v-if="canShowAvatar(hero.heroId)"
-                    :src="heroAvatar(hero.heroId)"
-                    :alt="heroName(hero.heroId)"
-                    width="36"
-                    height="36"
-                    @error="onAvatarError(hero.heroId)"
+                    v-if="nodeImageSrc(node)"
+                    class="node-card-icon node-card-icon-small"
+                    :src="nodeImageSrc(node)!"
+                    :alt="formatNodeLabel(node)"
+                    width="32"
+                    height="32"
                   />
-                  <span v-else>{{ avatarFallback(hero.heroId) }}</span>
+                  <span>{{ formatNodeLabel(node) }}</span>
                 </div>
-                <div class="node-hero-info">
-                  <div class="node-hero-name">
-                    {{ heroName(hero.heroId) }}
+                <div class="node-result-totals">
+                  <div>
+                    <span class="totals-label">{{ bonusLabel(node) }}</span>
+                    <span class="totals-value">
+                      {{ formatPercent(getNodeSummary(node).matchTotal) }}
+                    </span>
                   </div>
-                  <div class="node-hero-level">
-                    {{ levelLabel(hero.heroId) }}
-                  </div>
-                </div>
-                <div class="node-hero-buffs">
-                  <span class="buff-chip match">
-                    {{ bonusLabel(node) }} {{ formatPercent(hero.matchBonus) }}
-                  </span>
-                  <span class="buff-chip other">
-                    All Heroes {{ formatPercent(hero.otherBonus) }}
-                  </span>
-                </div>
-              </div>
-              <div
-                v-for="idx in unlockedPlaceholders(node)"
-                :key="`empty-${nodeKeyId(node)}-${idx}`"
-                class="node-hero-row placeholder"
-              >
-                <div class="node-hero-avatar placeholder-avatar">
-                  <i class="fa-regular fa-circle-user" aria-hidden="true"></i>
-                </div>
-                <div class="node-hero-info">
-                  <div class="node-hero-name">Empty slot</div>
-                  <div class="node-hero-level">
-                    Assign a hero to boost {{ formatNodeLabel(node) }} bonuses.
+                  <div>
+                    <span class="totals-label">All Heroes Bonus</span>
+                    <span class="totals-value">
+                      {{ formatPercent(getNodeSummary(node).otherTotal) }}
+                    </span>
                   </div>
                 </div>
-              </div>
-              <div
-                v-for="idx in lockedPlaceholders(node)"
-                :key="`locked-${nodeKeyId(node)}-${idx}`"
-                class="node-hero-row placeholder locked"
-              >
-                <div class="node-hero-avatar placeholder-avatar">
-                  <i class="fa-solid fa-lock" aria-hidden="true"></i>
-                </div>
-                <div class="node-hero-info">
-                  <div class="node-hero-name">Locked slot</div>
-                  <div class="node-hero-level">
-                    {{ nextUnlockLabel(node) }}
+                <div class="node-result-heroes">
+                  <div
+                    v-for="hero in getNodeSummary(node).heroes"
+                    :key="hero.heroId"
+                    class="node-hero-row"
+                  >
+                    <div class="node-hero-avatar">
+                      <img
+                        v-if="canShowAvatar(hero.heroId)"
+                        :src="heroAvatar(hero.heroId)"
+                        :alt="heroName(hero.heroId)"
+                        width="36"
+                        height="36"
+                        @error="onAvatarError(hero.heroId)"
+                      />
+                      <span v-else>{{ avatarFallback(hero.heroId) }}</span>
+                    </div>
+                    <div class="node-hero-info">
+                      <div class="node-hero-name">
+                        {{ heroName(hero.heroId) }}
+                      </div>
+                      <div class="node-hero-level">
+                        {{ levelLabel(hero.heroId) }}
+                      </div>
+                    </div>
+                    <div class="node-hero-buffs">
+                      <span class="buff-chip match">
+                        {{ bonusLabel(node) }} {{ formatPercent(hero.matchBonus) }}
+                      </span>
+                      <span class="buff-chip other">
+                        All Heroes {{ formatPercent(hero.otherBonus) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    v-for="idx in unlockedPlaceholders(node)"
+                    :key="`empty-${nodeKeyId(node)}-${idx}`"
+                    class="node-hero-row placeholder"
+                  >
+                    <div class="node-hero-avatar placeholder-avatar">
+                      <i class="fa-regular fa-circle-user" aria-hidden="true"></i>
+                    </div>
+                    <div class="node-hero-info">
+                      <div class="node-hero-name">Empty slot</div>
+                      <div class="node-hero-level">
+                        Assign a hero to boost {{ formatNodeLabel(node) }} bonuses.
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    v-for="idx in lockedPlaceholders(node)"
+                    :key="`locked-${nodeKeyId(node)}-${idx}`"
+                    class="node-hero-row placeholder locked"
+                  >
+                    <div class="node-hero-avatar placeholder-avatar">
+                      <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                    </div>
+                    <div class="node-hero-info">
+                      <div class="node-hero-name">Locked slot</div>
+                      <div class="node-hero-level">
+                        {{ nextUnlockLabel(node) }}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

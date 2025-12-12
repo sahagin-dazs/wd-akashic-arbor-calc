@@ -76,8 +76,8 @@ const elementOptions: ElementOption[] = [
     color: "#34d399"
   },
   {
-    id: "Electric",
-    label: "Lightning",
+    id: "Electro",
+    label: "Electro",
     icon: "fa-solid fa-bolt",
     color: "#facc15"
   },
