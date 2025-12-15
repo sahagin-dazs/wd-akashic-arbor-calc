@@ -242,15 +242,15 @@ const FUN_PHRASES = [
   "Teaching Ice Wolf Pup some new tricks...",
   "Running spreadsheets to please the Arbor spirits...",
   "Stargazing for comets with Starlight Weaver...",
-  "Dreaming for a Demon Spawn buff...",
+  "Dreaming of a Demon Spawn buff...",
+  "Losing in Apex arena...",
   "Rewiring Robot's overclocked core...",
-  "Force closing the game...",
   "Negotiating with the shopkeeper for extra rerolls...",
   "Charting rune routes through Goblin Ground...",
   "Syncing patrol timers with your sleep schedule...",
   "Updating guild message with fresh memes...",
   "Repainting the Arbor nodes for extra sparkle...",
-  "Sharpening Sword Saint's blade for dramatic effect...",
+  "Sharpening Sword Saint's blades for dramatic effect...",
   "Clearing Quick Patrol rewards...",
   "Complaining about Rate-up drop rates..."
 ];
