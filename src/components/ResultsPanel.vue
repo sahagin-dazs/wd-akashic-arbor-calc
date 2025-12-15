@@ -275,7 +275,11 @@ function nextUnlockDelta(node: NodeKey) {
         All increases apply equally to ATK%, HP%, and DEF%.
       </div>
       <div class="lineup-mini-grid">
-        <div v-for="(slot, idx) in lineup.slots" :key="idx" class="lineup-mini-card">
+        <div
+          v-for="(slot, idx) in lineup.slots"
+          :key="idx"
+          :class="['lineup-mini-card', { 'lineup-mini-card--priority': slot.priorityRank != null }]"
+        >
           <template v-if="slot.heroId">
             <div class="lineup-mini-avatar">
               <img
@@ -294,9 +298,6 @@ function nextUnlockDelta(node: NodeKey) {
                 {{ lineupBuff(slot.heroId) }}
               </div>
             </div>
-            <span v-if="slot.priorityRank != null" class="priority-tag">
-              {{ rankLabel(slot.priorityRank) }}
-            </span>
           </template>
           <template v-else>
             <div class="lineup-mini-empty">Empty slot</div>
