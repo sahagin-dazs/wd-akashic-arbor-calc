@@ -298,15 +298,23 @@ function startProgressInterval() {
   progressInterval = window.setInterval(() => {
     if (calcProgress.value < calcProgressTarget.value) {
       calcProgress.value = Math.min(
-        calcProgress.value + 0.05,
+        calcProgress.value + 0.015,
         calcProgressTarget.value
+      );
+    } else if (
+      calcProgressTarget.value < 0.96 &&
+      calcProgressTarget.value < 1
+    ) {
+      calcProgressTarget.value = Math.min(
+        calcProgressTarget.value + 0.005,
+        0.96
       );
     }
     if (calcProgress.value >= 1 && progressInterval) {
       clearInterval(progressInterval);
       progressInterval = null;
     }
-  }, 1500);
+  }, 900);
 }
 
 function stopProgressInterval() {
