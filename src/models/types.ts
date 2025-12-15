@@ -84,4 +84,5 @@ export interface OptimizationResult {
   assignments: SlotAssignment[];
   buffPerHero: Record<string, number>;
   totalPriorityBuff: number;
+  overallBuff: number;
 }

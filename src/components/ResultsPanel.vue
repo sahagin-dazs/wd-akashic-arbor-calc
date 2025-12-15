@@ -160,6 +160,10 @@ function getNodeStatus(node: NodeKey) {
   return nodeStatusMap.value.get(nodeKeyId(node));
 }
 
+const hasRankedFocus = computed(() =>
+  props.lineup.slots.some((slot) => slot.priorityRank != null)
+);
+
 function heroName(heroId: string) {
   return HERO_MAP.get(heroId)?.name ?? heroId;
 }
@@ -206,7 +210,7 @@ function nodeStyle(node: NodeKey) {
     return {
       borderColor: "transparent",
       borderWidth: "2px",
-      backgroundImage: `linear-gradient(150deg, #0b1220, #050816), ${color}`,
+      backgroundImage: `${color}, var(--result-card-bg)`,
       backgroundOrigin: "border-box",
       backgroundClip: "padding-box, border-box",
       boxShadow: "0 0 14px rgba(34, 211, 238, 0.35)"
@@ -254,10 +258,18 @@ function nextUnlockDelta(node: NodeKey) {
     <div class="buff-list">
       <div class="panel-title">Lineup Buff Summary</div>
       <div class="buff-row highlight">
-        <span>Total ranked buff</span>
-        <span class="totals-value totals-large">
-          {{ formatPercent(result.totalPriorityBuff) }}
-        </span>
+        <div class="highlight-block">
+          <span class="totals-label">All lineup buffed %</span>
+          <span class="totals-value totals-large">
+            {{ formatPercent(result.overallBuff) }}
+          </span>
+        </div>
+        <div v-if="hasRankedFocus" class="highlight-block secondary">
+          <span class="totals-label">Selected priority hero(s) buffed %</span>
+          <span class="totals-value totals-large">
+            {{ formatPercent(result.totalPriorityBuff) }}
+          </span>
+        </div>
       </div>
       <div class="buff-row note">
         All increases apply equally to ATK%, HP%, and DEF%.

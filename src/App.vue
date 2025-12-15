@@ -23,13 +23,15 @@ const NIGHTMARE_STORAGE_KEY = "wd-akashic-nightmare-level";
 const LINEUP_STORAGE_KEY = "wd-akashic-lineup";
 const OWNERSHIP_FILTER_STORAGE_KEY = "wd-akashic-ownership-filter";
 const INTRO_STORAGE_KEY = "wd-akashic-intro-hidden";
+const THEME_STORAGE_KEY = "wd-akashic-theme";
 const BASE_URL =
   typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
 const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
 const ARBOR_IMAGE_SRC = `${NORMALIZED_BASE}images/arbor.jpg`;
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.3.1";
 
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
+type ThemeMode = "dark" | "light";
 
 const ZERO_STAR_INDEX = LEVELS.indexOf("0S");
 
@@ -155,6 +157,18 @@ function loadIntroHidden(): boolean {
   return localStorage.getItem(INTRO_STORAGE_KEY) === "true";
 }
 
+function loadTheme(): ThemeMode {
+  if (typeof window === "undefined") return "dark";
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark") {
+    return stored;
+  }
+  if (window.matchMedia?.("(prefers-color-scheme: light)")?.matches) {
+    return "light";
+  }
+  return "dark";
+}
+
 const ownedHeroes = ref<OwnedHero[]>(loadOwnedHeroes());
 
 watch(
@@ -194,7 +208,14 @@ const calcPhraseKey = ref(0);
 const FUN_PHRASES = [
   "Polishing Cheffy's ladle of destiny...",
   "Convincing Scarlet Reaper to let her hair down...",
-  "Trading Windborn Ranger feathers for better RNG...",
+  "Praying to RNGesus for good rune rolls...",
+  "Reloading the game hoping for an update...",
+  "Playing bingo...",
+  "Wasting tickets on wheel spins...",
+  "Converting Hero EXP to Promotion Stones...",
+  "Raising Hero Echo Level...",
+  "Hoping Wave 20 isn't Medusa Queen...",
+  "Partying with Mr. Plump...",
   "Feeding rune dust to Void Witch's Piercing Sights...",
   "Spending Lunarite on xeno scrolls...",
   "Asking Archon Armor to reboot its Afterimages...",
@@ -211,7 +232,7 @@ const FUN_PHRASES = [
   "Merging hero shards...",
   "Salvaging gear for extra Enhancite...",
   "Enjoying a 0% success rate on gear refinement...",
-  "Sending daily friend gifts with extra emojis...",
+  "Sending daily friend gifts...",
   "Peeking at the arcade leaderboard between runs...",
   "Hitting 30-scroll pity on the Xeno banner...",
   "Skipping ads like a true veteran...",
@@ -305,6 +326,7 @@ const rarityFilters = ref<Rarity[]>([]);
 const searchQuery = ref("");
 const ownershipFilter = ref<OwnershipFilter>(loadOwnershipFilter());
 const introHidden = ref(loadIntroHidden());
+const theme = ref<ThemeMode>(loadTheme());
 
 watch(ownershipFilter, (value) => {
   if (typeof window === "undefined") return;
@@ -315,6 +337,32 @@ watch(introHidden, (value) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(INTRO_STORAGE_KEY, value ? "true" : "false");
 });
+
+function applyTheme(mode: ThemeMode) {
+  if (typeof document === "undefined") return;
+  document.documentElement.dataset.theme = mode;
+}
+
+watch(theme, (value) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(THEME_STORAGE_KEY, value);
+  }
+  applyTheme(value);
+});
+
+if (typeof document !== "undefined") {
+  applyTheme(theme.value);
+}
+
+const themeButtonLabel = computed(() =>
+  theme.value === "dark" ? "Light Mode" : "Dark Mode"
+);
+const themeAriaLabel = computed(() =>
+  theme.value === "dark" ? "Switch to light mode" : "Switch to dark mode"
+);
+const themeIcon = computed(() =>
+  theme.value === "dark" ? "fa-sun" : "fa-moon"
+);
 
 const untrackedHeroesCount = computed(
   () => ownedHeroes.value.filter((hero) => hero.levelIndex === null).length
@@ -547,9 +595,13 @@ const lastUpdated = new Date().toLocaleDateString(undefined, {
 });
 
 function scrollResultsIntoView() {
-  if (resultsRef.value) {
-    resultsRef.value.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  if (!resultsRef.value || typeof window === "undefined") return;
+  const rect = resultsRef.value.getBoundingClientRect();
+  const target = rect.top + window.scrollY - 24;
+  window.scrollTo({
+    top: Math.max(target, 0),
+    behavior: "smooth"
+  });
 }
 
 async function optimize() {
@@ -677,6 +729,10 @@ function openIntroImage() {
 function closeIntroImage() {
   isIntroImageOpen.value = false;
 }
+
+function toggleTheme() {
+  theme.value = theme.value === "dark" ? "light" : "dark";
+}
 </script>
 
 <template>
@@ -698,6 +754,15 @@ function closeIntroImage() {
         </a>
       </nav>
       <div class="header-actions">
+        <button
+          class="btn btn-sm btn-ghost theme-toggle"
+          type="button"
+          @click="toggleTheme"
+          :aria-label="themeAriaLabel"
+        >
+          <i class="fa-solid" :class="themeIcon" aria-hidden="true"></i>
+          <span>{{ themeButtonLabel }}</span>
+        </button>
         <a
           class="btn btn-sm btn-discord"
           href="https://discord.com/invite/wittledefender"
@@ -760,6 +825,15 @@ function closeIntroImage() {
         >
           Support this Project
         </a>
+        <button
+          class="btn btn-sm btn-ghost theme-toggle"
+          type="button"
+          @click="toggleTheme"
+          :aria-label="themeAriaLabel"
+        >
+          <i class="fa-solid" :class="themeIcon" aria-hidden="true"></i>
+          <span>{{ themeButtonLabel }}</span>
+        </button>
       </div>
     </header>
 

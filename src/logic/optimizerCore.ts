@@ -326,10 +326,12 @@ export function runOptimizationCore(
   }
 
   let totalPriorityBuff = 0;
+  let overallBuff = 0;
   const hasRanks = rankedHeroes.size > 0;
   for (const slot of lineup.slots) {
     if (!slot.heroId) continue;
     const contribution = buffPerHero[slot.heroId] ?? 0;
+    overallBuff += contribution;
     if (hasRanks) {
       if (slot.priorityRank != null) {
         totalPriorityBuff += contribution;
@@ -342,6 +344,7 @@ export function runOptimizationCore(
   return {
     assignments: bestAssignments,
     buffPerHero,
-    totalPriorityBuff
+    totalPriorityBuff,
+    overallBuff
   };
 }
