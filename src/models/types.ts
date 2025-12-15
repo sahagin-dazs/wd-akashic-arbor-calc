@@ -48,7 +48,15 @@ export const NOT_OWNED_LEVEL_INDEX = -1;
 
 export interface LineupSlot {
   heroId: string | null;
-  isPriority: boolean;
+  /**
+   * Optional ranking (1 = highest priority). When null, hero is unranked.
+   */
+  priorityRank: number | null;
+  /**
+   * Legacy flag retained for backwards compatibility with saved data.
+   * Not used by new logic.
+   */
+  isPriority?: boolean;
 }
 
 export interface Lineup {

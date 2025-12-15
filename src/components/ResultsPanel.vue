@@ -168,6 +168,16 @@ function lineupBuff(heroId: string) {
   return formatPercent(props.result.buffPerHero[heroId] ?? 0);
 }
 
+function rankLabel(rank: number | null | undefined) {
+  if (rank == null) return "";
+  if (rank === 1) return "1st Rank Priority";
+  if (rank === 2) return "2nd Rank Priority";
+  if (rank === 3) return "3rd Rank Priority";
+  if (rank === 4) return "4th Rank Priority";
+  if (rank === 5) return "5th Rank Priority";
+  return `${rank}th Rank Priority`;
+}
+
 const ELEMENT_COLORS: Record<string, string> = {
   Fire: "#ef4444",
   Ice: "#60a5fa",
@@ -244,7 +254,7 @@ function nextUnlockDelta(node: NodeKey) {
     <div class="buff-list">
       <div class="panel-title">Lineup Buff Summary</div>
       <div class="buff-row highlight">
-        <span>Total priority buff</span>
+        <span>Total ranked buff</span>
         <span class="totals-value totals-large">
           {{ formatPercent(result.totalPriorityBuff) }}
         </span>
@@ -272,7 +282,9 @@ function nextUnlockDelta(node: NodeKey) {
                 {{ lineupBuff(slot.heroId) }}
               </div>
             </div>
-            <span v-if="slot.isPriority" class="priority-tag">Priority</span>
+            <span v-if="slot.priorityRank != null" class="priority-tag">
+              {{ rankLabel(slot.priorityRank) }}
+            </span>
           </template>
           <template v-else>
             <div class="lineup-mini-empty">Empty slot</div>
@@ -416,4 +428,3 @@ function nextUnlockDelta(node: NodeKey) {
     </div>
   </div>
 </template>
-

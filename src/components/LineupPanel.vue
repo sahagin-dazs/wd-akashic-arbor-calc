@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  "toggle-priority": [slotIndex: number];
+  "set-rank": [slotIndex: number, rank: number | null];
   "clear-slot": [slotIndex: number];
 }>();
 
@@ -59,6 +59,7 @@ const ELEMENT_META = {
 } as const;
 
 const avatarLoadFailures = ref<Record<string, boolean>>({});
+const RANK_OPTIONS = [1, 2, 3, 4, 5];
 
 type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
 
@@ -181,6 +182,17 @@ function clearSlot(idx: number) {
   emit("clear-slot", idx);
 }
 
+function toggleRank(slotIndex: number, rank: number) {
+  const slot = props.lineup.slots[slotIndex];
+  if (!slot?.heroId) return;
+  const next = slot.priorityRank === rank ? null : rank;
+  emit("set-rank", slotIndex, next);
+}
+
+function clearRank(slotIndex: number) {
+  emit("set-rank", slotIndex, null);
+}
+
 function roleMeta(heroId: string | null) {
   const role = getHeroRole(heroId);
   if (!role) return ROLE_META.Ranger;
@@ -212,8 +224,7 @@ function elementMeta(heroId: string | null) {
       <a href="#hero-collection" class="link-btn">Track heroes</a>
     </div>
     <p class="lineup-hint">
-      Select heroes below to fill your lineup. You can adjust priorities or remove
-      heroes here.
+      Select heroes below to fill your lineup. Tap the focus chips to rank heroes 1-5 or leave them unranked for a balanced boost.
       <a href="#hero-collection" class="inline-link">Jump to hero collection</a>
     </p>
     <div class="lineup-row">
@@ -286,14 +297,30 @@ function elementMeta(heroId: string | null) {
               {{ getLevelLabel(slot.heroId) }}
             </span>
           </div>
-          <label class="priority-toggle lineup-priority">
-            <input
-              type="checkbox"
-              :checked="slot.isPriority"
-              @change="emit('toggle-priority', idx)"
-            />
-            <span>Priority Target</span>
-          </label>
+          <div class="rank-select">
+            <div class="rank-select-label">Set rank priority (1 is highest)</div>
+            <div class="rank-pill-group">
+              <button
+                v-for="rank in RANK_OPTIONS"
+                :key="rank"
+                type="button"
+                class="rank-pill"
+                :class="{ active: slot.priorityRank === rank }"
+                :disabled="!slot.heroId"
+                @click="toggleRank(idx, rank)"
+              >
+                {{ rank }}
+              </button>
+              <button
+                type="button"
+                class="rank-pill rank-pill-clear"
+                :disabled="!slot.heroId"
+                @click="clearRank(idx)"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
         </template>
         <div v-else class="lineup-slot-empty">
           <a href="#hero-collection" class="empty-slot-link">

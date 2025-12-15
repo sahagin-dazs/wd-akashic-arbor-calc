@@ -7,7 +7,8 @@ import type {
   Role,
   Element,
   Rarity,
-  Level
+  Level,
+  OptimizationResult
 } from "./models/types";
 import { LEVELS, NOT_OWNED_LEVEL_INDEX } from "./models/types";
 import HeroCollection from "./components/HeroCollection.vue";
@@ -26,6 +27,7 @@ const BASE_URL =
   typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
 const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
 const ARBOR_IMAGE_SRC = `${NORMALIZED_BASE}images/arbor.jpg`;
+const APP_VERSION = "1.3.0";
 
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 
@@ -79,11 +81,11 @@ function loadOwnedHeroes(): OwnedHero[] {
 function buildDefaultLineup(): Lineup {
   return {
     slots: [
-      { heroId: null, isPriority: true },
-      { heroId: null, isPriority: false },
-      { heroId: null, isPriority: false },
-      { heroId: null, isPriority: false },
-      { heroId: null, isPriority: false }
+      { heroId: null, priorityRank: null },
+      { heroId: null, priorityRank: null },
+      { heroId: null, priorityRank: null },
+      { heroId: null, priorityRank: null },
+      { heroId: null, priorityRank: null }
     ]
   };
 }
@@ -99,14 +101,28 @@ function loadLineup(): Lineup {
     if (!parsed?.slots || !Array.isArray(parsed.slots)) {
       return buildDefaultLineup();
     }
-    const slots = parsed.slots.slice(0, 5).map((slot, idx) => ({
-      heroId: typeof slot?.heroId === "string" ? slot.heroId : null,
-      isPriority: typeof slot?.isPriority === "boolean" ? slot.isPriority : idx === 0
-    }));
-    while (slots.length < 5) {
-      slots.push({ heroId: null, isPriority: false });
+    const slots = parsed.slots.slice(0, 5).map((slot) => {
+      const normalized: LineupSlot = {
+        heroId: typeof slot?.heroId === "string" ? slot.heroId : null,
+        priorityRank:
+          typeof slot?.priorityRank === "number"
+            ? slot.priorityRank
+            : null
+      };
+      return {
+        slot: normalized,
+        legacyPriority: normalized.priorityRank == null && slot?.isPriority
+      };
+    });
+    const legacyOrdered = slots.filter((s) => s.legacyPriority);
+    legacyOrdered.forEach(({ slot }, index) => {
+      slot.priorityRank = index + 1;
+    });
+    const normalizedSlots = slots.map(({ slot }) => slot);
+    while (normalizedSlots.length < 5) {
+      normalizedSlots.push({ heroId: null, priorityRank: null });
     }
-    return { slots };
+    return { slots: normalizedSlots };
   } catch {
     return buildDefaultLineup();
   }
@@ -168,11 +184,116 @@ watch(
   { deep: true }
 );
 
-const lastResult = ref(
-  null as ReturnType<typeof runOptimization> | null
-);
+const lastResult = ref<OptimizationResult | null>(null);
 const isCalculating = ref(false);
 const resultsRef = ref<HTMLElement | null>(null);
+const calcProgress = ref(0);
+const calcProgressTarget = ref(0);
+const calcPhrase = ref("Consulting the Arbor spirits...");
+const calcPhraseKey = ref(0);
+const FUN_PHRASES = [
+  "Polishing Cheffy's ladle of destiny...",
+  "Convincing Scarlet Reaper to let her hair down...",
+  "Trading Windborn Ranger feathers for better RNG...",
+  "Feeding rune dust to Void Witch's Piercing Sights...",
+  "Spending Lunarite on xeno scrolls...",
+  "Asking Archon Armor to reboot its Afterimages...",
+  "Feeding Fiery Vanguard extra ember snacks...",
+  "Unmasking Zorro...",
+  "Kiting boss attacks with Ice Demon trolls...",
+  "Buying essences from the black market vendor...",
+  "Nerfing Polar Captain in Arena...",
+  "Rolling Fire DMG on the Oracle Statue until it sparks...",
+  "Checking Abyss Tower leaderboards for new rivals...",
+  "Donating 5x daily to the guild...",
+  "Running a Quick Patrol for inspiration...",
+  "Collecting daily rewards from the mailbox...",
+  "Merging hero shards...",
+  "Salvaging gear for extra Enhancite...",
+  "Enjoying a 0% success rate on gear refinement...",
+  "Sending daily friend gifts with extra emojis...",
+  "Peeking at the arcade leaderboard between runs...",
+  "Hitting 30-scroll pity on the Xeno banner...",
+  "Skipping ads like a true veteran...",
+  "Polishing the guild statue for bonus luck...",
+  "Taking a peek in the Golden Rat Hole...",
+  "Assembling snacks for the Cheffy fan club...",
+  "Teaching Ice Wolf Pup some new tricks...",
+  "Running spreadsheets to please the Arbor spirits...",
+  "Stargazing for comets with Starlight Weaver...",
+  "Dreaming for a Demon Spawn buff...",
+  "Rewiring Robot's overclocked core...",
+  "Force closing the game...",
+  "Negotiating with the shopkeeper for extra rerolls...",
+  "Charting rune routes through Goblin Ground...",
+  "Syncing patrol timers with your sleep schedule...",
+  "Updating guild message with fresh memes...",
+  "Repainting the Arbor nodes for extra sparkle...",
+  "Sharpening Sword Saint's blade for dramatic effect...",
+  "Clearing Quick Patrol rewards...",
+  "Complaining about Rate-up drop rates..."
+];
+let phraseTimer: number | null = null;
+let progressInterval: number | null = null;
+const NAV_LINKS = [
+  { label: "Overview", href: "#overview" },
+  { label: "Lineup", href: "#lineup" },
+  { label: "Settings", href: "#settings" },
+  { label: "Hero Collection", href: "#hero-collection" },
+  { label: "Changelog", href: "/changelog.html", external: true }
+];
+
+
+function pickRandomPhrase(previous?: string) {
+  const candidates = FUN_PHRASES.filter((phrase) => phrase !== previous);
+  const pool = candidates.length ? candidates : FUN_PHRASES;
+  const next = pool[Math.floor(Math.random() * pool.length)];
+  return next ?? previous ?? FUN_PHRASES[0];
+}
+
+function startPhraseLoop() {
+  stopPhraseLoop();
+  calcPhrase.value = pickRandomPhrase();
+  calcPhraseKey.value += 1;
+  if (typeof window === "undefined") return;
+  phraseTimer = window.setInterval(() => {
+    calcPhrase.value = pickRandomPhrase(calcPhrase.value);
+    calcPhraseKey.value += 1;
+  }, 3500);
+}
+
+function stopPhraseLoop() {
+  if (phraseTimer) {
+    clearInterval(phraseTimer);
+    phraseTimer = null;
+  }
+}
+
+function startProgressInterval() {
+  if (typeof window === "undefined") return;
+  if (progressInterval) {
+    clearInterval(progressInterval);
+  }
+  progressInterval = window.setInterval(() => {
+    if (calcProgress.value < calcProgressTarget.value) {
+      calcProgress.value = Math.min(
+        calcProgress.value + 0.05,
+        calcProgressTarget.value
+      );
+    }
+    if (calcProgress.value >= 1 && progressInterval) {
+      clearInterval(progressInterval);
+      progressInterval = null;
+    }
+  }, 1500);
+}
+
+function stopProgressInterval() {
+  if (progressInterval) {
+    clearInterval(progressInterval);
+    progressInterval = null;
+  }
+}
 
 const lineupHeroIds = computed(() =>
   new Set(lineup.value.slots.map((s) => s.heroId).filter(Boolean) as string[])
@@ -309,6 +430,7 @@ function updateOwned(heroId: string, levelIndex: number | null) {
       lineup.value.slots.forEach((slot) => {
         if (slot.heroId === heroId) {
           slot.heroId = null;
+          slot.priorityRank = null;
         }
       });
     }
@@ -328,16 +450,33 @@ function toggleHeroInLineup(heroId: string, shouldAdd: boolean) {
   const slotWithHero = lineup.value.slots.find((slot) => slot.heroId === heroId);
   if (slotWithHero) {
     slotWithHero.heroId = null;
+    slotWithHero.priorityRank = null;
   }
 }
 
-function togglePriority(slotIndex: number) {
-  lineup.value.slots[slotIndex].isPriority =
-    !lineup.value.slots[slotIndex].isPriority;
+function setPriorityRank(slotIndex: number, rank: number | null) {
+  const slot = lineup.value.slots[slotIndex];
+  if (!slot) return;
+  if (!slot.heroId) {
+    slot.priorityRank = null;
+    return;
+  }
+  if (rank === null) {
+    slot.priorityRank = null;
+    return;
+  }
+  // Ensure uniqueness: remove rank from other slots.
+  lineup.value.slots.forEach((other, idx) => {
+    if (idx !== slotIndex && other.priorityRank === rank) {
+      other.priorityRank = null;
+    }
+  });
+  slot.priorityRank = rank;
 }
 
 function clearLineupSlot(slotIndex: number) {
   lineup.value.slots[slotIndex].heroId = null;
+  lineup.value.slots[slotIndex].priorityRank = null;
 }
 
 function toggleRoleFilter(role: Role) {
@@ -413,20 +552,50 @@ function scrollResultsIntoView() {
   }
 }
 
-function optimize() {
+async function optimize() {
   if (!canOptimize.value || isCalculating.value) return;
   isCalculating.value = true;
+  calcProgress.value = 0;
+  calcProgressTarget.value = 0.15;
+  startProgressInterval();
   lastResult.value = null;
-  setTimeout(() => {
-    const result = runOptimization(
-      ownedHeroes.value,
-      lineup.value,
-      nightmareLevel.value
+  startPhraseLoop();
+  const ownedPayload = ownedHeroes.value.map((hero) => ({
+    heroId: hero.heroId,
+    levelIndex: hero.levelIndex
+  }));
+  const lineupPayload: Lineup = {
+    slots: lineup.value.slots.map((slot) => ({
+      heroId: slot.heroId,
+      priorityRank: slot.priorityRank
+    }))
+  };
+  try {
+    const result = await runOptimization(
+      ownedPayload,
+      lineupPayload,
+      nightmareLevel.value,
+      (progress) => {
+          const clamped = Math.min(Math.max(progress, 0), 0.9);
+          if (clamped > calcProgressTarget.value) {
+            calcProgressTarget.value = clamped;
+            startProgressInterval();
+          }
+      }
     );
     lastResult.value = result;
-    isCalculating.value = false;
+    calcProgressTarget.value = 1;
+    startProgressInterval();
     scrollResultsIntoView();
-  }, 0);
+  } catch (error) {
+    console.error("Failed to optimize arbor", error);
+  } finally {
+    isCalculating.value = false;
+    stopPhraseLoop();
+    stopProgressInterval();
+    calcProgress.value = 1;
+    calcPhrase.value = "Arbor ready to deploy!";
+  }
 }
 
 function optimizeFromResults() {
@@ -443,9 +612,33 @@ const filtersCollapsed = ref(false);
 let filtersMediaQuery: MediaQueryList | null = null;
 let filtersMediaListener: ((event: MediaQueryListEvent) => void) | null = null;
 
+const navOpen = ref(false);
+const isMobileNav = ref(false);
+
 function applyFiltersMediaState(matches: boolean) {
   isMobileFilters.value = matches;
   filtersCollapsed.value = matches;
+}
+
+function updateNavMode() {
+  if (typeof window === "undefined") return;
+  isMobileNav.value = window.innerWidth < 900;
+  if (!isMobileNav.value) {
+    navOpen.value = false;
+  }
+}
+
+function toggleNav() {
+  navOpen.value = !navOpen.value;
+}
+
+function closeNav() {
+  navOpen.value = false;
+}
+
+function handleNavLink(link?: { external?: boolean }) {
+  if (link?.external) return;
+  closeNav();
 }
 
 onMounted(() => {
@@ -457,12 +650,18 @@ onMounted(() => {
     filtersCollapsed.value = event.matches;
   };
   filtersMediaQuery.addEventListener("change", filtersMediaListener);
+  updateNavMode();
+  window.addEventListener("resize", updateNavMode);
 });
 
 onBeforeUnmount(() => {
   if (filtersMediaQuery && filtersMediaListener) {
     filtersMediaQuery.removeEventListener("change", filtersMediaListener);
   }
+  if (typeof window !== "undefined") {
+    window.removeEventListener("resize", updateNavMode);
+  }
+  stopPhraseLoop();
 });
 
 function toggleFiltersPanel() {
@@ -482,11 +681,85 @@ function closeIntroImage() {
 
 <template>
   <div class="app-shell">
-    <header class="app-header">
-      <div class="app-title">Wittle Defenders Akashic Arbor Optimizer</div>
-      <div class="app-subtitle">
-        Save hero levels, pick your lineup from the collection, set nightmare
-        level, then optimize the tree for your priority units.
+    <header class="site-header">
+      <div class="logo-block">
+        <div class="app-title">WD Akashic Arbor Optimizer</div>
+      </div>
+      <nav class="desktop-nav">
+        <a
+          v-for="link in NAV_LINKS"
+          :key="link.href"
+          :href="link.href"
+          :target="link.external ? '_blank' : undefined"
+          :rel="link.external ? 'noreferrer' : undefined"
+          @click="handleNavLink(link)"
+        >
+          {{ link.label }}
+        </a>
+      </nav>
+      <div class="header-actions">
+        <a
+          class="btn btn-sm btn-discord"
+          href="https://discord.com/invite/wittledefender"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <i class="fa-brands fa-discord" aria-hidden="true"></i>
+          Join Discord
+        </a>
+        <a
+          class="btn btn-sm btn-support header-support"
+          href="https://www.buymeacoffee.com/sahagin"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Support this Project
+        </a>
+        <button
+          class="nav-toggle"
+          type="button"
+          @click="toggleNav"
+          :aria-expanded="navOpen"
+        >
+          <i class="fa-solid" :class="navOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
+          <span class="sr-only">Toggle navigation</span>
+        </button>
+      </div>
+      <div
+        v-if="navOpen && isMobileNav"
+        class="mobile-nav"
+        role="dialog"
+        aria-modal="true"
+      >
+        <a
+          v-for="link in NAV_LINKS"
+          :key="`mobile-${link.href}`"
+          :href="link.href"
+          :target="link.external ? '_blank' : undefined"
+          :rel="link.external ? 'noreferrer' : undefined"
+          @click="handleNavLink(link)"
+        >
+          {{ link.label }}
+        </a>
+        <a
+          class="btn btn-sm btn-discord"
+          href="https://discord.com/invite/wittledefender"
+          target="_blank"
+          rel="noreferrer"
+          @click="handleNavLink"
+        >
+          <i class="fa-brands fa-discord" aria-hidden="true"></i>
+          Join Discord
+        </a>
+        <a
+          class="btn btn-sm btn-support"
+          href="https://www.buymeacoffee.com/sahagin"
+          target="_blank"
+          rel="noreferrer"
+          @click="handleNavLink"
+        >
+          Support this Project
+        </a>
       </div>
     </header>
 
@@ -499,14 +772,17 @@ function closeIntroImage() {
       >
         Show Akashic Arbor intro
       </button>
-      <section v-else class="panel intro-panel">
+      <section v-else class="panel intro-panel" id="overview">
         <div class="panel-header">
-          <div class="panel-title">What is the Akashic Arbor?</div>
+          <div class="panel-title">About this tool</div>
           <button class="btn btn-sm btn-ghost" type="button" @click="introHidden = true">
             Hide
           </button>
         </div>
         <div class="panel-body intro-body">
+          <p class="intro-tagline">
+            Save hero levels, set your nightmare progress, prioritize lineups, and let the optimizer handle the math.
+          </p>
           <p>
             Akashic Arbor unlocks for Wittle Defenders players at account level 35, eight days after
             the account is created. Each role and element node contains up to three slots. A hero can
@@ -528,20 +804,20 @@ function closeIntroImage() {
         </div>
       </section>
 
-      <section class="panel lineup-panel">
+      <section class="panel lineup-panel" id="lineup">
         <div class="panel-body">
           <LineupPanel
             :heroes="HEROES"
             :lineup="lineup"
             :owned="ownedHeroes"
             :untracked-count="untrackedHeroesCount"
-            @toggle-priority="togglePriority"
+            @set-rank="setPriorityRank"
             @clear-slot="clearLineupSlot"
           />
         </div>
       </section>
 
-      <section class="panel settings-panel">
+      <section class="panel settings-panel" id="settings">
         <SettingsPanel
           v-model:nightmareLevel="nightmareLevel"
           :optimize-disabled="!canOptimize || isCalculating"
@@ -552,14 +828,13 @@ function closeIntroImage() {
           @optimize="optimize"
         />
       </section>
-      <section class="panel" v-if="lastResult || isCalculating" ref="resultsRef">
+      <section class="panel" v-if="lastResult || isCalculating" ref="resultsRef" id="results">
         <div class="panel-header">
           <div class="panel-title">Results</div>
         </div>
         <div class="panel-body">
           <div v-if="isCalculating" class="calc-status-panel">
-            <span class="spinner"></span>
-            <span>Calculating optimal arbor...</span>
+            Optimization in progress... check the overlay for live status.
           </div>
           <ResultsPanel
             v-else
@@ -575,6 +850,7 @@ function closeIntroImage() {
 
       <section
         class="panel filters-panel"
+        id="filters"
         :class="{
           'is-collapsible': isMobileFilters,
           collapsed: isMobileFilters && filtersCollapsed
@@ -642,7 +918,25 @@ function closeIntroImage() {
           />
         </div>
       </section>
+
     </main>
+
+    <div
+      v-if="isCalculating"
+      class="calc-overlay"
+      role="alert"
+      aria-live="assertive"
+    >
+      <div class="calc-overlay-card">
+        <transition name="phrase-fade" mode="out-in">
+          <div class="calc-progress-text" :key="calcPhraseKey">{{ calcPhrase }}</div>
+        </transition>
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: `${Math.round(calcProgress * 100)}%` }"></div>
+        </div>
+        <div class="progress-percent">{{ Math.round(calcProgress * 100) }}%</div>
+      </div>
+    </div>
     <footer class="app-footer">
       <div class="footer-meta">
         <span>
@@ -651,6 +945,7 @@ function closeIntroImage() {
           Tool created by Sahagin Dazs.
         </span>
         <span>Last updated {{ lastUpdated }}</span>
+        <span>Version v{{ APP_VERSION }} • <a href="/changelog.html" target="_blank" rel="noreferrer">Changelog</a></span>
         <span class="footer-support-note">
           Hosting and development are funded out of pocket. If this tool helps you, please consider supporting the costs to keep it online.
         </span>
