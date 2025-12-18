@@ -35,6 +35,12 @@ const TOOL_TABS = [
   { id: "arbor", label: "Akashic Arbor" },
   { id: "summons", label: "Summon Simulator" }
 ] as const;
+type ToolTab = (typeof TOOL_TABS)[number]["id"];
+const HASH_TOOL_MAP: Record<string, ToolTab> = {
+  "#summon": "summons",
+  "#summons": "summons",
+  "#arbor": "arbor"
+};
 
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 type ThemeMode = "dark" | "light";
@@ -270,10 +276,15 @@ const NAV_LINKS = [
   { label: "Changelog", href: "/changelog.html", external: true }
 ];
 
-type ToolTab = (typeof TOOL_TABS)[number]["id"];
+function toolFromHash(hash: string): ToolTab | null {
+  const normalized = hash.toLowerCase();
+  return HASH_TOOL_MAP[normalized as "#summon"] ?? null;
+}
 
 function loadActiveTool(): ToolTab {
   if (typeof window === "undefined") return "arbor";
+  const hashTool = toolFromHash(window.location.hash);
+  if (hashTool) return hashTool;
   const stored = localStorage.getItem(ACTIVE_TOOL_STORAGE_KEY);
   return stored === "summons" ? "summons" : "arbor";
 }
@@ -283,11 +294,36 @@ const activeTool = ref<ToolTab>(loadActiveTool());
 watch(activeTool, (value) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(ACTIVE_TOOL_STORAGE_KEY, value);
+  syncToolHash(value);
 });
 
 function setActiveTool(tab: ToolTab) {
   activeTool.value = tab;
   closeNav();
+}
+
+function syncToolHash(value: ToolTab) {
+  if (typeof window === "undefined") return;
+  const hash = window.location.hash.toLowerCase();
+  if (value === "summons") {
+    if (hash !== "#summon" && hash !== "#summons") {
+      window.location.hash = "#summon";
+    }
+  } else {
+    if (hash === "#summon" || hash === "#summons" || hash === "" || hash === "#arbor") {
+      window.location.hash = "#arbor";
+    }
+  }
+}
+
+function handleToolHashChange() {
+  if (typeof window === "undefined") return;
+  const mapped = toolFromHash(window.location.hash);
+  if (mapped && mapped !== activeTool.value) {
+    activeTool.value = mapped;
+  } else if (!mapped && activeTool.value === "summons") {
+    activeTool.value = "arbor";
+  }
 }
 
 const isArborView = computed(() => activeTool.value === "arbor");
@@ -755,6 +791,8 @@ onMounted(() => {
   filtersMediaQuery.addEventListener("change", filtersMediaListener);
   updateNavMode();
   window.addEventListener("resize", updateNavMode);
+  handleToolHashChange();
+  window.addEventListener("hashchange", handleToolHashChange);
 });
 
 onBeforeUnmount(() => {
@@ -763,6 +801,7 @@ onBeforeUnmount(() => {
   }
   if (typeof window !== "undefined") {
     window.removeEventListener("resize", updateNavMode);
+    window.removeEventListener("hashchange", handleToolHashChange);
   }
   stopPhraseLoop();
 });
@@ -943,7 +982,7 @@ function toggleTheme() {
     </header>
 
     <main class="app-main">
-      <template v-if="isArborView">
+      <div v-if="isArborView" class="tool-view arbor-view" id="arbor">
         <button
           v-if="introHidden"
           class="btn btn-sm btn-secondary intro-toggle"
@@ -1098,9 +1137,9 @@ function toggleTheme() {
             />
           </div>
         </section>
-      </template>
-      <template v-else>
-        <section class="panel summon-panel-wrapper" id="summon-simulator">
+      </div>
+      <div v-else class="tool-view summon-view" id="summon">
+        <section class="panel summon-panel-wrapper">
           <div class="panel-body">
             <div
               v-if="hasPendingHeroes"
@@ -1119,7 +1158,7 @@ function toggleTheme() {
             <SummonSimulator :heroes="HEROES" />
           </div>
         </section>
-      </template>
+      </div>
     </main>
 
     <div

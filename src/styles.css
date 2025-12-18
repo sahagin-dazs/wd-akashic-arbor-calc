@@ -887,6 +887,10 @@ body {
   font-size: 13px;
 }
 
+.tool-view {
+  width: 100%;
+}
+
 .summon-panel {
   border-radius: 16px;
   border: 1px solid var(--border-soft);
@@ -1246,7 +1250,7 @@ body {
 }
 
 .featured-count-row.warrior-grid {
-  grid-template-columns: repeat(2, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .featured-count-card {
@@ -3103,11 +3107,11 @@ body {
   border: 1px solid rgba(253, 224, 71, 0.6);
   background: linear-gradient(135deg, #fde047, #f97316);
   color: #1f2937;
-  padding: 14px 18px;
-  min-width: 180px;
+  padding: 12px 16px;
+  min-width: 150px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   cursor: pointer;
   box-shadow: 0 12px 25px rgba(251, 191, 36, 0.35);
@@ -3123,6 +3127,12 @@ body {
 .summon-control-btn:not(:disabled):hover {
   filter: brightness(1.05);
   transform: translateY(-1px);
+}
+
+@media (max-width: 520px) {
+  .summon-control-btn {
+    width: 100%;
+  }
 }
 
 .summon-button-top {

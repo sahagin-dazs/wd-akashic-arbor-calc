@@ -189,20 +189,28 @@ const lastRoll = ref<SummonHistoryEntry | null>(null);
 const brokenAvatars = ref<Record<string, boolean>>({});
 const WARRIOR_ELEMENTS = ["Ice", "Fire", "Electro", "Wind"] as const;
 type WarriorElement = (typeof WARRIOR_ELEMENTS)[number];
+const SUMMON_BASE =
+  typeof import.meta !== "undefined" && typeof import.meta.env?.BASE_URL === "string"
+    ? import.meta.env.BASE_URL
+    : "/";
+const SUMMON_BASE_NORMALIZED = SUMMON_BASE.endsWith("/")
+  ? SUMMON_BASE
+  : `${SUMMON_BASE}/`;
+const summonAsset = (name: string) => `${SUMMON_BASE_NORMALIZED}summon/${name}`;
 const SUMMON_TAB_ICONS: Record<SummonTab, string> = {
-  warrior: "/summon/WarriorSummon.png",
-  rate: "/summon/RateUpSummon.png",
-  xeno: "/summon/XenoSummon.png"
+  warrior: summonAsset("WarriorSummon.png"),
+  rate: summonAsset("RateUpSummon.png"),
+  xeno: summonAsset("XenoSummon.png")
 };
 const REWARD_ICONS: Partial<Record<SummonCategory, string>> = {
-  gem30k: "/summon/30kgems.png",
-  gem2888: "/summon/2888gems.png",
-  hammer: "/summon/XenoHammer.png",
-  mythicShard: "/summon/RandomMythicHeroShard.png",
-  legendaryShard: "/summon/RandomLegendaryHeroShard.png",
-  promoStone: "/summon/PromotionStone.png"
+  gem30k: summonAsset("30kgems.png"),
+  gem2888: summonAsset("2888gems.png"),
+  hammer: summonAsset("XenoHammer.png"),
+  mythicShard: summonAsset("RandomMythicHeroShard.png"),
+  legendaryShard: summonAsset("RandomLegendaryHeroShard.png"),
+  promoStone: summonAsset("PromotionStone.png")
 };
-const GEM_ICON = "/summon/Gem.png";
+const GEM_ICON = summonAsset("Gem.png");
 const ELEMENT_META: Record<
   WarriorElement,
   { label: string; icon: string; color: string }
