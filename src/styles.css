@@ -1169,6 +1169,33 @@ body {
   pointer-events: none;
 }
 
+@media (max-width: 600px) {
+  .summon-pull-row {
+    gap: 6px;
+  }
+
+  .summon-pull-card {
+    padding: 8px;
+    min-width: 54px;
+    max-width: 68px;
+  }
+
+  .pull-visual {
+    width: 48px;
+    height: 48px;
+  }
+
+  .pull-visual img {
+    width: 44px;
+    height: 44px;
+    border-width: 1px;
+  }
+
+  .pull-quantity {
+    font-size: 11px;
+  }
+}
+
 .pull-visual img {
   width: 54px;
   height: 54px;
