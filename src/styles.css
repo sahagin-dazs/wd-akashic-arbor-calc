@@ -1277,7 +1277,7 @@ body {
 }
 
 .featured-count-row.warrior-grid {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(2, minmax(200px, 1fr));
 }
 
 .featured-count-card {
@@ -1912,8 +1912,14 @@ body {
 @media (max-width: 820px) {
   .settings-row {
     gap: 10px;
-    flex-direction: column;
+  flex-direction: column;
+}
+
+@media (max-width: 600px) {
+  .featured-count-row.warrior-grid {
+    grid-template-columns: 1fr;
   }
+}
 
   .slot-summary-panel {
     width: 100%;
