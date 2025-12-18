@@ -60,6 +60,7 @@ interface SummonState {
     scrolls: number;
     featuredHeroId: string | null;
     pity: number;
+    featuredGuarantee: boolean;
   };
   xeno: {
     scrolls: number;
@@ -106,7 +107,8 @@ const DEFAULT_STATE: SummonState = {
   rateUp: {
     scrolls: 0,
     featuredHeroId: "Valk",
-    pity: 40
+    pity: 50,
+    featuredGuarantee: false
   },
   xeno: {
     scrolls: 0,
@@ -146,7 +148,8 @@ function loadState(): SummonState {
       rateUp: {
         scrolls: Math.max(0, Number(parsed?.rateUp?.scrolls) || 0),
         featuredHeroId: parsed?.rateUp?.featuredHeroId ?? "Valk",
-        pity: parsed?.rateUp?.pity ?? 40
+        pity: parsed?.rateUp?.pity ?? 50,
+        featuredGuarantee: Boolean(parsed?.rateUp?.featuredGuarantee)
       },
       xeno: {
         scrolls: Math.max(0, Number(parsed?.xeno?.scrolls) || 0),
@@ -771,7 +774,7 @@ function rollWarriorOnce(): SummonResult {
 }
 
 function updateRatePity(hitMythic: boolean) {
-  state.value.rateUp.pity = hitMythic ? 40 : Math.max(1, state.value.rateUp.pity - 1);
+  state.value.rateUp.pity = hitMythic ? 50 : Math.max(1, state.value.rateUp.pity - 1);
 }
 
 function targetHero() {
@@ -788,9 +791,15 @@ function rollRateUpOnce(): SummonResult {
     const pool = RATE_UP_DEFAULT_FALLBACK.map((id) => heroMap.value.get(id)).filter(
       (hero): hero is HeroDef => Boolean(hero && hero.id !== featured.id)
     );
-    const mythicHero =
-      Math.random() < 0.5 || !pool.length ? featured : pickRandom(pool);
+    let mythicHero: HeroDef;
+    if (state.value.rateUp.featuredGuarantee) {
+      mythicHero = featured;
+    } else {
+      mythicHero =
+        Math.random() < 0.5 || !pool.length ? featured : pickRandom(pool);
+    }
     updateRatePity(true);
+    state.value.rateUp.featuredGuarantee = mythicHero.id !== featured.id;
     return buildHeroResult(mythicHero, {
       rarityLabel: "Mythic",
       note: mythicHero.id === featured.id ? "Featured" : undefined,
