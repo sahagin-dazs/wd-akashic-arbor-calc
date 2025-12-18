@@ -58,7 +58,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: false
   },
   {
     id: "WR",
@@ -69,7 +71,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: false
   },
   {
     id: "Lich",
@@ -80,7 +84,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "AA",
@@ -91,7 +97,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "FL",
@@ -102,7 +110,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "SR",
@@ -113,7 +123,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "Cheffy",
@@ -124,7 +136,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "IQ",
@@ -135,7 +149,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: true
   },
   {
     id: "VG",
@@ -146,7 +162,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "PC",
@@ -157,7 +175,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "SS",
@@ -168,7 +188,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "NB",
@@ -179,7 +201,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: true
   },
   {
     id: "Odin",
@@ -190,7 +214,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: true,
+    isWishlistHero: true
   },
   {
     id: "BA",
@@ -201,7 +227,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: true
   },
   {
     id: "SM",
@@ -212,7 +240,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: true
   },
   {
     id: "Pharaoh",
@@ -223,7 +253,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: true
   },
   {
     id: "ID",
@@ -234,7 +266,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: true
   },
   {
     id: "DS",
@@ -245,7 +279,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: true
   },
   {
     id: "Robot",
@@ -256,7 +292,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       2.0, 2.1, 2.2
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: true
   },
   {
     id: "Seraph",
@@ -267,7 +305,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "FM",
@@ -278,7 +318,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "DH",
@@ -289,7 +331,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "Cat",
@@ -300,7 +344,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "IM",
@@ -311,7 +357,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "HP",
@@ -322,7 +370,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "IW",
@@ -333,7 +383,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "FW",
@@ -344,7 +396,9 @@ export const HEROES: HeroDef[] = [
     percents: buildPercents([
       0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,
       0.95, 1.0, 1.05, 1.1
-    ])
+    ]),
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "ElfRanger",
@@ -352,7 +406,9 @@ export const HEROES: HeroDef[] = [
     rarity: "Epic",
     role: "Ranger",
     element: "Wind",
-    percents: { "0S": 0.2 }
+    percents: { "0S": 0.2 },
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "NovicePriest",
@@ -360,7 +416,9 @@ export const HEROES: HeroDef[] = [
     rarity: "Epic",
     role: "Support",
     element: "Electro",
-    percents: { "0S": 0.2 }
+    percents: { "0S": 0.2 },
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "FrostArcher",
@@ -368,7 +426,9 @@ export const HEROES: HeroDef[] = [
     rarity: "Epic",
     role: "Ranger",
     element: "Ice",
-    percents: { "0S": 0.2 }
+    percents: { "0S": 0.2 },
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "FireApprentice",
@@ -376,7 +436,9 @@ export const HEROES: HeroDef[] = [
     rarity: "Epic",
     role: "Mage",
     element: "Fire",
-    percents: { "0S": 0.2 }
+    percents: { "0S": 0.2 },
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "UL",
@@ -384,7 +446,9 @@ export const HEROES: HeroDef[] = [
     rarity: "Common",
     role: "Fighter",
     element: "Wind",
-    percents: { "0S": 0.1 }
+    percents: { "0S": 0.1 },
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "Frankenstein",
@@ -392,7 +456,9 @@ export const HEROES: HeroDef[] = [
     rarity: "Common",
     role: "Mage",
     element: "Electro",
-    percents: { "0S": 0.1 }
+    percents: { "0S": 0.1 },
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "RogueFM",
@@ -400,7 +466,9 @@ export const HEROES: HeroDef[] = [
     rarity: "Common",
     role: "Mage",
     element: "Fire",
-    percents: { "0S": 0.1 }
+    percents: { "0S": 0.1 },
+    isRateUpHero: false,
+    isWishlistHero: false
   },
   {
     id: "IceWolfPup",
@@ -408,7 +476,9 @@ export const HEROES: HeroDef[] = [
     rarity: "Common",
     role: "Fighter",
     element: "Ice",
-    percents: { "0S": 0.1 }
+    percents: { "0S": 0.1 },
+    isRateUpHero: false,
+    isWishlistHero: false
   }
 ];
 

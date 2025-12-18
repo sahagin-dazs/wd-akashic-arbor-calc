@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { HEROES } from "./models/heroes";
 import type {
   OwnedHero,
@@ -16,6 +16,7 @@ import LineupPanel from "./components/LineupPanel.vue";
 import SettingsPanel from "./components/SettingsPanel.vue";
 import ResultsPanel from "./components/ResultsPanel.vue";
 import HeroFilters from "./components/HeroFilters.vue";
+import SummonSimulator from "./components/SummonSimulator.vue";
 import { runOptimization } from "./logic/optimizer";
 
 const HERO_STORAGE_KEY = "wd-akashic-owned-heroes";
@@ -24,11 +25,16 @@ const LINEUP_STORAGE_KEY = "wd-akashic-lineup";
 const OWNERSHIP_FILTER_STORAGE_KEY = "wd-akashic-ownership-filter";
 const INTRO_STORAGE_KEY = "wd-akashic-intro-hidden";
 const THEME_STORAGE_KEY = "wd-akashic-theme";
+const ACTIVE_TOOL_STORAGE_KEY = "wd-tools-active-view";
 const BASE_URL =
   typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
 const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
 const ARBOR_IMAGE_SRC = `${NORMALIZED_BASE}images/arbor.jpg`;
-const APP_VERSION = "1.3.1";
+const APP_VERSION = "1.4.0";
+const TOOL_TABS = [
+  { id: "arbor", label: "Akashic Arbor" },
+  { id: "summons", label: "Summon Simulator" }
+] as const;
 
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 type ThemeMode = "dark" | "light";
@@ -264,6 +270,41 @@ const NAV_LINKS = [
   { label: "Changelog", href: "/changelog.html", external: true }
 ];
 
+type ToolTab = (typeof TOOL_TABS)[number]["id"];
+
+function loadActiveTool(): ToolTab {
+  if (typeof window === "undefined") return "arbor";
+  const stored = localStorage.getItem(ACTIVE_TOOL_STORAGE_KEY);
+  return stored === "summons" ? "summons" : "arbor";
+}
+
+const activeTool = ref<ToolTab>(loadActiveTool());
+
+watch(activeTool, (value) => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(ACTIVE_TOOL_STORAGE_KEY, value);
+});
+
+function setActiveTool(tab: ToolTab) {
+  activeTool.value = tab;
+  closeNav();
+}
+
+const isArborView = computed(() => activeTool.value === "arbor");
+
+function jumpToHeroCollection(event?: Event) {
+  if (event) {
+    event.preventDefault();
+  }
+  if (!isArborView.value) {
+    setActiveTool("arbor");
+  }
+  nextTick(() => {
+    if (typeof window !== "undefined") {
+      window.location.hash = "#hero-collection";
+    }
+  });
+}
 
 function pickRandomPhrase(previous?: string) {
   const candidates = FUN_PHRASES.filter((phrase) => phrase !== previous);
@@ -375,6 +416,8 @@ const themeIcon = computed(() =>
 const untrackedHeroesCount = computed(
   () => ownedHeroes.value.filter((hero) => hero.levelIndex === null).length
 );
+
+const hasPendingHeroes = computed(() => untrackedHeroesCount.value > 0);
 
 watch(untrackedHeroesCount, (count) => {
   if (count === 0 && ownershipFilter.value === "untracked") {
@@ -746,57 +789,87 @@ function toggleTheme() {
 <template>
   <div class="app-shell">
     <header class="site-header">
-      <div class="logo-block">
-        <div class="app-title">WD Akashic Arbor Optimizer</div>
+      <div class="header-row">
+        <div class="logo-block">
+          <div class="app-title">WD Tools</div>
+          <p class="app-tagline">Utilities for Wittle Defenders</p>
+          <div v-if="hasPendingHeroes" class="pending-chip">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span>
+              {{ untrackedHeroesCount }} hero<span v-if="untrackedHeroesCount !== 1">es</span> need star data
+            </span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button
+            class="btn btn-sm btn-ghost theme-toggle"
+            type="button"
+            @click="toggleTheme"
+            :aria-label="themeAriaLabel"
+          >
+            <i class="fa-solid" :class="themeIcon" aria-hidden="true"></i>
+            <span>{{ themeButtonLabel }}</span>
+          </button>
+          <a
+            class="btn btn-sm btn-discord"
+            href="https://discord.com/invite/wittledefender"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i class="fa-brands fa-discord" aria-hidden="true"></i>
+            Join Discord
+          </a>
+          <a
+            class="btn btn-sm btn-support header-support"
+            href="https://www.buymeacoffee.com/sahagin"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Support this Project
+          </a>
+          <button
+            class="nav-toggle"
+            type="button"
+            @click="toggleNav"
+            :aria-expanded="navOpen"
+          >
+            <i class="fa-solid" :class="navOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
+            <span class="sr-only">Toggle navigation</span>
+            <span v-if="hasPendingHeroes" class="pending-dot"></span>
+          </button>
+        </div>
       </div>
-      <nav class="desktop-nav">
-        <a
-          v-for="link in NAV_LINKS"
-          :key="link.href"
-          :href="link.href"
-          :target="link.external ? '_blank' : undefined"
-          :rel="link.external ? 'noreferrer' : undefined"
-          @click="handleNavLink(link)"
-        >
-          {{ link.label }}
-        </a>
-      </nav>
-      <div class="header-actions">
-        <button
-          class="btn btn-sm btn-ghost theme-toggle"
-          type="button"
-          @click="toggleTheme"
-          :aria-label="themeAriaLabel"
-        >
-          <i class="fa-solid" :class="themeIcon" aria-hidden="true"></i>
-          <span>{{ themeButtonLabel }}</span>
-        </button>
-        <a
-          class="btn btn-sm btn-discord"
-          href="https://discord.com/invite/wittledefender"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <i class="fa-brands fa-discord" aria-hidden="true"></i>
-          Join Discord
-        </a>
-        <a
-          class="btn btn-sm btn-support header-support"
-          href="https://www.buymeacoffee.com/sahagin"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Support this Project
-        </a>
-        <button
-          class="nav-toggle"
-          type="button"
-          @click="toggleNav"
-          :aria-expanded="navOpen"
-        >
-          <i class="fa-solid" :class="navOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
-          <span class="sr-only">Toggle navigation</span>
-        </button>
+      <div class="tool-nav-row">
+        <div class="tool-tabs" role="tablist">
+          <button
+            v-for="tab in TOOL_TABS"
+            :key="tab.id"
+            type="button"
+            class="tool-tab"
+            :class="{ active: activeTool === tab.id }"
+            @click="setActiveTool(tab.id)"
+          >
+            {{ tab.label }}
+            <span
+              v-if="tab.id === 'arbor' && hasPendingHeroes"
+              class="pending-counter"
+            >
+              {{ untrackedHeroesCount }}
+            </span>
+          </button>
+        </div>
+        <nav class="desktop-nav" v-if="isArborView && !isMobileNav">
+          <a
+            v-for="link in NAV_LINKS"
+            :key="link.href"
+            :href="link.href"
+            :target="link.external ? '_blank' : undefined"
+            :rel="link.external ? 'noreferrer' : undefined"
+            @click="handleNavLink(link)"
+          >
+            {{ link.label }}
+          </a>
+        </nav>
       </div>
       <div
         v-if="navOpen && isMobileNav"
@@ -804,17 +877,41 @@ function toggleTheme() {
         role="dialog"
         aria-modal="true"
       >
-        <a
-          v-for="link in NAV_LINKS"
-          :key="`mobile-${link.href}`"
-          :href="link.href"
-          :target="link.external ? '_blank' : undefined"
-          :rel="link.external ? 'noreferrer' : undefined"
-          @click="handleNavLink(link)"
-        >
-          {{ link.label }}
-        </a>
-        <a
+        <div class="tool-tabs mobile-tool-tabs">
+          <button
+            v-for="tab in TOOL_TABS"
+            :key="`mobile-${tab.id}`"
+            type="button"
+            class="tool-tab"
+            :class="{ active: activeTool === tab.id }"
+            @click="setActiveTool(tab.id)"
+          >
+            {{ tab.label }}
+            <span
+              v-if="tab.id === 'arbor' && hasPendingHeroes"
+              class="pending-counter"
+            >
+              {{ untrackedHeroesCount }}
+            </span>
+          </button>
+        </div>
+        <div v-if="hasPendingHeroes" class="mobile-pending">
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          <span>{{ untrackedHeroesCount }} hero<span v-if="untrackedHeroesCount !== 1">es</span> still untracked.</span>
+        </div>
+        <div v-if="isArborView" class="mobile-section-links">
+          <a
+            v-for="link in NAV_LINKS"
+            :key="`mobile-${link.href}`"
+            :href="link.href"
+            :target="link.external ? '_blank' : undefined"
+            :rel="link.external ? 'noreferrer' : undefined"
+            @click="handleNavLink(link)"
+          >
+            {{ link.label }}
+          </a>
+        </div>
+        <button
           class="btn btn-sm btn-discord"
           href="https://discord.com/invite/wittledefender"
           target="_blank"
@@ -823,7 +920,7 @@ function toggleTheme() {
         >
           <i class="fa-brands fa-discord" aria-hidden="true"></i>
           Join Discord
-        </a>
+        </button>
         <a
           class="btn btn-sm btn-support"
           href="https://www.buymeacoffee.com/sahagin"
@@ -846,161 +943,183 @@ function toggleTheme() {
     </header>
 
     <main class="app-main">
-      <button
-        v-if="introHidden"
-        class="btn btn-sm btn-secondary intro-toggle"
-        type="button"
-        @click="introHidden = false"
-      >
-        Show Akashic Arbor intro
-      </button>
-      <section v-else class="panel intro-panel" id="overview">
-        <div class="panel-header">
-          <div class="panel-title">About this tool</div>
-          <button class="btn btn-sm btn-ghost" type="button" @click="introHidden = true">
-            Hide
-          </button>
-        </div>
-        <div class="panel-body intro-body">
-          <p class="intro-tagline">
-            Save hero levels, set your nightmare progress, prioritize lineups, and let the optimizer handle the math.
-          </p>
-          <p>
-            Akashic Arbor unlocks for Wittle Defenders players at account level 35, eight days after
-            the account is created. Each role and element node contains up to three slots. A hero can
-            be placed in either its role node or its element node, and every slot grants stat bonuses
-            to the lineup: matching heroes receive <strong>3×</strong> the listed ATK/DEF/HP %, while
-            all other heroes receive <strong>1×</strong> the same value.
-          </p>
-          <ul>
-            <li>Heroes can only occupy one slot at a time, so trading a hero between role and element nodes matters.</li>
-            <li>Slot unlocks depend on your Nightmare progress - this tool tracks those thresholds and only optimizes available slots.</li>
-            <li>The calculator stores hero levels, lineup, and preference for priority targets so the best buffs are recomputed instantly.</li>
-          </ul>
-          <div class="intro-actions">
-            <a class="link-btn" href="#hero-collection">Track heroes now</a>
-            <button class="btn btn-sm btn-secondary" type="button" @click="openIntroImage">
-              View Example Arbor
+      <template v-if="isArborView">
+        <button
+          v-if="introHidden"
+          class="btn btn-sm btn-secondary intro-toggle"
+          type="button"
+          @click="introHidden = false"
+        >
+          Show Akashic Arbor intro
+        </button>
+        <section v-else class="panel intro-panel" id="overview">
+          <div class="panel-header">
+            <div class="panel-title">About this tool</div>
+            <button class="btn btn-sm btn-ghost" type="button" @click="introHidden = true">
+              Hide
             </button>
           </div>
-        </div>
-      </section>
+          <div class="panel-body intro-body">
+            <p class="intro-tagline">
+              Save hero levels, set your nightmare progress, prioritize lineups, and let the optimizer handle the math.
+            </p>
+            <p>
+              Akashic Arbor unlocks for Wittle Defenders players at account level 35, eight days after
+              the account is created. Each role and element node contains up to three slots. A hero can
+              be placed in either its role node or its element node, and every slot grants stat bonuses
+              to the lineup: matching heroes receive <strong>3×</strong> the listed ATK/DEF/HP %, while
+              all other heroes receive <strong>1×</strong> the same value.
+            </p>
+            <ul>
+              <li>Heroes can only occupy one slot at a time, so trading a hero between role and element nodes matters.</li>
+              <li>Slot unlocks depend on your Nightmare progress - this tool tracks those thresholds and only optimizes available slots.</li>
+              <li>The calculator stores hero levels, lineup, and preference for priority targets so the best buffs are recomputed instantly.</li>
+            </ul>
+            <div class="intro-actions">
+              <a class="link-btn" href="#hero-collection">Track heroes now</a>
+              <button class="btn btn-sm btn-secondary" type="button" @click="openIntroImage">
+                View Example Arbor
+              </button>
+            </div>
+          </div>
+        </section>
 
-      <section class="panel lineup-panel" id="lineup">
-        <div class="panel-body">
-          <LineupPanel
-            :heroes="HEROES"
-            :lineup="lineup"
-            :owned="ownedHeroes"
+        <section class="panel lineup-panel" id="lineup">
+          <div class="panel-body">
+            <LineupPanel
+              :heroes="HEROES"
+              :lineup="lineup"
+              :owned="ownedHeroes"
+              :untracked-count="untrackedHeroesCount"
+              @set-rank="setPriorityRank"
+              @clear-slot="clearLineupSlot"
+            />
+          </div>
+        </section>
+
+        <section class="panel settings-panel" id="settings">
+          <SettingsPanel
+            v-model:nightmareLevel="nightmareLevel"
+            :optimize-disabled="!canOptimize || isCalculating"
+            :lineup-ready="isLineupFull"
+            :all-classified="allHeroesClassified"
             :untracked-count="untrackedHeroesCount"
-            @set-rank="setPriorityRank"
-            @clear-slot="clearLineupSlot"
+            :is-calculating="isCalculating"
+            @optimize="optimize"
           />
-        </div>
-      </section>
-
-      <section class="panel settings-panel" id="settings">
-        <SettingsPanel
-          v-model:nightmareLevel="nightmareLevel"
-          :optimize-disabled="!canOptimize || isCalculating"
-          :lineup-ready="isLineupFull"
-          :all-classified="allHeroesClassified"
-          :untracked-count="untrackedHeroesCount"
-          :is-calculating="isCalculating"
-          @optimize="optimize"
-        />
-      </section>
-      <section class="panel" v-if="lastResult || isCalculating" ref="resultsRef" id="results">
-        <div class="panel-header">
-          <div class="panel-title">Results</div>
-        </div>
-        <div class="panel-body">
-          <div v-if="isCalculating" class="calc-status-panel">
-            Optimization in progress... check the overlay for live status.
+        </section>
+        <section class="panel" v-if="lastResult || isCalculating" ref="resultsRef" id="results">
+          <div class="panel-header">
+            <div class="panel-title">Results</div>
           </div>
-          <ResultsPanel
-            v-else
-            :result="lastResult"
-            :lineup="lineup"
-            :heroes="HEROES"
-            :owned="ownedHeroes"
-            :nightmare-level="nightmareLevel"
-            @optimize-again="optimizeFromResults"
-          />
-        </div>
-      </section>
+          <div class="panel-body">
+            <div v-if="isCalculating" class="calc-status-panel">
+              Optimization in progress... check the overlay for live status.
+            </div>
+            <ResultsPanel
+              v-else
+              :result="lastResult"
+              :lineup="lineup"
+              :heroes="HEROES"
+              :owned="ownedHeroes"
+              :nightmare-level="nightmareLevel"
+              @optimize-again="optimizeFromResults"
+            />
+          </div>
+        </section>
 
-      <section
-        class="panel filters-panel"
-        id="filters"
-        :class="{
-          'is-collapsible': isMobileFilters,
-          collapsed: isMobileFilters && filtersCollapsed
-        }"
-      >
-        <div class="panel-header filters-header">
-          <div class="panel-title">Filter Heroes</div>
-          <div class="filters-header-actions">
-            <button class="btn btn-sm btn-ghost" @click="clearFilters" :disabled="!hasActiveFilters">
-              Clear
-            </button>
-            <button
-              v-if="isMobileFilters"
-              class="btn btn-sm btn-ghost collapse-toggle"
-              type="button"
-              @click="toggleFiltersPanel"
-              :aria-expanded="!filtersCollapsed"
+        <section
+          class="panel filters-panel"
+          id="filters"
+          :class="{
+            'is-collapsible': isMobileFilters,
+            collapsed: isMobileFilters && filtersCollapsed
+          }"
+        >
+          <div class="panel-header filters-header">
+            <div class="panel-title">Filter Heroes</div>
+            <div class="filters-header-actions">
+              <button class="btn btn-sm btn-ghost" @click="clearFilters" :disabled="!hasActiveFilters">
+                Clear
+              </button>
+              <button
+                v-if="isMobileFilters"
+                class="btn btn-sm btn-ghost collapse-toggle"
+                type="button"
+                @click="toggleFiltersPanel"
+                :aria-expanded="!filtersCollapsed"
+              >
+                <i
+                  :class="[
+                    'fa-solid',
+                    filtersCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'
+                  ]"
+                  aria-hidden="true"
+                ></i>
+                {{ filtersCollapsed ? "Show Filters" : "Hide Filters" }}
+              </button>
+            </div>
+          </div>
+          <div class="panel-body" v-if="!isMobileFilters || !filtersCollapsed">
+            <HeroFilters
+              :selected-roles="roleFilters"
+              :selected-elements="elementFilters"
+              :selected-rarities="rarityFilters"
+              @toggle-role="toggleRoleFilter"
+              @toggle-element="toggleElementFilter"
+              @toggle-rarity="toggleRarityFilter"
+            />
+          </div>
+        </section>
+
+        <section class="panel hero-panel" id="hero-collection">
+          <div class="panel-header">
+            <div class="panel-title">Hero Collection</div>
+          </div>
+          <div class="panel-body">
+            <HeroCollection
+              :heroes="filteredHeroes"
+              :owned="ownedHeroes"
+              :lineupHeroIds="lineupHeroIds"
+              :levels="LEVELS"
+              :lineup-size="lineup.slots.length"
+              :search-value="searchQuery"
+              :total-count="HEROES.length"
+              :shown-count="filteredHeroes.length"
+              :has-active-filters="hasActiveFilters"
+              :has-search="hasSearch"
+              :ownership-filter="ownershipFilter"
+              @update-owned="updateOwned"
+              @toggle-lineup="toggleHeroInLineup"
+              @search="handleSearch"
+              @clear-search="clearSearch"
+              @clear-filters="clearFilters"
+              @update:ownershipFilter="setOwnershipFilter"
+            />
+          </div>
+        </section>
+      </template>
+      <template v-else>
+        <section class="panel summon-panel-wrapper" id="summon-simulator">
+          <div class="panel-body">
+            <div
+              v-if="hasPendingHeroes"
+              class="collection-warning"
             >
-              <i
-                :class="[
-                  'fa-solid',
-                  filtersCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'
-                ]"
-                aria-hidden="true"
-              ></i>
-              {{ filtersCollapsed ? "Show Filters" : "Hide Filters" }}
-            </button>
+              <div class="warning-text">
+                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                <span>
+                  {{ untrackedHeroesCount }} hero<span v-if="untrackedHeroesCount !== 1">es</span> still need star levels. Optimizer and simulator data stay in sync, so update them in the hero collection first.
+                </span>
+              </div>
+              <a href="#hero-collection" class="link-btn" @click.prevent="jumpToHeroCollection">
+                Track heroes
+              </a>
+            </div>
+            <SummonSimulator :heroes="HEROES" />
           </div>
-        </div>
-        <div class="panel-body" v-if="!isMobileFilters || !filtersCollapsed">
-          <HeroFilters
-            :selected-roles="roleFilters"
-            :selected-elements="elementFilters"
-            :selected-rarities="rarityFilters"
-            @toggle-role="toggleRoleFilter"
-            @toggle-element="toggleElementFilter"
-            @toggle-rarity="toggleRarityFilter"
-          />
-        </div>
-      </section>
-
-      <section class="panel hero-panel" id="hero-collection">
-        <div class="panel-header">
-          <div class="panel-title">Hero Collection</div>
-        </div>
-        <div class="panel-body">
-          <HeroCollection
-            :heroes="filteredHeroes"
-            :owned="ownedHeroes"
-            :lineupHeroIds="lineupHeroIds"
-            :levels="LEVELS"
-            :lineup-size="lineup.slots.length"
-            :search-value="searchQuery"
-            :total-count="HEROES.length"
-            :shown-count="filteredHeroes.length"
-            :has-active-filters="hasActiveFilters"
-            :has-search="hasSearch"
-            :ownership-filter="ownershipFilter"
-            @update-owned="updateOwned"
-            @toggle-lineup="toggleHeroInLineup"
-            @search="handleSearch"
-            @clear-search="clearSearch"
-            @clear-filters="clearFilters"
-            @update:ownershipFilter="setOwnershipFilter"
-          />
-        </div>
-      </section>
-
+        </section>
+      </template>
     </main>
 
     <div

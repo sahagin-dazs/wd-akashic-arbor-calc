@@ -168,6 +168,11 @@ function heroName(heroId: string) {
   return HERO_MAP.get(heroId)?.name ?? heroId;
 }
 
+function heroRarityClass(heroId: string) {
+  const rarity = HERO_MAP.get(heroId)?.rarity ?? "Common";
+  return `rarity-${rarity.toLowerCase()}`;
+}
+
 function lineupBuff(heroId: string) {
   return formatPercent(props.result.buffPerHero[heroId] ?? 0);
 }
@@ -350,7 +355,7 @@ function nextUnlockDelta(node: NodeKey) {
                   <div
                     v-for="hero in getNodeSummary(node).heroes"
                     :key="hero.heroId"
-                    class="node-hero-row"
+                    :class="['node-hero-row', heroRarityClass(hero.heroId)]"
                   >
                     <div class="node-hero-avatar">
                       <img
