@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   akashic-arbor-dev:
     image: node:22-alpine
@@ -15,3 +13,38 @@ services:
     build: .
     ports:
       - "8080:80"
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    platform: linux/amd64
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+
+  wdtools-api:
+    image: mcr.microsoft.com/azure-functions/node:4-node20
+    platform: linux/amd64
+    working_dir: /home/site/wwwroot
+    volumes:
+      - ./api:/home/site/wwwroot
+      - /home/site/wwwroot/node_modules
+      - api-data:/home/site/wwwroot/.data
+    environment:
+      AzureWebJobsStorage: UseDevelopmentStorage=true
+      FUNCTIONS_WORKER_RUNTIME: node
+      AzureWebJobsScriptRoot: /home/site/wwwroot
+      USE_LOCAL_DB: "true"
+      LOCAL_DATA_PATH: /home/site/wwwroot/.data/items.json
+    ports:
+      - "7071:7071"
+    depends_on:
+      - azurite
+    command: sh -c "npm install -g azure-functions-core-tools@4 --unsafe-perm true && npm install && func start --script-root /home/site/wwwroot --verbose"
+
+volumes:
+  azurite-data:
+  api-data:

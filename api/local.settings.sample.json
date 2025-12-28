@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "COSMOSDB_ENDPOINT": "https://wdtoolscosmos.documents.azure.com:443/",
+    "COSMOSDB_KEY": "YOUR_COSMOS_KEY",
+    "COSMOSDB_DB": "appdata",
+    "COSMOSDB_CONTAINER": "items"
+  }
+}

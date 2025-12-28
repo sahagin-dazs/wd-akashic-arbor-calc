@@ -18,6 +18,7 @@ import ResultsPanel from "./components/ResultsPanel.vue";
 import HeroFilters from "./components/HeroFilters.vue";
 import SummonSimulator from "./components/SummonSimulator.vue";
 import { runOptimization } from "./logic/optimizer";
+import TierListBuilder from "./components/TierListBuilder.vue";
 
 const HERO_STORAGE_KEY = "wd-akashic-owned-heroes";
 const NIGHTMARE_STORAGE_KEY = "wd-akashic-nightmare-level";
@@ -30,17 +31,22 @@ const BASE_URL =
   typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
 const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
 const ARBOR_IMAGE_SRC = `${NORMALIZED_BASE}images/arbor.jpg`;
-const APP_VERSION = "1.4.0";
+const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.0.0";
 const TOOL_TABS = [
   { id: "arbor", label: "Akashic Arbor" },
-  { id: "summons", label: "Summon Simulator" }
+  { id: "summons", label: "Summon Simulator" },
+  { id: "tiers", label: "Tier Lists" }
 ] as const;
 type ToolTab = (typeof TOOL_TABS)[number]["id"];
 const HASH_TOOL_MAP: Record<string, ToolTab> = {
   "#summon": "summons",
   "#summons": "summons",
-  "#arbor": "arbor"
+  "#arbor": "arbor",
+  "#tier": "tiers",
+  "#tiers": "tiers"
 };
+const LEGACY_HOST = "sahagin-dazs.github.io";
+const LEGACY_PATH = "/wd-akashic-arbor-calc";
 
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 type ThemeMode = "dark" | "light";
@@ -283,10 +289,15 @@ function toolFromHash(hash: string): ToolTab | null {
 
 function loadActiveTool(): ToolTab {
   if (typeof window === "undefined") return "arbor";
+  const isLegacyHost =
+    window.location.hostname === LEGACY_HOST &&
+    window.location.pathname.startsWith(LEGACY_PATH);
   const hashTool = toolFromHash(window.location.hash);
+  if (hashTool === "tiers" && isLegacyHost) return "arbor";
   if (hashTool) return hashTool;
   const stored = localStorage.getItem(ACTIVE_TOOL_STORAGE_KEY);
-  return stored === "summons" ? "summons" : "arbor";
+  if (stored === "tiers" && isLegacyHost) return "arbor";
+  return stored === "summons" || stored === "tiers" ? (stored as ToolTab) : "arbor";
 }
 
 const activeTool = ref<ToolTab>(loadActiveTool());
@@ -298,16 +309,25 @@ watch(activeTool, (value) => {
 });
 
 function setActiveTool(tab: ToolTab) {
+  if (tab === "tiers" && isTierDisabled.value) return;
   activeTool.value = tab;
   closeNav();
 }
 
 function syncToolHash(value: ToolTab) {
   if (typeof window === "undefined") return;
+  if (value === "tiers" && isTierDisabled.value) {
+    window.location.hash = "#arbor";
+    return;
+  }
   const hash = window.location.hash.toLowerCase();
   if (value === "summons") {
     if (hash !== "#summon" && hash !== "#summons") {
       window.location.hash = "#summon";
+    }
+  } else if (value === "tiers") {
+    if (hash !== "#tier" && hash !== "#tiers") {
+      window.location.hash = "#tier";
     }
   } else {
     if (hash === "#summon" || hash === "#summons" || hash === "" || hash === "#arbor") {
@@ -319,6 +339,11 @@ function syncToolHash(value: ToolTab) {
 function handleToolHashChange() {
   if (typeof window === "undefined") return;
   const mapped = toolFromHash(window.location.hash);
+  if (mapped === "tiers" && isTierDisabled.value) {
+    activeTool.value = "arbor";
+    window.location.hash = "#arbor";
+    return;
+  }
   if (mapped && mapped !== activeTool.value) {
     activeTool.value = mapped;
   } else if (!mapped && activeTool.value === "summons") {
@@ -327,6 +352,15 @@ function handleToolHashChange() {
 }
 
 const isArborView = computed(() => activeTool.value === "arbor");
+const isSummonView = computed(() => activeTool.value === "summons");
+const isTierView = computed(() => activeTool.value === "tiers");
+const isTierDisabled = computed(() => {
+  if (typeof window === "undefined") return false;
+  return (
+    window.location.hostname === LEGACY_HOST &&
+    window.location.pathname.startsWith(LEGACY_PATH)
+  );
+});
 
 function jumpToHeroCollection(event?: Event) {
   if (event) {
@@ -830,8 +864,8 @@ function toggleTheme() {
     <header class="site-header">
       <div class="header-row">
         <div class="logo-block">
-          <div class="app-title">WD Tools</div>
-          <p class="app-tagline">Utilities for Wittle Defenders</p>
+          <div class="app-title">WD Toolbox</div>
+          <p class="app-tagline">Various tools and utilities for Wittle Defenders</p>
           <div v-if="hasPendingHeroes" class="pending-chip">
             <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             <span>
@@ -885,7 +919,8 @@ function toggleTheme() {
             :key="tab.id"
             type="button"
             class="tool-tab"
-            :class="{ active: activeTool === tab.id }"
+            :class="{ active: activeTool === tab.id, disabled: tab.id === 'tiers' && isTierDisabled }"
+            :disabled="tab.id === 'tiers' && isTierDisabled"
             @click="setActiveTool(tab.id)"
           >
             {{ tab.label }}
@@ -922,7 +957,8 @@ function toggleTheme() {
             :key="`mobile-${tab.id}`"
             type="button"
             class="tool-tab"
-            :class="{ active: activeTool === tab.id }"
+            :class="{ active: activeTool === tab.id, disabled: tab.id === 'tiers' && isTierDisabled }"
+            :disabled="tab.id === 'tiers' && isTierDisabled"
             @click="setActiveTool(tab.id)"
           >
             {{ tab.label }}
@@ -1138,7 +1174,7 @@ function toggleTheme() {
           </div>
         </section>
       </div>
-      <div v-else class="tool-view summon-view" id="summon">
+      <div v-else-if="isSummonView" class="tool-view summon-view" id="summon">
         <section class="panel summon-panel-wrapper">
           <div class="panel-body">
             <div
@@ -1158,6 +1194,9 @@ function toggleTheme() {
             <SummonSimulator :heroes="HEROES" />
           </div>
         </section>
+      </div>
+      <div v-else-if="isTierView" class="tool-view tier-view" id="tier">
+        <TierListBuilder />
       </div>
     </main>
 

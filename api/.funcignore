@@ -1,0 +1,9 @@
+node_modules
+.env
+.env.*
+local.settings.json
+test
+tests
+*.log
+*.ts
+*.map

@@ -1,3 +1,9 @@
 node_modules/
 dist/
 .DS_Store
+.env
+.envrc
+infra/terraform/.env
+infra/terraform/.envrc
+api/local.settings.json
+api/.data

@@ -211,6 +211,13 @@ body {
   color: var(--text-main);
   box-shadow: inset 0 0 0 1px var(--accent-strong);
 }
+.tool-tab:disabled,
+.tool-tab.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.2);
+}
 
 .pending-chip {
   display: inline-flex;
@@ -3230,4 +3237,764 @@ body {
 .callout-number {
   font-weight: 800;
   color: var(--text-main);
+}
+
+/* Tier List Builder */
+.tier-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: var(--panel-shadow);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.tier-card .tier-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tier-card .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0 0 4px;
+}
+.tier-card h2 {
+  margin: 0;
+}
+.tier-card .muted {
+  color: var(--text-muted);
+  margin: 0;
+}
+.tier-card .actions {
+  display: flex;
+  gap: 10px;
+}
+.tier-card .primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.tier-card .ghost {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.tier-card .ghost.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.tier-card .ghost.tiny {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.tier-card .ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: saturate(0.6);
+}
+.tier-card .panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tier-card .tier-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+.tier-card .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tier-card .field.dual {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.tier-card label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.tier-card input, .tier-card select {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  color: var(--text-main);
+  padding: 8px 10px;
+}
+.tier-card .inline-input {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.tier-card .status {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tier-card .pill {
+  background: var(--meta-pill-bg);
+  color: var(--text-main);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.tier-card .pill.success { color: #22c55e; }
+.tier-card .pill.danger { color: var(--danger); }
+.tier-card .share-box {
+  display: grid;
+  gap: 10px;
+}
+.tier-card .share-box .inline-input {
+  width: 100%;
+  flex-direction: row;
+}
+.tier-card .share-box .inline-input input {
+  flex: 1 1 auto;
+  width: 100%;
+}
+.tier-card .share-box .inline-input button {
+  flex: 0 0 auto;
+  min-width: 96px;
+  padding: 10px 16px;
+}
+.tier-card .share-copy-btn {
+  border-color: var(--accent);
+  color: var(--text-strong);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.tier-card .share-hint {
+  font-size: 12px;
+}
+.tier-card .rows-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tier-card .row-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.tier-card .preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 6px 0 8px;
+  width: 100%;
+}
+.tier-card .notes-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 6px 0 10px;
+  width: 100%;
+}
+.tier-card .notes-panel textarea {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  background: var(--input-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  color: var(--text-main);
+  padding: 10px 12px;
+  font-family: inherit;
+}
+.tier-card .notes-hint {
+  font-size: 12px;
+}
+.tier-card .notes-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tier-card .notes-preview h4 {
+  margin: 0;
+}
+.tier-card .notes-preview p {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.tier-card .tier-export-notes {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tier-card .tier-export-notes-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+.tier-card .tier-export-notes-body {
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+.tier-card .tier-export {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+}
+.tier-card .tier-export.exporting {
+  box-shadow: var(--panel-shadow);
+}
+.tier-card .tier-export-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+.tier-card .tier-export-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.tier-card .tier-export-row {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+.tier-card .tier-export-label {
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-weight: 600;
+  text-align: center;
+  color: #0b1020;
+}
+.tier-card .tier-export-heroes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tier-card .tier-export-hero {
+  width: 54px;
+  height: 54px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tier-card .tier-export-hero.linked {
+  width: calc(54px + (var(--stack-count) - 1) * var(--stack-offset));
+}
+.tier-card .tier-export-hero .hero-stack {
+  width: 48px;
+  height: 48px;
+  --stack-size: 48px;
+}
+.tier-card .rows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tier-card .row-item {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+.tier-card .row-top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.tier-card .row-label {
+  width: 100%;
+}
+.tier-card .row-config {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tier-card .color-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-soft);
+}
+.tier-card .color-toggle .swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  display: inline-block;
+}
+.tier-card .color-popover {
+  position: absolute;
+  top: 8px;
+  left: 48px;
+  z-index: 12;
+  background: var(--overlay-card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  box-shadow: var(--panel-shadow);
+  padding: 12px;
+  min-width: 220px;
+}
+.tier-card .color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tier-card .row-color {
+  width: 64px;
+  height: 36px;
+  border-radius: 10px;
+}
+.tier-card .row-color-hex {
+  width: 140px;
+}
+.tier-card .color-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tier-card .color-presets .preset {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+}
+.tier-card .row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.tier-card .row-heroes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.tier-card .empty-row {
+  width: 100%;
+  text-align: center;
+}
+.tier-card .hero-add {
+  width: 74px;
+  height: 74px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-soft);
+  background: transparent;
+  color: var(--text-main);
+  font-size: 22px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tier-card .hero-add-popover {
+  position: absolute;
+  z-index: 12;
+  background: var(--overlay-card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  box-shadow: var(--panel-shadow);
+  padding: 10px;
+  margin-top: 8px;
+  width: 320px;
+  min-width: 280px;
+}
+.tier-card .hero-add-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+.tier-card .hero-add-card {
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 4px;
+  cursor: pointer;
+  width: 100%;
+  min-width: calc(70px + (var(--stack-count, 1) - 1) * var(--stack-offset));
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.tier-card .hero-add-card.sublime {
+  border-color: transparent;
+}
+.tier-card .hero-add-card.sublime::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  background: var(--sublime-border);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.tier-card .hero-add-card.sublime .hero-stack {
+  position: relative;
+  z-index: 1;
+}
+.tier-card .hero-add-grid {
+  grid-template-columns: repeat(4, minmax(60px, 1fr));
+}
+.tier-card .hero-add-card .hero-stack {
+  width: calc(var(--stack-size, 60px) + (var(--stack-count) - 1) * var(--stack-offset));
+  height: var(--stack-size, 60px);
+  --stack-size: 60px;
+}
+.tier-card .hero-stack {
+  --stack-count: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.tier-card .hero-stack img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.tier-card .hero-stack.linked img {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  width: calc(var(--stack-size, 58px) * 0.78);
+  height: calc(var(--stack-size, 58px) * 0.78);
+  transform: translateX(calc(-50% + (var(--stack-index) - (var(--stack-count) - 1) / 2) * var(--stack-offset)));
+  z-index: calc(10 - var(--stack-index));
+  border: 2px solid rgba(7, 10, 20, 0.7);
+}
+.tier-card .hero-stack.linked {
+  position: relative;
+  overflow: visible;
+  justify-content: center;
+  width: calc(var(--stack-size, 58px) + (var(--stack-count) - 1) * var(--stack-offset));
+  height: var(--stack-size, 58px);
+}
+.tier-card .hero-stack.linked {
+  --stack-offset: 18px;
+}
+.tier-card .hero-chip {
+  background: var(--meta-pill-bg);
+  border: 1px solid var(--border-soft);
+  padding: 6px 8px;
+  border-radius: 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  overflow: visible;
+  width: 85px;
+  z-index: 1;
+}
+.tier-card .hero-chip .hero-stack {
+  width: 58px;
+  height: 58px;
+  --stack-size: 58px;
+}
+.tier-card .hero-chip {
+  min-width: 74px;
+  min-height: 74px;
+  justify-content: center;
+}
+.tier-card .hero-chip.selected {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.tier-card .row-hero-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.tier-card .row-hero-actions .hero-select {
+  width: 100%;
+}
+.tier-card .action-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) minmax(220px, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+.tier-card .row-hero-actions .action-label {
+  font-weight: 600;
+}
+.tier-card .row-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tier-card .btn-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tier-card .btn-row .action-subtitle {
+  font-weight: 600;
+}
+.tier-card .adjust-inline {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tier-card .move-inline {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.tier-card .move-btn {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 600;
+}
+.tier-card .move-btn:disabled {
+  opacity: 0.45;
+}
+.tier-card .hero-select {
+  min-width: 180px;
+}
+.tier-card .hero-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tier-card .hero-controls .ghost {
+  text-align: left;
+}
+.tier-card .linked-builder {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: var(--overlay-card-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tier-card .linked-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+.tier-card .linked-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  max-height: 220px;
+  overflow: auto;
+  padding-right: 4px;
+}
+.tier-card .linked-hero {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  position: relative;
+}
+.tier-card .linked-hero .hero-stack {
+  width: 40px;
+  height: 40px;
+  --stack-size: 40px;
+}
+.tier-card .linked-hero span {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+.tier-card .linked-hero.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.tier-card .linked-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.tier-card .linked-existing {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tier-card .linked-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tier-card .linked-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  overflow: visible;
+  position: relative;
+}
+.tier-card .linked-pill .hero-stack {
+  width: calc(var(--stack-size, 36px) + (var(--stack-count, 1) - 1) * var(--stack-offset));
+  height: var(--stack-size, 36px);
+  --stack-size: 36px;
+}
+.tier-card .linked-pill span {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+}
+@media (max-width: 600px) {
+  .tier-card .row-hero-actions {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  .tier-card .row-hero-actions .hero-select {
+    width: 100%;
+  }
+  .tier-card .action-row {
+    grid-template-columns: 1fr;
+  }
+  .tier-card .move-inline {
+    justify-content: flex-start;
+  }
+  .tier-card .btn-row {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+}
+.tier-card .hero-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  max-height: 520px;
+  overflow: auto;
+  padding-right: 4px;
+}
+.tier-card .hero-card-mini {
+  background: var(--hero-card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  }
+.tier-card .hero-card-mini.assigned {
+  border-color: var(--accent);
+}
+.hero-card-mini.rarity-mythic,
+.linked-hero.rarity-mythic,
+.tier-card .linked-pill.rarity-mythic {
+  border-color: rgba(225, 29, 72, 0.95);
+  background: rgba(225, 29, 72, 0.2);
+}
+.hero-card-mini.rarity-legendary,
+.linked-hero.rarity-legendary,
+.tier-card .linked-pill.rarity-legendary {
+  border-color: rgba(250, 204, 21, 0.95);
+  background: rgba(250, 204, 21, 0.2);
+}
+.hero-card-mini.rarity-sublime,
+.linked-hero.rarity-sublime,
+.tier-card .linked-pill.rarity-sublime {
+  border-color: transparent;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.22), rgba(236, 72, 153, 0.22));
+}
+.hero-card-mini.rarity-sublime::before,
+.linked-hero.rarity-sublime::before,
+.tier-card .linked-pill.rarity-sublime::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(135deg, #06b6d4, #ec4899);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.hero-card-mini.rarity-sublime .hero-stack,
+.linked-hero.rarity-sublime .hero-stack,
+.tier-card .linked-pill.rarity-sublime .hero-stack {
+  position: relative;
+  z-index: 1;
+}
+.tier-card .hero-card-mini .hero-stack {
+  width: 90px;
+  height: 90px;
+  align-self: center;
+  --stack-size: 90px;
+}
+.tier-card .hero-card-mini select {
+  width: 100%;
+}
+@media (min-width: 900px) {
+  .tier-card .hero-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+@media (max-width: 768px) {
+  .tier-card .row-item {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "label"
+      "actions"
+      "heroes";
+  }
+  .tier-card .row-actions {
+    justify-content: flex-start;
+  }
 }

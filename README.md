@@ -1,12 +1,13 @@
-## WD Tools
+## WD Toolbox
 
-WD Tools bundles the Akashic Arbor optimizer and a summon simulator into a single responsive site. Track every hero you own, maximize Arbor buffs, and experiment with Warrior/Rate-Up/Xenoscape summon odds with persistent pity counters and resource pools.
+WD Toolbox bundles the Akashic Arbor optimizer and a summon simulator into a single responsive site. Track every hero you own, maximize Arbor buffs, and experiment with Warrior/Rate-Up/Xenoscape summon odds with persistent pity counters and resource pools.
 
-**Live app:** https://sahagin-dazs.github.io/wd-akashic-arbor-calc/
+**Live app:** https://wdtoolbox.com/
 
 ### Tools included
 - **Akashic Arbor Optimizer** – Save star levels for the entire hero collection, set Nightmare progress, rank lineup priorities 1-5, and let the optimizer assign role/element slots using the real unlock table.
 - **Summon Simulator** – Configure Warrior wishlists, monthly/weekly rate-up banners, Xenoscape targets, pity counters, scrolls, and gem reserves. Run 1x or 10x rolls and review history for every banner.
+- **Tier Lists (cloud)** – Build custom rows, assign each hero once, save to the managed API, and share public/edit links (edit token stored locally). Works offline with a file-backed store during local dev.
 
 ### Analytics (optional)
 If you want to track usage with Google Analytics 4, set your measurement ID before building:
@@ -54,6 +55,10 @@ If you want to track usage with Google Analytics 4, set your measurement ID befo
    npm run build
    ```
    The compiled files land in `dist/`.
+- API base (optional): the managed API defaults to `/api`. To override (e.g., pointing at a deployed Function App), set:
+  ```bash
+  VITE_API_BASE=https://<your-api-host>/api
+  ```
 
 ### Running with Docker
 You can also build and serve the app entirely inside Docker:
