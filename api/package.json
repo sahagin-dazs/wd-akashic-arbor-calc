@@ -6,6 +6,9 @@
   "main": "index.js",
   "type": "commonjs",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "func start"
   },
