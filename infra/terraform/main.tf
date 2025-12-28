@@ -75,4 +75,6 @@ resource "azurerm_static_web_app" "web" {
   sku_tier            = "Free"
   sku_size            = "Free"
   tags                = local.tags
+  repository_branch   = "main"
+  repository_url      = "https://github.com/sahagin-dazs/wd-akashic-arbor-calc"
 }

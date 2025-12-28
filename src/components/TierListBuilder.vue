@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, reactive, ref, onErrorCaptured, nextTick } from "vue";
+import { computed, onMounted, onBeforeUnmount, reactive, ref, onErrorCaptured, nextTick, watch } from "vue";
 import html2canvas from "html2canvas";
 import { HEROES } from "../models/heroes";
 import type { TierRow, TierAssignments, TierData, TierDocument, TierOrder } from "../models/tierList";
@@ -108,6 +108,8 @@ const rowAddOpen = reactive<Record<string, boolean>>({});
 const moveTarget = reactive<Record<string, string>>({});
 
 const tokens = ref(loadTokens());
+const localSavedLists = ref(loadLocalSaved());
+const ownedListsStore = ref(loadOwnedLists());
 const BASE_HERO_MAP = new Map(HEROES.map((h) => [h.id, h]));
 const linkedHeroViews = computed(() => {
   return (draft.linkedHeroes || [])
@@ -157,8 +159,8 @@ const rowsWithHeroes = computed(() => {
 });
 
 const ownedLists = computed(() => {
-  const local = loadLocalSaved();
-  const owned = loadOwnedLists();
+  const local = localSavedLists.value;
+  const owned = ownedListsStore.value;
   const merged = new Map<string, OwnedList>();
   Object.values(local).forEach((doc) => {
     merged.set(doc.id, {
@@ -343,6 +345,27 @@ function isLocalId(id: string | null | undefined) {
 function setTierHash(id: string) {
   if (typeof window === "undefined") return;
   window.location.hash = `#tier=${encodeURIComponent(id)}`;
+}
+
+function buildShareUrl(id: string) {
+  if (typeof window === "undefined") return `#tier=${id}`;
+  return `${window.location.origin}${window.location.pathname}#tier=${id}`;
+}
+
+function buildEditUrl(id: string, token: string) {
+  if (typeof window === "undefined") return `#tier=${id}&edit=${token}`;
+  return `${window.location.origin}${window.location.pathname}#tier=${id}&edit=${token}`;
+}
+
+function refreshShareLinks() {
+  if (!draft.id) {
+    shareUrl.value = null;
+    editUrl.value = null;
+    return;
+  }
+  shareUrl.value = buildShareUrl(draft.id);
+  const token = tokens.value[draft.id];
+  editUrl.value = token ? buildEditUrl(draft.id, token) : null;
 }
 
 const isLocked = computed(() => {
@@ -624,6 +647,7 @@ function loadLocalSaved(): Record<string, TierDocument> {
 function persistLocalSaved(map: Record<string, TierDocument>) {
   if (typeof window === "undefined") return;
   localStorage.setItem(LOCAL_SAVED_KEY, JSON.stringify(map));
+  localSavedLists.value = map;
 }
 
 function loadOwnedLists(): Record<string, OwnedList> {
@@ -639,10 +663,11 @@ function loadOwnedLists(): Record<string, OwnedList> {
 function persistOwnedLists(map: Record<string, OwnedList>) {
   if (typeof window === "undefined") return;
   localStorage.setItem(OWNED_LISTS_KEY, JSON.stringify(map));
+  ownedListsStore.value = map;
 }
 
 function upsertOwnedList(id: string, title: string, source: "cloud" | "local") {
-  const owned = loadOwnedLists();
+  const owned = { ...ownedListsStore.value };
   owned[id] = {
     id,
     title: title || "Untitled",
@@ -653,13 +678,13 @@ function upsertOwnedList(id: string, title: string, source: "cloud" | "local") {
 }
 
 function saveLocalList(id: string, title: string, data: TierData) {
-  const saved = loadLocalSaved();
+  const saved = { ...localSavedLists.value };
   saved[id] = { id, title, data };
   persistLocalSaved(saved);
 }
 
 function loadLocalList(id: string): TierDocument | null {
-  const saved = loadLocalSaved();
+  const saved = localSavedLists.value;
   return saved[id] || null;
 }
 
@@ -1055,6 +1080,22 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
   event.preventDefault();
   event.returnValue = "";
 }
+
+watch(
+  () => draft.id,
+  () => {
+    refreshShareLinks();
+  },
+  { immediate: true }
+);
+
+watch(
+  tokens,
+  () => {
+    refreshShareLinks();
+  },
+  { deep: true }
+);
 
 onMounted(() => {
   handleHashLoad();

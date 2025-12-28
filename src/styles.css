@@ -3408,6 +3408,8 @@ body {
   gap: 8px;
   margin: 6px 0 10px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 .tier-card .notes-panel textarea {
   width: 100%;
@@ -3419,6 +3421,9 @@ body {
   color: var(--text-main);
   padding: 10px 12px;
   font-family: inherit;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .tier-card .notes-hint {
   font-size: 12px;
@@ -3427,6 +3432,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-width: 100%;
+  min-width: 0;
 }
 .tier-card .notes-preview h4 {
   margin: 0;
@@ -3434,6 +3441,8 @@ body {
 .tier-card .notes-preview p {
   white-space: pre-wrap;
   word-break: break-word;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 .tier-card .tier-export-notes {
   border-top: 1px solid var(--border-soft);
@@ -3449,6 +3458,9 @@ body {
 .tier-card .tier-export-notes-body {
   font-size: 12px;
   white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 .tier-card .tier-export {
   background: var(--bg-elevated);

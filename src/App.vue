@@ -284,6 +284,12 @@ const NAV_LINKS = [
 
 function toolFromHash(hash: string): ToolTab | null {
   const normalized = hash.toLowerCase();
+  if (normalized.startsWith("#tier=") || normalized.startsWith("#tiers=")) {
+    return "tiers";
+  }
+  if (normalized.startsWith("#tier&") || normalized.startsWith("#tiers&")) {
+    return "tiers";
+  }
   return HASH_TOOL_MAP[normalized as "#summon"] ?? null;
 }
 
@@ -326,7 +332,12 @@ function syncToolHash(value: ToolTab) {
       window.location.hash = "#summon";
     }
   } else if (value === "tiers") {
-    if (hash !== "#tier" && hash !== "#tiers") {
+    const isTierHash =
+      hash === "#tier" ||
+      hash === "#tiers" ||
+      hash.startsWith("#tier=") ||
+      hash.startsWith("#tiers=");
+    if (!isTierHash) {
       window.location.hash = "#tier";
     }
   } else {
