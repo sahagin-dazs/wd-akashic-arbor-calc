@@ -11,7 +11,7 @@
     "cy:run": "cypress run"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "22.x"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
