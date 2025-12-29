@@ -16,5 +16,13 @@
     "@azure/cosmos": "^3.17.3",
     "@azure/functions": "^4.0.0",
     "nanoid": "^5.0.6"
+  },
+  "overrides": {
+    "@azure/core-auth": "1.7.2",
+    "@azure/core-rest-pipeline": "1.15.0",
+    "@azure/core-tracing": "1.0.0",
+    "@azure/core-util": "1.9.0",
+    "@azure/logger": "1.1.0",
+    "@typespec/ts-http-runtime": "0.2.0"
   }
 }
