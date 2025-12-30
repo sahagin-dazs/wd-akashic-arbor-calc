@@ -38,11 +38,16 @@ function safeJson(res, status, body, req) {
 }
 
 function parseBody(req) {
-  try {
-    return req.body ? JSON.parse(req.body) : {};
-  } catch {
-    return {};
+  if (!req || req.body === undefined || req.body === null) return {};
+  if (typeof req.body === "object") return req.body;
+  if (typeof req.body === "string") {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
   }
+  return {};
 }
 
 module.exports = { newId, hashToken, sanitizeInput, safeJson, parseBody };
