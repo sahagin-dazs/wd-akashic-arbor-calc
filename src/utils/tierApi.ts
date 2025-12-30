@@ -1,6 +1,18 @@
 import type { TierDocument, TierData } from "../models/tierList";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "/api";
+const DEFAULT_API_BASE = "/api";
+const FALLBACK_API_BASE = "https://wdtools-api.azurewebsites.net/api";
+
+function resolveApiBase() {
+  const explicit = import.meta.env.VITE_API_BASE;
+  if (explicit) return explicit;
+  if (typeof window !== "undefined" && window.location.hostname === "wdtoolbox.com") {
+    return FALLBACK_API_BASE;
+  }
+  return DEFAULT_API_BASE;
+}
+
+const API_BASE = resolveApiBase();
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
