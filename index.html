@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script>
+      (function () {
+        var legacyHost = "sahagin-dazs.github.io";
+        var legacyPath = "/wd-akashic-arbor-calc";
+        if (location.hostname === legacyHost && location.pathname.startsWith(legacyPath)) {
+          var target = "https://wdtoolbox.com" + location.hash;
+          location.replace(target);
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <title>WD Toolbox · Wittle Defenders Tier Lists & Tools</title>
     <meta
