@@ -17,6 +17,10 @@ module.exports = async function (context, req) {
     return safeJson({}, 405, { error: "Method not allowed" });
   } catch (err) {
     context.log.error("items handler error", err);
+    const message = err && err.message ? String(err.message) : "";
+    if (message.includes("COSMOSDB_ENDPOINT") || message.includes("COSMOSDB_KEY")) {
+      return safeJson({}, 500, { error: message });
+    }
     return safeJson({}, 500, { error: "Internal server error" });
   }
 };

@@ -101,6 +101,12 @@ resource "azurerm_windows_function_app" "api" {
   tags                       = local.tags
 
   site_config {
+    cors {
+      allowed_origins = [
+        "https://wdtoolbox.com",
+        "https://www.wdtoolbox.com"
+      ]
+    }
     application_stack {
       node_version = "~18"
     }
