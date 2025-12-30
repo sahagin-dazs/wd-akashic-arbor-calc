@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "api/**"
+      - ".github/workflows/azure-functions-api.yml"
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
