@@ -116,6 +116,8 @@ resource "azurerm_windows_function_app" "api" {
     {
       AzureWebJobsStorage      = azurerm_storage_account.func_sa.primary_connection_string
       FUNCTIONS_WORKER_RUNTIME = "node"
+      SCM_DO_BUILD_DURING_DEPLOYMENT = "1"
+      ENABLE_ORYX_BUILD              = "true"
       COSMOSDB_ENDPOINT        = azurerm_cosmosdb_account.cosmos.endpoint
       COSMOSDB_KEY             = sensitive(azurerm_cosmosdb_account.cosmos.primary_key)
       COSMOSDB_DB              = azurerm_cosmosdb_sql_database.db.name

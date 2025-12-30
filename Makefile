@@ -1,4 +1,4 @@
-.PHONY: up down prod logs api frontend
+.PHONY: up down prod logs api frontend tf-apply tf-plan
 
 up:
 	docker compose up -d --build akashic-arbor-dev wdtools-api azurite
@@ -17,3 +17,9 @@ api:
 
 frontend:
 	docker compose up -d --build akashic-arbor-dev
+
+tf-plan:
+	cd infra/terraform && ./tf.sh plan
+
+tf-apply:
+	cd infra/terraform && ./tf.sh apply
