@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Managed API for Azure Static Web Apps (Azure Functions) with Cosmos DB backend.",
-  "main": "index.js",
   "type": "commonjs",
   "license": "MIT",
   "engines": {
