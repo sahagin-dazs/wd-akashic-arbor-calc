@@ -21,10 +21,11 @@ module.exports = async function (context, req) {
   } catch (err) {
     context.log.error("items handler error", err);
     const message = err && err.message ? String(err.message) : "";
+    const code = err && err.code ? String(err.code) : null;
     if (message.includes("COSMOSDB_ENDPOINT") || message.includes("COSMOSDB_KEY")) {
-      return safeJson(context.res || {}, 500, { error: message }, req);
+      return safeJson(context.res || {}, 500, { error: message, code }, req);
     }
-    return safeJson(context.res || {}, 500, { error: "Internal server error" }, req);
+    return safeJson(context.res || {}, 500, { error: "Internal server error", code, message }, req);
   }
 };
 
