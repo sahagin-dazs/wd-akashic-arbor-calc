@@ -1208,9 +1208,6 @@ onErrorCaptured((err, instance, info) => {
             <button class="ghost" :disabled="isLocked" @click="addRow">Add Row</button>
             <button class="ghost danger" :disabled="isLocked" @click="confirmClearRows">Clear List</button>
           </div>
-          <div v-else class="row-header-actions">
-            <button class="ghost" @click="copyTierImage">Copy Image</button>
-          </div>
         </div>
         <div v-if="!isLocked" class="rows-list">
           <div
