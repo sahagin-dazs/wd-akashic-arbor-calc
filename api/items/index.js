@@ -1,21 +1,21 @@
-const store = require("../shared/store");
 const { newId, hashToken, sanitizeInput, safeJson, parseBody } = require("../shared/utils");
 
 module.exports = async function (context, req) {
   const method = req.method || "GET";
   const route = context.bindingData.route || "";
   try {
+    const store = require("../shared/store");
     if (method === "OPTIONS") {
       return safeJson({}, 204, null, req);
     }
     if (method === "POST" && !context.bindingData.id) {
-      return await createItem(req, context);
+      return await createItem(req, context, store);
     }
     if (method === "GET" && context.bindingData.id) {
-      return await getItem(req, context);
+      return await getItem(req, context, store);
     }
     if (method === "POST" && context.bindingData.id) {
-      return await updateItem(req, context);
+      return await updateItem(req, context, store);
     }
     return safeJson({}, 405, { error: "Method not allowed" }, req);
   } catch (err) {
@@ -28,7 +28,7 @@ module.exports = async function (context, req) {
   }
 };
 
-async function createItem(req, context) {
+async function createItem(req, context, store) {
   const body = parseBody(req);
   const title = sanitizeInput(body.title, "Untitled");
   const payload = body.data && typeof body.data === "object" ? body.data : {};
@@ -60,7 +60,7 @@ async function createItem(req, context) {
   }, req);
 }
 
-async function getItem(req, context) {
+async function getItem(req, context, store) {
   const id = context.bindingData.id;
   try {
     const resource = await store.read(id);
@@ -73,7 +73,7 @@ async function getItem(req, context) {
   }
 }
 
-async function updateItem(req, context) {
+async function updateItem(req, context, store) {
   const id = context.bindingData.id;
   const body = parseBody(req);
   const providedToken =

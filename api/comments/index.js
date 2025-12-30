@@ -1,4 +1,3 @@
-const store = require("../shared/store");
 const { newId, sanitizeInput, safeJson, parseBody } = require("../shared/utils");
 
 module.exports = async function (context, req) {
@@ -12,6 +11,7 @@ module.exports = async function (context, req) {
   if (!id) return safeJson({}, 400, { error: "Missing id" }, req);
 
   try {
+    const store = require("../shared/store");
     const resource = await store.read(id);
     if (!resource) return safeJson({}, 404, { error: "Not found" }, req);
 
@@ -36,6 +36,10 @@ module.exports = async function (context, req) {
   } catch (err) {
     if (err.code === 404) return safeJson({}, 404, { error: "Not found" }, req);
     context.log.error("comment error", err);
+    const message = err && err.message ? String(err.message) : "";
+    if (message.includes("COSMOSDB_ENDPOINT") || message.includes("COSMOSDB_KEY")) {
+      return safeJson({}, 500, { error: message }, req);
+    }
     return safeJson({}, 500, { error: "Internal server error" }, req);
   }
 };
