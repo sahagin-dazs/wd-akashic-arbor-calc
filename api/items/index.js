@@ -5,6 +5,9 @@ module.exports = async function (context, req) {
   const method = req.method || "GET";
   const route = context.bindingData.route || "";
   try {
+    if (method === "OPTIONS") {
+      return safeJson({}, 204, null, req);
+    }
     if (method === "POST" && !context.bindingData.id) {
       return await createItem(req, context);
     }
@@ -14,14 +17,14 @@ module.exports = async function (context, req) {
     if (method === "POST" && context.bindingData.id) {
       return await updateItem(req, context);
     }
-    return safeJson({}, 405, { error: "Method not allowed" });
+    return safeJson({}, 405, { error: "Method not allowed" }, req);
   } catch (err) {
     context.log.error("items handler error", err);
     const message = err && err.message ? String(err.message) : "";
     if (message.includes("COSMOSDB_ENDPOINT") || message.includes("COSMOSDB_KEY")) {
-      return safeJson({}, 500, { error: message });
+      return safeJson({}, 500, { error: message }, req);
     }
-    return safeJson({}, 500, { error: "Internal server error" });
+    return safeJson({}, 500, { error: "Internal server error" }, req);
   }
 };
 
@@ -54,18 +57,18 @@ async function createItem(req, context) {
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
     editToken
-  });
+  }, req);
 }
 
 async function getItem(req, context) {
   const id = context.bindingData.id;
   try {
     const resource = await store.read(id);
-    if (!resource) return safeJson({}, 404, { error: "Not found" });
+    if (!resource) return safeJson({}, 404, { error: "Not found" }, req);
     const { editSecretHash, ...rest } = resource;
-    return safeJson({}, 200, rest);
+    return safeJson({}, 200, rest, req);
   } catch (err) {
-    if (err.code === 404) return safeJson({}, 404, { error: "Not found" });
+    if (err.code === 404) return safeJson({}, 404, { error: "Not found" }, req);
     throw err;
   }
 }
@@ -77,21 +80,21 @@ async function updateItem(req, context) {
     sanitizeInput(req.headers["x-edit-token"]) || sanitizeInput(body.editToken);
 
   if (!providedToken) {
-    return safeJson({}, 401, { error: "Missing edit token" });
+    return safeJson({}, 401, { error: "Missing edit token" }, req);
   }
 
   let resource;
   try {
     resource = await store.read(id);
-    if (!resource) return safeJson({}, 404, { error: "Not found" });
+    if (!resource) return safeJson({}, 404, { error: "Not found" }, req);
   } catch (err) {
-    if (err.code === 404) return safeJson({}, 404, { error: "Not found" });
+    if (err.code === 404) return safeJson({}, 404, { error: "Not found" }, req);
     throw err;
   }
 
   const hashed = hashToken(providedToken);
   if (hashed !== resource.editSecretHash) {
-    return safeJson({}, 403, { error: "Invalid edit token" });
+    return safeJson({}, 403, { error: "Invalid edit token" }, req);
   }
 
   const now = new Date().toISOString();
@@ -104,5 +107,5 @@ async function updateItem(req, context) {
 
   await store.replace(nextDoc);
   const { editSecretHash, ...rest } = nextDoc;
-  return safeJson({}, 200, rest);
+  return safeJson({}, 200, rest, req);
 }

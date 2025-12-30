@@ -16,10 +16,24 @@ function sanitizeInput(value, fallback = null) {
   return fallback;
 }
 
-function safeJson(res, status, body) {
+function safeJson(res, status, body, req) {
+  const allowedOrigins = (process.env.CORS_ORIGINS ||
+    "https://wdtoolbox.com,https://www.wdtoolbox.com,http://localhost:5173,http://localhost:8080")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const origin = req && req.headers ? req.headers.origin : null;
+  const allowOrigin = origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0] || "*";
+
   res.status = status;
-  res.headers = { "content-type": "application/json" };
-  res.body = JSON.stringify(body);
+  res.headers = {
+    "content-type": "application/json",
+    "access-control-allow-origin": allowOrigin,
+    "access-control-allow-methods": "GET,POST,OPTIONS",
+    "access-control-allow-headers": "Content-Type,x-edit-token",
+    "vary": "Origin"
+  };
+  res.body = body === null || body === undefined ? "" : JSON.stringify(body);
   return res;
 }
 
