@@ -14,8 +14,7 @@
   },
   "dependencies": {
     "@azure/cosmos": "^3.17.3",
-    "@azure/functions": "^4.0.0",
-    "nanoid": "^5.0.6"
+    "@azure/functions": "^4.0.0"
   },
   "overrides": {
     "@azure/core-auth": "1.7.2",

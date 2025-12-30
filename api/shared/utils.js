@@ -1,8 +1,7 @@
 const crypto = require("crypto");
-const { nanoid } = require("nanoid");
 
 function newId() {
-  return nanoid(12);
+  return crypto.randomUUID().replace(/-/g, "").slice(0, 12);
 }
 
 function hashToken(token) {
