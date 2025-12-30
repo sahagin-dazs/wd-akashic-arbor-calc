@@ -26,3 +26,10 @@ variable "enable_free_tier" {
   type        = bool
   default     = true
 }
+
+variable "application_insights_connection_string" {
+  description = "Optional Application Insights connection string for the Function App."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

@@ -23,6 +23,8 @@ jobs:
           node-version: "20"
 
       - name: Build frontend
+        env:
+          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
         run: |
           npm ci
           npm run build
@@ -49,10 +51,9 @@ jobs:
           action: upload
           app_location: dist
           output_location: ""
-          api_location: api
+          api_location: ""
           skip_app_build: true
-          skip_api_build: false
-          api_build_command: "npm ci --omit=dev"
+          skip_api_build: true
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
@@ -65,4 +66,4 @@ jobs:
           action: close
           app_location: dist
           output_location: ""
-          api_location: api
+          api_location: ""

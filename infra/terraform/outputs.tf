@@ -12,3 +12,13 @@ output "cosmosdb_endpoint" {
   value       = azurerm_cosmosdb_account.cosmos.endpoint
   description = "Cosmos DB endpoint."
 }
+
+output "function_app_name" {
+  value       = azurerm_windows_function_app.api.name
+  description = "Azure Functions app name for the tier list API."
+}
+
+output "function_app_default_hostname" {
+  value       = azurerm_windows_function_app.api.default_hostname
+  description = "Default hostname for the Azure Functions app."
+}
