@@ -1133,7 +1133,7 @@ onErrorCaptured((err, instance, info) => {
 </script>
 
 <template>
-  <section class="tier-card">
+  <section class="tier-card" :class="{ locked: isLocked }">
     <div class="tier-header">
       <div>
         <p class="eyebrow">Collaborative lists</p>
@@ -1143,7 +1143,7 @@ onErrorCaptured((err, instance, info) => {
     <div class="actions">
       <button class="ghost" @click="resetDraft">New List</button>
       <button v-if="isLocked" class="ghost" @click="forkList">Fork & Edit</button>
-      <button class="primary" :disabled="saving || isLocked" @click="save">
+      <button v-if="!isLocked" class="primary" :disabled="saving" @click="save">
         <span v-if="saving">Saving...</span>
         <span v-else>Save</span>
       </button>

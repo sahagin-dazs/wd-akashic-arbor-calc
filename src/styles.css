@@ -3252,6 +3252,9 @@ body {
   max-width: 1180px;
   margin: 0 auto;
 }
+.tier-card.locked {
+  max-width: 650px;
+}
 .tier-card .tier-header {
   display: flex;
   justify-content: space-between;

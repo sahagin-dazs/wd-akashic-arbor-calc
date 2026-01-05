@@ -147,7 +147,7 @@ function loadState(): SummonState {
       },
       rateUp: {
         scrolls: Math.max(0, Number(parsed?.rateUp?.scrolls) || 0),
-        featuredHeroId: parsed?.rateUp?.featuredHeroId ?? "Valk",
+        featuredHeroId: parsed?.rateUp?.featuredHeroId ?? "FP",
         pity: parsed?.rateUp?.pity ?? 50,
         featuredGuarantee: Boolean(parsed?.rateUp?.featuredGuarantee)
       },
@@ -942,7 +942,13 @@ function clearHistoryForActiveTab() {
     state.value.warrior.guaranteedMythicProgress = 0;
     state.value.warrior.xenoScrollCount = 0;
     state.value.warrior.xenoScrollProgress = 0;
+    return;
   }
+  if (activeTab.value === "rate") {
+    state.value.rateUp.pity = 50;
+    return;
+  }
+  state.value.xeno.pity = 30;
 }
 
 function changeTab(tab: SummonTab) {
