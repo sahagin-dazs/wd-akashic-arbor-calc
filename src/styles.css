@@ -908,6 +908,262 @@ body {
   gap: 14px;
 }
 
+.rateup-quest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.rateup-quest-card,
+.rateup-stars-card {
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  padding: 14px;
+  background: rgba(8, 15, 36, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rateup-quest-card.complete {
+  border-color: rgba(148, 163, 184, 0.45);
+  background: rgba(12, 18, 34, 0.55);
+}
+
+.rateup-quest-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rateup-quest-title,
+.rateup-stars-title {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 13px;
+}
+
+.rateup-quest-meta,
+.rateup-stars-count,
+.rateup-stars-next,
+.rateup-quest-note {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.rateup-quest-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  overflow: hidden;
+}
+
+.rateup-quest-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #818cf8, #22d3ee);
+  border-radius: 999px;
+}
+
+.rateup-quest-fill.complete {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.rateup-quest-rewards.complete {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.rateup-stars-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rateup-stars-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.rateup-stars-tier-icon {
+  font-size: 13px;
+}
+
+.rateup-stars-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.rateup-config-link {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: #a5b4fc;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rateup-config-link:hover {
+  color: #c4b5fd;
+}
+
+.rateup-config-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 9, 20, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+}
+
+.rateup-config-modal {
+  width: min(460px, 100%);
+  background: var(--panel-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.rateup-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rateup-config-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rateup-config-close {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.rateup-config-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rateup-config-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rateup-config-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rateup-config-hero-name {
+  font-weight: 600;
+}
+
+.rateup-config-hero-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rateup-config-level {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rateup-config-visual {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rateup-config-level-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rateup-config-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 18px;
+}
+
+.rateup-config-placeholder {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rateup-config-select {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-main);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.rateup-config-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rateup-config-extras input {
+  border-radius: 10px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-main);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.rateup-config-total {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rateup-config-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rateup-config-actions .btn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 .summon-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

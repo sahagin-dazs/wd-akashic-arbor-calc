@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import type { HeroDef, Rarity } from "../models/types";
+import type { HeroDef, Level, Rarity } from "../models/types";
 import { avatarKey, avatarUrl } from "../utils/avatar";
 
 const props = defineProps<{
@@ -55,17 +55,26 @@ interface SummonState {
     guaranteedMythicProgress: number;
     xenoScrollCount: number;
     xenoScrollProgress: number;
+    summonsUsed: number;
   };
   rateUp: {
     scrolls: number;
     featuredHeroId: string | null;
     pity: number;
     featuredGuarantee: boolean;
+    questProgress: number;
+    questRewards: number;
+    questBaselineProgress: number;
+    questBaselineRewards: number;
+    existingHeroPulls: number;
+    bannerHeroPulls: number;
+    summonsUsed: number;
   };
   xeno: {
     scrolls: number;
     targetHeroId: string | null;
     pity: number;
+    summonsUsed: number;
   };
   history: SummonHistoryEntry[];
 }
@@ -82,6 +91,36 @@ const RATE_UP_DEFAULT_FALLBACK = [
   "Robot",
   "IQ"
 ] as const;
+const RATE_UP_QUEST_TARGET = 200;
+const RATE_UP_QUEST_MAX_REWARDS = 5;
+const RATE_UP_STAR_TIERS = [
+  { min: 1, label: "0 Stars" },
+  { min: 2, label: "1 Star" },
+  { min: 3, label: "3 Stars" },
+  { min: 5, label: "5 Stars" },
+  { min: 8, label: "1 Moon" },
+  { min: 12, label: "3 Moons" },
+  { min: 17, label: "5 Moons" },
+  { min: 23, label: "1 Diamond" },
+  { min: 29, label: "3 Diamonds" },
+  { min: 36, label: "4 Diamonds" },
+  { min: 44, label: "5 Diamonds" },
+  { min: 53, label: "Rainbow Diamond" }
+] as const;
+const RATE_UP_LEVEL_OPTIONS: { level: Level; label: string; minCopies: number }[] = [
+  { level: "0S", label: "0 Stars", minCopies: 1 },
+  { level: "1S", label: "1 Star", minCopies: 2 },
+  { level: "3S", label: "3 Stars", minCopies: 3 },
+  { level: "5S", label: "5 Stars", minCopies: 5 },
+  { level: "1M", label: "1 Moon", minCopies: 8 },
+  { level: "3M", label: "3 Moons", minCopies: 12 },
+  { level: "5M", label: "5 Moons", minCopies: 17 },
+  { level: "1D", label: "1 Diamond", minCopies: 23 },
+  { level: "3D", label: "3 Diamonds", minCopies: 29 },
+  { level: "4D", label: "4 Diamonds", minCopies: 36 },
+  { level: "5D", label: "5 Diamonds", minCopies: 44 },
+  { level: "RD", label: "Rainbow Diamond", minCopies: 53 }
+];
 
 const TOOLTIP_META = {
   warrior: "Warrior Summon",
@@ -102,18 +141,27 @@ const DEFAULT_STATE: SummonState = {
     guaranteedMythicCount: 0,
     guaranteedMythicProgress: 0,
     xenoScrollCount: 0,
-    xenoScrollProgress: 0
+    xenoScrollProgress: 0,
+    summonsUsed: 0
   },
   rateUp: {
     scrolls: 0,
     featuredHeroId: "Valk",
     pity: 50,
-    featuredGuarantee: false
+    featuredGuarantee: false,
+    questProgress: 0,
+    questRewards: 0,
+    questBaselineProgress: 0,
+    questBaselineRewards: 0,
+    existingHeroPulls: 0,
+    bannerHeroPulls: 0,
+    summonsUsed: 0
   },
   xeno: {
     scrolls: 0,
     targetHeroId: "VW",
-    pity: 30
+    pity: 30,
+    summonsUsed: 0
   },
   history: []
 };
@@ -128,6 +176,13 @@ function loadState(): SummonState {
     const saved = localStorage.getItem(SUMMON_STORAGE_KEY);
     if (!saved) return cloneDefaultState();
     const parsed = JSON.parse(saved) as SummonState;
+    const history = Array.isArray(parsed?.history) ? parsed.history : [];
+    const historySummonsBy = (banner: SummonTab) =>
+      history.reduce(
+        (sum, entry) =>
+          sum + (entry?.banner === banner ? entry?.pulls?.length ?? 0 : 0),
+        0
+      );
     return {
       resources: {
         gems: Math.max(0, Number(parsed?.resources?.gems) || 0)
@@ -143,18 +198,33 @@ function loadState(): SummonState {
         guaranteedMythicCount: parsed?.warrior?.guaranteedMythicCount ?? 0,
         guaranteedMythicProgress: parsed?.warrior?.guaranteedMythicProgress ?? 0,
         xenoScrollCount: parsed?.warrior?.xenoScrollCount ?? 0,
-        xenoScrollProgress: parsed?.warrior?.xenoScrollProgress ?? 0
+        xenoScrollProgress: parsed?.warrior?.xenoScrollProgress ?? 0,
+        summonsUsed:
+          Math.max(0, Number(parsed?.warrior?.summonsUsed) || 0) ||
+          historySummonsBy("warrior")
       },
       rateUp: {
         scrolls: Math.max(0, Number(parsed?.rateUp?.scrolls) || 0),
         featuredHeroId: parsed?.rateUp?.featuredHeroId ?? "FP",
         pity: parsed?.rateUp?.pity ?? 50,
-        featuredGuarantee: Boolean(parsed?.rateUp?.featuredGuarantee)
+        featuredGuarantee: Boolean(parsed?.rateUp?.featuredGuarantee),
+        questProgress: Math.max(0, Number(parsed?.rateUp?.questProgress) || 0),
+        questRewards: Math.max(0, Number(parsed?.rateUp?.questRewards) || 0),
+        questBaselineProgress: Math.max(0, Number(parsed?.rateUp?.questBaselineProgress) || 0),
+        questBaselineRewards: Math.max(0, Number(parsed?.rateUp?.questBaselineRewards) || 0),
+        existingHeroPulls: Math.max(0, Number(parsed?.rateUp?.existingHeroPulls) || 0),
+        bannerHeroPulls: Math.max(0, Number(parsed?.rateUp?.bannerHeroPulls) || 0),
+        summonsUsed:
+          Math.max(0, Number(parsed?.rateUp?.summonsUsed) || 0) ||
+          historySummonsBy("rate")
       },
       xeno: {
         scrolls: Math.max(0, Number(parsed?.xeno?.scrolls) || 0),
         targetHeroId: parsed?.xeno?.targetHeroId ?? "VW",
-        pity: parsed?.xeno?.pity ?? 30
+        pity: parsed?.xeno?.pity ?? 30,
+        summonsUsed:
+          Math.max(0, Number(parsed?.xeno?.summonsUsed) || 0) ||
+          historySummonsBy("xeno")
       },
       history: Array.isArray(parsed?.history)
         ? parsed.history.slice(0, 300).map((entry) => ({
@@ -296,9 +366,11 @@ const pullsForTab = computed(() =>
   historyByTab.value.flatMap((entry) => entry.pulls)
 );
 
-const scrollsUsed = computed(() =>
-  historyByTab.value.reduce((sum, entry) => sum + (entry.scrollsSpent ?? entry.pulls.length), 0)
-);
+const scrollsUsed = computed(() => {
+  if (activeTab.value === "warrior") return state.value.warrior.summonsUsed;
+  if (activeTab.value === "rate") return state.value.rateUp.summonsUsed;
+  return state.value.xeno.summonsUsed;
+});
 
 const gemsUsed = computed(() =>
   historyByTab.value.reduce((sum, entry) => sum + (entry.gemsSpent ?? 0), 0)
@@ -353,10 +425,110 @@ const rateUpFeatured = computed(() => {
     ? {
         heroId,
         hero,
-        count: countHeroPulls(heroId, "rateup")
+        count: rateUpHeroPulls.value
       }
     : null;
 });
+
+const rateUpQuestRewards = computed(() =>
+  Math.min(RATE_UP_QUEST_MAX_REWARDS, state.value.rateUp.questRewards)
+);
+const rateUpQuestProgress = computed(() => {
+  if (rateUpQuestRewards.value >= RATE_UP_QUEST_MAX_REWARDS) {
+    return RATE_UP_QUEST_TARGET;
+  }
+  return Math.min(RATE_UP_QUEST_TARGET, state.value.rateUp.questProgress);
+});
+const rateUpQuestPercent = computed(() =>
+  Math.min(100, (rateUpQuestProgress.value / RATE_UP_QUEST_TARGET) * 100)
+);
+const rateUpHeroPulls = computed(() => {
+  if (activeTab.value !== "rate") return 0;
+  return state.value.rateUp.existingHeroPulls + state.value.rateUp.bannerHeroPulls;
+});
+const rateUpStarTier = computed(() => {
+  const count = rateUpHeroPulls.value;
+  if (count < 1) {
+    return { count, current: null, next: RATE_UP_STAR_TIERS[0] ?? null };
+  }
+  let current = RATE_UP_STAR_TIERS[0];
+  for (const tier of RATE_UP_STAR_TIERS) {
+    if (count >= tier.min) current = tier;
+  }
+  const next = RATE_UP_STAR_TIERS.find((tier) => tier.min > current.min);
+  return { count, current, next };
+});
+const rateUpStarTokens = computed(() => {
+  const label = rateUpStarTier.value.current?.label ?? null;
+  if (!label) return [];
+  const option = RATE_UP_LEVEL_OPTIONS.find(
+    (entry) => entry.minCopies === rateUpStarTier.value.current?.min
+  );
+  if (!option) return [];
+  return tokenizeLevel(option.level);
+});
+const rateUpQuestComplete = computed(
+  () => rateUpQuestRewards.value >= RATE_UP_QUEST_MAX_REWARDS
+);
+const rateUpConfigHero = computed(() => {
+  const heroId = state.value.rateUp.featuredHeroId;
+  return heroId ? heroMap.value.get(heroId) ?? null : null;
+});
+const rateUpConfigLevelLabel = computed(() => {
+  if (rateUpConfigLevel.value === "none") return "Not yet obtained";
+  return (
+    RATE_UP_LEVEL_OPTIONS.find((entry) => entry.level === rateUpConfigLevel.value)
+      ?.label ?? "Select star level"
+  );
+});
+const rateUpConfigDisabled = computed(() => rateUpConfigLevel.value === "none");
+
+type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
+const LEVEL_ICON_CLASS_MAP: Record<LevelIconType, string> = {
+  star: "fa-solid fa-star level-icon-star",
+  moon: "fa-solid fa-moon level-icon-moon",
+  diamond: "fa-solid fa-gem level-icon-diamond",
+  rainbow: "fa-solid fa-gem level-icon-rainbow"
+};
+
+function tokenizeLevel(level: Level): { type: LevelIconType; count: number }[] {
+  if (level === "RD") return [{ type: "rainbow", count: 1 }];
+  const suffix = level.slice(-1);
+  const count = Number(level.slice(0, -1));
+  if (count <= 0) return [];
+  if (suffix === "S") return [{ type: "star", count }];
+  if (suffix === "M") return [{ type: "moon", count }];
+  if (suffix === "D") return [{ type: "diamond", count }];
+  return [];
+}
+
+function levelIconClass(type: LevelIconType) {
+  return LEVEL_ICON_CLASS_MAP[type];
+}
+const rateUpConfigOpen = ref(false);
+const rateUpConfigLevel = ref<Level | "none">("none");
+const rateUpConfigExtras = ref(0);
+const rateUpQuestConfigOpen = ref(false);
+const rateUpQuestRewardsValue = ref(0);
+const rateUpQuestProgressValue = ref(0);
+const rateUpConfigIndex = computed(() => {
+  if (rateUpConfigLevel.value === "none") return -1;
+  return RATE_UP_LEVEL_OPTIONS.findIndex((option) => option.level === rateUpConfigLevel.value);
+});
+const rateUpConfigTokens = computed(() => {
+  if (rateUpConfigLevel.value === "none") return [];
+  return tokenizeLevel(rateUpConfigLevel.value);
+});
+const rateUpConfigBaseCopies = computed(() => {
+  if (rateUpConfigLevel.value === "none") return 0;
+  const option = RATE_UP_LEVEL_OPTIONS.find(
+    (entry) => entry.level === rateUpConfigLevel.value
+  );
+  return option?.minCopies ?? 0;
+});
+const rateUpConfigTotalCopies = computed(
+  () => rateUpConfigBaseCopies.value + Math.max(0, rateUpConfigExtras.value)
+);
 
 const xenoFeatured = computed(() => {
   const heroId = state.value.xeno.targetHeroId;
@@ -782,6 +954,38 @@ function targetHero() {
   return (id && heroMap.value.get(id)) ?? heroFromRarity("Mythic");
 }
 
+function applyRateUpQuestProgress(pulls: number): SummonResult[] {
+  const rateUp = state.value.rateUp;
+  if (rateUp.questRewards >= RATE_UP_QUEST_MAX_REWARDS) {
+    rateUp.questProgress = RATE_UP_QUEST_TARGET;
+    return [];
+  }
+  let progress = rateUp.questProgress + pulls;
+  let rewardsEarned = 0;
+  while (
+    progress >= RATE_UP_QUEST_TARGET &&
+    rateUp.questRewards + rewardsEarned < RATE_UP_QUEST_MAX_REWARDS
+  ) {
+    progress -= RATE_UP_QUEST_TARGET;
+    rewardsEarned += 1;
+  }
+  rateUp.questRewards = Math.min(
+    RATE_UP_QUEST_MAX_REWARDS,
+    rateUp.questRewards + rewardsEarned
+  );
+  rateUp.questProgress =
+    rateUp.questRewards >= RATE_UP_QUEST_MAX_REWARDS ? RATE_UP_QUEST_TARGET : progress;
+  if (!rewardsEarned) return [];
+  const featured = targetHero();
+  return Array.from({ length: rewardsEarned }, () =>
+    buildHeroResult(featured, {
+      rarityLabel: "Mythic",
+      note: "Rate-Up Quest",
+      category: "rateup"
+    })
+  );
+}
+
 function rollRateUpOnce(): SummonResult {
   const pityRemaining = state.value.rateUp.pity;
   const forceMythic = pityRemaining <= 1;
@@ -896,6 +1100,7 @@ function runSummon(pulls: number) {
       if (!isWarriorReady.value) throw new Error("Set your wishlist first.");
       const spend = consumeScrolls(pulls, "warrior");
       updateWarriorProgress(pulls);
+      state.value.warrior.summonsUsed += pulls;
       addHistoryEntry(
         "warrior",
         Array.from({ length: pulls }, () => rollWarriorOnce()),
@@ -907,9 +1112,17 @@ function runSummon(pulls: number) {
     if (activeTab.value === "rate") {
       if (!isRateReady.value) throw new Error("Pick a rate-up hero first.");
       const spend = consumeScrolls(pulls, "rate");
+      const ratePulls = Array.from({ length: pulls }, () => rollRateUpOnce());
+      const questRewards = applyRateUpQuestProgress(pulls);
+      const newRateUpHits = [...ratePulls, ...questRewards].reduce(
+        (sum, result) => sum + (result.category === "rateup" ? 1 : 0),
+        0
+      );
+      state.value.rateUp.bannerHeroPulls += newRateUpHits;
+      state.value.rateUp.summonsUsed += pulls;
       addHistoryEntry(
         "rate",
-        Array.from({ length: pulls }, () => rollRateUpOnce()),
+        [...ratePulls, ...questRewards],
         spend.gemsSpent,
         spend.scrollsSpent
       );
@@ -917,6 +1130,7 @@ function runSummon(pulls: number) {
     }
     if (!isXenoReady.value) throw new Error("Select a Xenoscape hero first.");
     const spend = consumeScrolls(pulls, "xeno");
+    state.value.xeno.summonsUsed += pulls;
     addHistoryEntry(
       "xeno",
       Array.from({ length: pulls }, () => rollXenoOnce()),
@@ -942,13 +1156,116 @@ function clearHistoryForActiveTab() {
     state.value.warrior.guaranteedMythicProgress = 0;
     state.value.warrior.xenoScrollCount = 0;
     state.value.warrior.xenoScrollProgress = 0;
+    state.value.warrior.summonsUsed = 0;
     return;
   }
   if (activeTab.value === "rate") {
     state.value.rateUp.pity = 50;
+    state.value.rateUp.questProgress = state.value.rateUp.questBaselineProgress;
+    state.value.rateUp.questRewards = state.value.rateUp.questBaselineRewards;
+    state.value.rateUp.bannerHeroPulls = 0;
+    state.value.rateUp.summonsUsed = 0;
     return;
   }
   state.value.xeno.pity = 30;
+  state.value.xeno.summonsUsed = 0;
+}
+
+function openRateUpConfig() {
+  const total = Math.max(0, Number(state.value.rateUp.existingHeroPulls) || 0);
+  if (total < 1) {
+    rateUpConfigLevel.value = "none";
+    rateUpConfigExtras.value = 0;
+  } else {
+    const base =
+      [...RATE_UP_LEVEL_OPTIONS]
+        .reverse()
+        .find((entry) => entry.minCopies <= total) ?? RATE_UP_LEVEL_OPTIONS[0];
+    rateUpConfigLevel.value = base.level;
+    rateUpConfigExtras.value = total - base.minCopies;
+  }
+  rateUpConfigOpen.value = true;
+}
+
+function closeRateUpConfig() {
+  rateUpConfigOpen.value = false;
+}
+
+function stepRateUpLevel(delta: number) {
+  const current = rateUpConfigIndex.value;
+  const next = Math.min(
+    RATE_UP_LEVEL_OPTIONS.length - 1,
+    Math.max(-1, current + delta)
+  );
+  if (next < 0) {
+    rateUpConfigLevel.value = "none";
+    return;
+  }
+  rateUpConfigLevel.value = RATE_UP_LEVEL_OPTIONS[next].level;
+}
+
+function saveRateUpConfig() {
+  const extras = Math.max(0, Math.floor(Number(rateUpConfigExtras.value) || 0));
+  if (rateUpConfigLevel.value === "none") {
+    state.value.rateUp.existingHeroPulls = 0;
+    rateUpConfigExtras.value = 0;
+  } else {
+    state.value.rateUp.existingHeroPulls =
+      rateUpConfigBaseCopies.value + extras;
+  }
+  rateUpConfigOpen.value = false;
+}
+
+function clearRateUpExisting() {
+  state.value.rateUp.existingHeroPulls = 0;
+  rateUpConfigLevel.value = "none";
+  rateUpConfigExtras.value = 0;
+  rateUpConfigOpen.value = false;
+}
+
+function openRateUpQuestConfig() {
+  rateUpQuestRewardsValue.value = Math.min(
+    RATE_UP_QUEST_MAX_REWARDS,
+    state.value.rateUp.questBaselineRewards
+  );
+  rateUpQuestProgressValue.value = Math.min(
+    RATE_UP_QUEST_TARGET,
+    state.value.rateUp.questBaselineProgress
+  );
+  rateUpQuestConfigOpen.value = true;
+}
+
+function closeRateUpQuestConfig() {
+  rateUpQuestConfigOpen.value = false;
+}
+
+function saveRateUpQuestConfig() {
+  const rewards = Math.min(
+    RATE_UP_QUEST_MAX_REWARDS,
+    Math.max(0, Math.floor(Number(rateUpQuestRewardsValue.value) || 0))
+  );
+  let progress = Math.min(
+    RATE_UP_QUEST_TARGET,
+    Math.max(0, Math.floor(Number(rateUpQuestProgressValue.value) || 0))
+  );
+  if (rewards >= RATE_UP_QUEST_MAX_REWARDS) {
+    progress = RATE_UP_QUEST_TARGET;
+  }
+  state.value.rateUp.questBaselineRewards = rewards;
+  state.value.rateUp.questBaselineProgress = progress;
+  state.value.rateUp.questRewards = rewards;
+  state.value.rateUp.questProgress = progress;
+  rateUpQuestConfigOpen.value = false;
+}
+
+function clearRateUpQuestExisting() {
+  state.value.rateUp.questBaselineRewards = 0;
+  state.value.rateUp.questBaselineProgress = 0;
+  state.value.rateUp.questRewards = 0;
+  state.value.rateUp.questProgress = 0;
+  rateUpQuestRewardsValue.value = 0;
+  rateUpQuestProgressValue.value = 0;
+  rateUpQuestConfigOpen.value = false;
 }
 
 function changeTab(tab: SummonTab) {
@@ -958,6 +1275,12 @@ function changeTab(tab: SummonTab) {
 watch(activeTab, (value) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(SUMMON_TAB_STORAGE_KEY, value);
+});
+
+watch(rateUpConfigLevel, (value) => {
+  if (value === "none") {
+    rateUpConfigExtras.value = 0;
+  }
 });
 
 function heroOptionLabel(hero?: HeroDef | null) {
@@ -1408,6 +1731,69 @@ watch(
         </div>
       </div>
 
+      <div v-if="activeTab === 'rate'" class="rateup-quest-grid">
+        <div class="rateup-quest-card" :class="{ complete: rateUpQuestComplete }">
+          <div class="rateup-quest-header">
+            <div class="rateup-quest-title">Rate-Up Quest</div>
+            <div class="rateup-quest-meta">
+              {{ rateUpQuestProgress }}/{{ RATE_UP_QUEST_TARGET }} summons ·
+              <span
+                class="rateup-quest-rewards"
+                :class="{ complete: rateUpQuestComplete }"
+              >
+                {{ rateUpQuestRewards }}/{{ RATE_UP_QUEST_MAX_REWARDS }} rewards
+              </span>
+            </div>
+          </div>
+          <div class="rateup-quest-bar" aria-hidden="true">
+            <div
+              class="rateup-quest-fill"
+              :class="{ complete: rateUpQuestComplete }"
+              :style="{ width: `${rateUpQuestPercent}%` }"
+            ></div>
+          </div>
+          <div class="rateup-quest-note">
+            Every 200 summons grants a free rate-up hero (max 5).
+          </div>
+          <button type="button" class="rateup-config-link" @click="openRateUpQuestConfig">
+            Configure existing
+          </button>
+        </div>
+        <div class="rateup-stars-card">
+          <div class="rateup-stars-title">Rate-Up Hero Star Level</div>
+          <div v-if="rateUpStarTier.current" class="rateup-stars-main">
+            <span class="rateup-stars-tier">
+              <template v-if="rateUpStarTokens.length">
+                <template
+                  v-for="token in rateUpStarTokens"
+                  :key="`rateup-tier-${token.type}`"
+                >
+                  <i
+                    v-for="countIndex in token.count"
+                    :key="`rateup-tier-${token.type}-${countIndex}`"
+                    :class="['level-icon', levelIconClass(token.type)]"
+                    aria-hidden="true"
+                  ></i>
+                </template>
+              </template>
+              {{ rateUpStarTier.current.label }}
+            </span>
+            <span class="rateup-stars-count">
+              {{ rateUpStarTier.count }} rate-up hero pulls
+            </span>
+          </div>
+          <div v-else class="rateup-stars-empty">
+            Rate-up hero not yet obtained.
+          </div>
+          <div v-if="rateUpStarTier.next" class="rateup-stars-next">
+            Next: {{ rateUpStarTier.next.label }} at {{ rateUpStarTier.next.min }} rate-up hero pulls
+          </div>
+          <button type="button" class="rateup-config-link" @click="openRateUpConfig">
+            Configure existing
+          </button>
+        </div>
+      </div>
+
       <div
         v-if="activeTab === 'warrior'"
         class="featured-count-row warrior-grid"
@@ -1649,6 +2035,158 @@ watch(
               <div class="pull-placeholder"></div>
             </template>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="rateUpConfigOpen"
+      class="rateup-config-overlay"
+      @click="closeRateUpConfig"
+    >
+      <div class="rateup-config-modal" @click.stop>
+        <div class="rateup-config-header">
+          <div class="rateup-config-title">Configure existing hero level</div>
+          <button type="button" class="rateup-config-close" @click="closeRateUpConfig">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="rateup-config-hero">
+          <div class="rateup-config-avatar">
+            <img
+              v-if="rateUpConfigHero"
+              :src="heroAvatar(rateUpConfigHero.id)"
+              :alt="rateUpConfigHero.name"
+            />
+            <i v-else class="fa-solid fa-user" aria-hidden="true"></i>
+          </div>
+          <div>
+            <div class="rateup-config-hero-name">
+              {{ rateUpConfigHero?.name ?? "Rate-Up Hero" }}
+            </div>
+            <div class="rateup-config-hero-sub">
+              Set your starting level before this banner.
+            </div>
+          </div>
+        </div>
+        <div class="rateup-config-level">
+          <button
+            type="button"
+            class="stepper-btn stepper-btn-sm"
+            @click="stepRateUpLevel(-1)"
+            :disabled="rateUpConfigIndex <= -1"
+          >
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+          </button>
+          <div class="rateup-config-visual">
+            <div class="rateup-config-level-label">{{ rateUpConfigLevelLabel }}</div>
+            <div class="rateup-config-icons">
+              <template v-if="rateUpConfigTokens.length">
+                <template
+                  v-for="token in rateUpConfigTokens"
+                  :key="`rateup-token-${token.type}`"
+                >
+                  <i
+                    v-for="countIndex in token.count"
+                    :key="`rateup-token-${token.type}-${countIndex}`"
+                    class="level-icon"
+                    :class="levelIconClass(token.type)"
+                    aria-hidden="true"
+                  ></i>
+                </template>
+              </template>
+              <span v-else class="rateup-config-placeholder">Not yet obtained</span>
+            </div>
+            <select v-model="rateUpConfigLevel" class="rateup-config-select">
+              <option value="none">Not yet obtained</option>
+              <option
+                v-for="option in RATE_UP_LEVEL_OPTIONS"
+                :key="`rateup-level-${option.level}`"
+                :value="option.level"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <button
+            type="button"
+            class="stepper-btn stepper-btn-sm"
+            @click="stepRateUpLevel(1)"
+            :disabled="rateUpConfigIndex >= RATE_UP_LEVEL_OPTIONS.length - 1"
+          >
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+        <label class="rateup-config-extras">
+          <span>Additional copies</span>
+          <input
+            type="number"
+            min="0"
+            v-model.number="rateUpConfigExtras"
+            :disabled="rateUpConfigDisabled"
+          />
+        </label>
+        <div class="rateup-config-total">
+          Total rate-up hero pulls: {{ rateUpConfigTotalCopies }}
+        </div>
+        <div class="rateup-config-actions">
+          <button type="button" class="btn btn-outline" @click="clearRateUpExisting">
+            Clear existing
+          </button>
+          <button type="button" class="btn btn-outline" @click="closeRateUpConfig">
+            Cancel
+          </button>
+          <button type="button" class="btn" @click="saveRateUpConfig">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="rateUpQuestConfigOpen"
+      class="rateup-config-overlay"
+      @click="closeRateUpQuestConfig"
+    >
+      <div class="rateup-config-modal" @click.stop>
+        <div class="rateup-config-header">
+          <div class="rateup-config-title">Configure existing quest progress</div>
+          <button type="button" class="rateup-config-close" @click="closeRateUpQuestConfig">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="rateup-config-extras">
+          <span>Rewards earned (0-5)</span>
+          <input
+            type="number"
+            min="0"
+            :max="RATE_UP_QUEST_MAX_REWARDS"
+            v-model.number="rateUpQuestRewardsValue"
+          />
+        </div>
+        <div class="rateup-config-extras">
+          <span>Summons into current reward (0-200)</span>
+          <input
+            type="number"
+            min="0"
+            :max="RATE_UP_QUEST_TARGET"
+            v-model.number="rateUpQuestProgressValue"
+          />
+        </div>
+        <div class="rateup-config-total">
+          Baseline set to {{ rateUpQuestRewardsValue }}/{{ RATE_UP_QUEST_MAX_REWARDS }}
+          rewards and {{ rateUpQuestProgressValue }}/{{ RATE_UP_QUEST_TARGET }} summons.
+        </div>
+        <div class="rateup-config-actions">
+          <button type="button" class="btn btn-outline" @click="clearRateUpQuestExisting">
+            Clear existing
+          </button>
+          <button type="button" class="btn btn-outline" @click="closeRateUpQuestConfig">
+            Cancel
+          </button>
+          <button type="button" class="btn" @click="saveRateUpQuestConfig">
+            Save
+          </button>
         </div>
       </div>
     </div>
