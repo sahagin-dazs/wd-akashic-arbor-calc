@@ -39,18 +39,18 @@ const SUBLIME_HEROES: HeroDef[] = [
     percents: SUBLIME_PERCENTS
   },
   {
-    id: "VW",
-    name: "Void Witch",
-    rarity: "Sublime",
-    role: "Mage",
-    element: "Xeno",
-    percents: SUBLIME_PERCENTS
-  },
-  {
     id: "PK",
     name: "Peace Keeper",
     rarity: "Sublime",
     role: "Fighter",
+    element: "Xeno",
+    percents: SUBLIME_PERCENTS
+  },
+  {
+    id: "VW",
+    name: "Void Witch",
+    rarity: "Sublime",
+    role: "Mage",
     element: "Xeno",
     percents: SUBLIME_PERCENTS
   }
