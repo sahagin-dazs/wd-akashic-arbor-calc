@@ -838,6 +838,27 @@ async function waitForImages(root: HTMLElement) {
   );
 }
 
+function isIOS() {
+  if (typeof navigator === "undefined") return false;
+  return (
+    /iP(hone|od|ad)/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
+function openImageInNewTab(blob: Blob) {
+  const url = URL.createObjectURL(blob);
+  const opened = window.open(url, "_blank");
+  if (!opened) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.click();
+  }
+  window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
 async function copyTierImage() {
   if (!exportRef.value) return;
   const exportWidth = 650;
@@ -863,8 +884,17 @@ async function copyTierImage() {
   const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!blob) return;
   if (navigator.clipboard && window.ClipboardItem) {
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-    success.value = "Tier list image copied.";
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      success.value = "Tier list image copied.";
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  if (isIOS()) {
+    openImageInNewTab(blob);
+    success.value = "Image opened in a new tab.";
     return;
   }
   const url = URL.createObjectURL(blob);
