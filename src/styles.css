@@ -977,6 +977,10 @@ body {
   gap: 14px;
 }
 
+.rateup-quest-grid.single {
+  grid-template-columns: 1fr;
+}
+
 .rateup-quest-card,
 .rateup-stars-card {
   border-radius: 14px;

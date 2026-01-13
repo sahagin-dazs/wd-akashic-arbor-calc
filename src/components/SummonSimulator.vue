@@ -429,6 +429,7 @@ const rateUpFeatured = computed(() => {
       }
     : null;
 });
+const rateUpHasQuest = computed(() => rateUpFeatured.value?.hero?.isQuest === true);
 
 const rateUpQuestRewards = computed(() =>
   Math.min(RATE_UP_QUEST_MAX_REWARDS, state.value.rateUp.questRewards)
@@ -1288,6 +1289,11 @@ function heroOptionLabel(hero?: HeroDef | null) {
   return hero.name;
 }
 
+function rateUpHeroLabel(hero?: HeroDef | null) {
+  if (!hero) return "Unknown hero";
+  return hero.isQuest ? `${hero.name} (Quest)` : hero.name;
+}
+
 function heroAvatar(id?: string) {
   if (!id) return "";
   const hero = heroMap.value.get(id);
@@ -1664,7 +1670,7 @@ watch(
             :value="hero.id"
             :key="`rate-${hero.id}`"
           >
-            {{ heroOptionLabel(hero) }}
+            {{ rateUpHeroLabel(hero) }}
           </option>
         </select>
       </label>
@@ -1731,8 +1737,8 @@ watch(
         </div>
       </div>
 
-      <div v-if="activeTab === 'rate'" class="rateup-quest-grid">
-        <div class="rateup-quest-card" :class="{ complete: rateUpQuestComplete }">
+      <div v-if="activeTab === 'rate'" class="rateup-quest-grid" :class="{ single: !rateUpHasQuest }">
+        <div v-if="rateUpHasQuest" class="rateup-quest-card" :class="{ complete: rateUpQuestComplete }">
           <div class="rateup-quest-header">
             <div class="rateup-quest-title">Rate-Up Quest</div>
             <div class="rateup-quest-meta">

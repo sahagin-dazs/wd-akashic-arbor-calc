@@ -65,7 +65,8 @@ const MYTHIC_HEROES: HeroDef[] = [
     element: "Fire",
     percents: MYTHIC_PERCENTS,
     isRateUpHero: true,
-    isWishlistHero: false
+    isWishlistHero: false,
+    isQuest: true
   },
   {
     id: "Valk",
