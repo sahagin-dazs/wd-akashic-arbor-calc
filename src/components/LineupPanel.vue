@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import type { HeroDef, Lineup, OwnedHero, Level } from "../models/types";
 import { HERO_MAP } from "../models/heroes";
 import { LEVELS } from "../models/types";
@@ -15,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   "set-rank": [slotIndex: number, rank: number | null];
   "clear-slot": [slotIndex: number];
+  "set-hero": [slotIndex: number, heroId: string];
 }>();
 
 const ELEMENT_BACKGROUNDS: Record<
@@ -60,6 +61,9 @@ const ELEMENT_META = {
 
 const avatarLoadFailures = ref<Record<string, boolean>>({});
 const RANK_OPTIONS = [1, 2, 3, 4, 5];
+const activeSlotPopover = ref<number | null>(null);
+const rootRef = ref<HTMLElement | null>(null);
+const ALLOWED_HERO_RARITIES = new Set(["Sublime", "Mythic", "Legendary"]);
 
 type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
 
@@ -182,6 +186,45 @@ function clearSlot(idx: number) {
   emit("clear-slot", idx);
 }
 
+const lineupHeroIds = computed(
+  () => new Set(props.lineup.slots.map((slot) => slot.heroId).filter(Boolean) as string[])
+);
+
+const availableHeroes = computed(() =>
+  props.heroes.filter(
+    (hero) => !lineupHeroIds.value.has(hero.id) && ALLOWED_HERO_RARITIES.has(hero.rarity)
+  )
+);
+
+function setSlotHero(slotIndex: number, heroId: string) {
+  if (!heroId) return;
+  if (lineupHeroIds.value.has(heroId)) return;
+  emit("set-hero", slotIndex, heroId);
+  activeSlotPopover.value = null;
+}
+
+function toggleSlotPopover(slotIndex: number) {
+  activeSlotPopover.value = activeSlotPopover.value === slotIndex ? null : slotIndex;
+}
+
+function closePopovers(event: MouseEvent) {
+  const root = rootRef.value;
+  if (!root) return;
+  if (!root.contains(event.target as Node)) {
+    activeSlotPopover.value = null;
+  }
+}
+
+onMounted(() => {
+  if (typeof document === "undefined") return;
+  document.addEventListener("click", closePopovers);
+});
+
+onBeforeUnmount(() => {
+  if (typeof document === "undefined") return;
+  document.removeEventListener("click", closePopovers);
+});
+
 function toggleRank(slotIndex: number, rank: number) {
   const slot = props.lineup.slots[slotIndex];
   if (!slot?.heroId) return;
@@ -207,7 +250,7 @@ function elementMeta(heroId: string | null) {
 </script>
 
 <template>
-  <div>
+  <div ref="rootRef">
     <div class="panel-header">
       <div class="panel-title">Lineup</div>
     </div>
@@ -221,11 +264,11 @@ function elementMeta(heroId: string | null) {
           {{ props.untrackedCount }} hero<span v-if="(props.untrackedCount ?? 0) !== 1">es</span> still need star levels.
         </span>
       </div>
-      <a href="#hero-collection" class="link-btn">Track heroes</a>
+      <a href="#collection" class="link-btn">Track heroes</a>
     </div>
     <p class="lineup-hint">
       Select heroes below to fill your lineup. Tap the focus chips to rank heroes 1-5 or leave them unranked for a balanced boost.
-      <a href="#hero-collection" class="inline-link">Jump to hero collection</a>
+      <a href="#collection" class="inline-link">Jump to hero collection</a>
     </p>
     <div class="lineup-row">
       <div
@@ -323,10 +366,34 @@ function elementMeta(heroId: string | null) {
           </div>
         </template>
         <div v-else class="lineup-slot-empty">
-          <a href="#hero-collection" class="empty-slot-link">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            <span>Select a hero from the collection</span>
-          </a>
+          <button
+            class="hero-add"
+            type="button"
+            @click.stop="toggleSlotPopover(idx)"
+            aria-label="Add hero"
+          >
+            +
+          </button>
+          <div class="lineup-empty-text">Empty slot</div>
+          <div
+            v-if="activeSlotPopover === idx"
+            class="hero-add-backdrop"
+            @click="activeSlotPopover = null"
+          ></div>
+          <div v-if="activeSlotPopover === idx" class="hero-add-popover" @click.stop>
+            <div class="hero-add-grid">
+              <button
+                v-for="hero in availableHeroes"
+                :key="hero.id"
+                class="hero-add-card"
+                type="button"
+                @click="setSlotHero(idx, hero.id)"
+              >
+                <img :src="avatarUrl(hero.id, hero.name)" :alt="hero.name" />
+                <span>{{ hero.name }}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

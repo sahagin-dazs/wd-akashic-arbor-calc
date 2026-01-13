@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
+import html2canvas from "html2canvas";
 import { HEROES } from "./models/heroes";
 import type {
   OwnedHero,
@@ -19,6 +20,8 @@ import HeroFilters from "./components/HeroFilters.vue";
 import SummonSimulator from "./components/SummonSimulator.vue";
 import { runOptimization } from "./logic/optimizer";
 import TierListBuilder from "./components/TierListBuilder.vue";
+import LineupBuilder from "./components/LineupBuilder.vue";
+import { avatarUrl } from "./utils/avatar";
 
 const HERO_STORAGE_KEY = "wd-akashic-owned-heroes";
 const NIGHTMARE_STORAGE_KEY = "wd-akashic-nightmare-level";
@@ -27,14 +30,17 @@ const OWNERSHIP_FILTER_STORAGE_KEY = "wd-akashic-ownership-filter";
 const INTRO_STORAGE_KEY = "wd-akashic-intro-hidden";
 const THEME_STORAGE_KEY = "wd-akashic-theme";
 const ACTIVE_TOOL_STORAGE_KEY = "wd-tools-active-view";
+const SCREEN_NAME_STORAGE_KEY = "wd-tools-screen-name";
 const BASE_URL =
   typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
 const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
 const ARBOR_IMAGE_SRC = `${NORMALIZED_BASE}images/arbor.jpg`;
 const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.0.0";
 const TOOL_TABS = [
+  { id: "collection", label: "Hero Collection" },
   { id: "arbor", label: "Akashic Arbor" },
   { id: "summons", label: "Summon Simulator" },
+  { id: "lineups", label: "Lineups" },
   { id: "tiers", label: "Tier Lists" }
 ] as const;
 type ToolTab = (typeof TOOL_TABS)[number]["id"];
@@ -42,8 +48,11 @@ const HASH_TOOL_MAP: Record<string, ToolTab> = {
   "#summon": "summons",
   "#summons": "summons",
   "#arbor": "arbor",
+  "#lineup": "lineups",
+  "#lineups": "lineups",
   "#tier": "tiers",
-  "#tiers": "tiers"
+  "#tiers": "tiers",
+  "#collection": "collection"
 };
 const LEGACY_HOST = "sahagin-dazs.github.io";
 const LEGACY_PATH = "/wd-akashic-arbor-calc";
@@ -96,6 +105,11 @@ function loadOwnedHeroes(): OwnedHero[] {
   } catch {
     return buildDefaultOwned();
   }
+}
+
+function loadScreenName() {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(SCREEN_NAME_STORAGE_KEY) || "";
 }
 
 function buildDefaultLineup(): Lineup {
@@ -188,6 +202,21 @@ function loadTheme(): ThemeMode {
 }
 
 const ownedHeroes = ref<OwnedHero[]>(loadOwnedHeroes());
+const ownedExportRef = ref<HTMLElement | null>(null);
+const ownedExporting = ref(false);
+const ownedExportStatus = ref<string | null>(null);
+const screenName = ref(loadScreenName());
+const ownedExportDate = ref("");
+const isResetCollectionOpen = ref(false);
+
+type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
+const LEVEL_ICON_CLASS_MAP: Record<LevelIconType, string> = {
+  star: "fa-solid fa-star level-icon-star",
+  moon: "fa-solid fa-moon level-icon-moon",
+  diamond: "fa-solid fa-gem level-icon-diamond",
+  rainbow: "fa-solid fa-gem level-icon-rainbow"
+};
+const EXPORT_RARITIES: Rarity[] = ["Sublime", "Mythic", "Legendary"];
 
 watch(
   ownedHeroes,
@@ -196,6 +225,15 @@ watch(
     localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(value));
   },
   { deep: true }
+);
+
+watch(
+  screenName,
+  (value) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(SCREEN_NAME_STORAGE_KEY, value.trim());
+  },
+  { immediate: true }
 );
 
 const nightmareLevel = ref(loadNightmareLevel());
@@ -274,13 +312,6 @@ const FUN_PHRASES = [
 ];
 let phraseTimer: number | null = null;
 let progressInterval: number | null = null;
-const NAV_LINKS = [
-  { label: "Overview", href: "#overview" },
-  { label: "Lineup", href: "#lineup" },
-  { label: "Settings", href: "#settings" },
-  { label: "Hero Collection", href: "#hero-collection" },
-  { label: "Changelog", href: "/changelog.html", external: true }
-];
 
 function toolFromHash(hash: string): ToolTab | null {
   const normalized = hash.toLowerCase();
@@ -289,6 +320,12 @@ function toolFromHash(hash: string): ToolTab | null {
   }
   if (normalized.startsWith("#tier&") || normalized.startsWith("#tiers&")) {
     return "tiers";
+  }
+  if (normalized.startsWith("#lineup=") || normalized.startsWith("#lineups=")) {
+    return "lineups";
+  }
+  if (normalized.startsWith("#lineup&") || normalized.startsWith("#lineups&")) {
+    return "lineups";
   }
   return HASH_TOOL_MAP[normalized as "#summon"] ?? null;
 }
@@ -300,10 +337,14 @@ function loadActiveTool(): ToolTab {
     window.location.pathname.startsWith(LEGACY_PATH);
   const hashTool = toolFromHash(window.location.hash);
   if (hashTool === "tiers" && isLegacyHost) return "arbor";
+  if (hashTool === "lineups" && isLegacyHost) return "arbor";
   if (hashTool) return hashTool;
   const stored = localStorage.getItem(ACTIVE_TOOL_STORAGE_KEY);
   if (stored === "tiers" && isLegacyHost) return "arbor";
-  return stored === "summons" || stored === "tiers" ? (stored as ToolTab) : "arbor";
+  if (stored === "lineups" && isLegacyHost) return "arbor";
+  return stored === "summons" || stored === "tiers" || stored === "lineups" || stored === "collection"
+    ? (stored as ToolTab)
+    : "arbor";
 }
 
 const activeTool = ref<ToolTab>(loadActiveTool());
@@ -316,6 +357,7 @@ watch(activeTool, (value) => {
 
 function setActiveTool(tab: ToolTab) {
   if (tab === "tiers" && isTierDisabled.value) return;
+  if (tab === "lineups" && isLineupDisabled.value) return;
   activeTool.value = tab;
   closeNav();
 }
@@ -326,10 +368,25 @@ function syncToolHash(value: ToolTab) {
     window.location.hash = "#arbor";
     return;
   }
+  if (value === "collection") {
+    if (window.location.hash !== "#collection") {
+      window.location.hash = "#collection";
+    }
+    return;
+  }
   const hash = window.location.hash.toLowerCase();
   if (value === "summons") {
     if (hash !== "#summon" && hash !== "#summons") {
       window.location.hash = "#summon";
+    }
+  } else if (value === "lineups") {
+    const isLineupHash =
+      hash === "#lineup" ||
+      hash === "#lineups" ||
+      hash.startsWith("#lineup=") ||
+      hash.startsWith("#lineups=");
+    if (!isLineupHash) {
+      window.location.hash = "#lineup";
     }
   } else if (value === "tiers") {
     const isTierHash =
@@ -341,7 +398,7 @@ function syncToolHash(value: ToolTab) {
       window.location.hash = "#tier";
     }
   } else {
-    if (hash === "#summon" || hash === "#summons" || hash === "" || hash === "#arbor") {
+    if (hash !== "#arbor") {
       window.location.hash = "#arbor";
     }
   }
@@ -355,6 +412,11 @@ function handleToolHashChange() {
     window.location.hash = "#arbor";
     return;
   }
+  if (mapped === "lineups" && isLineupDisabled.value) {
+    activeTool.value = "arbor";
+    window.location.hash = "#arbor";
+    return;
+  }
   if (mapped && mapped !== activeTool.value) {
     activeTool.value = mapped;
   } else if (!mapped && activeTool.value === "summons") {
@@ -364,8 +426,17 @@ function handleToolHashChange() {
 
 const isArborView = computed(() => activeTool.value === "arbor");
 const isSummonView = computed(() => activeTool.value === "summons");
+const isLineupView = computed(() => activeTool.value === "lineups");
 const isTierView = computed(() => activeTool.value === "tiers");
+const isCollectionView = computed(() => activeTool.value === "collection");
 const isTierDisabled = computed(() => {
+  if (typeof window === "undefined") return false;
+  return (
+    window.location.hostname === LEGACY_HOST &&
+    window.location.pathname.startsWith(LEGACY_PATH)
+  );
+});
+const isLineupDisabled = computed(() => {
   if (typeof window === "undefined") return false;
   return (
     window.location.hostname === LEGACY_HOST &&
@@ -377,12 +448,12 @@ function jumpToHeroCollection(event?: Event) {
   if (event) {
     event.preventDefault();
   }
-  if (!isArborView.value) {
-    setActiveTool("arbor");
+  if (!isCollectionView.value) {
+    setActiveTool("collection");
   }
   nextTick(() => {
     if (typeof window !== "undefined") {
-      window.location.hash = "#hero-collection";
+      window.location.hash = "#collection";
     }
   });
 }
@@ -617,6 +688,67 @@ function updateOwned(heroId: string, levelIndex: number | null) {
   }
 }
 
+function tokenizeLevel(level: Level): { type: LevelIconType; count: number }[] {
+  if (level === "RD") return [{ type: "rainbow", count: 1 }];
+  const suffix = level.slice(-1);
+  const count = Number(level.slice(0, -1));
+  if (count <= 0) return [];
+  if (suffix === "S") return [{ type: "star", count }];
+  if (suffix === "M") return [{ type: "moon", count }];
+  if (suffix === "D") return [{ type: "diamond", count }];
+  return [];
+}
+
+function levelIconClass(type: LevelIconType) {
+  return LEVEL_ICON_CLASS_MAP[type];
+}
+
+function rarityBorder(rarity: Rarity) {
+  if (rarity === "Sublime") return "linear-gradient(120deg, #22d3ee, #d946ef)";
+  if (rarity === "Mythic") return "#ef4444";
+  if (rarity === "Legendary") return "#f59e0b";
+  return "rgba(148, 163, 184, 0.45)";
+}
+
+function formatExportDate(value: Date) {
+  return value.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function ownedExportCardStyle(hero: { rarity: Rarity }) {
+  const border = rarityBorder(hero.rarity);
+  if (border.startsWith("linear-gradient")) {
+    return {};
+  }
+  return { borderColor: border };
+}
+
+const ownedLevelMap = computed(() => {
+  const map = new Map<string, number | null>();
+  ownedHeroes.value.forEach((entry) => map.set(entry.heroId, entry.levelIndex));
+  return map;
+});
+
+const ownedExportGroups = computed(() => {
+  const grouped = EXPORT_RARITIES.map((rarity) => ({
+    rarity,
+    heroes: [] as { id: string; name: string; level: Level | null; rarity: Rarity; owned: boolean }[]
+  }));
+  const rarityIndex = new Map(EXPORT_RARITIES.map((rarity, index) => [rarity, index]));
+  HEROES.forEach((hero) => {
+    const index = rarityIndex.get(hero.rarity);
+    if (index == null) return;
+    const levelIndex = ownedLevelMap.value.get(hero.id);
+    const owned = typeof levelIndex === "number" && levelIndex >= 0;
+    const level = owned && LEVELS[levelIndex] ? LEVELS[levelIndex] : null;
+    grouped[index].heroes.push({ id: hero.id, name: hero.name, level, rarity: hero.rarity, owned });
+  });
+  return grouped;
+});
+
 function toggleHeroInLineup(heroId: string, shouldAdd: boolean) {
   if (shouldAdd) {
     if (lineupHeroIds.value.has(heroId)) return;
@@ -657,6 +789,95 @@ function setPriorityRank(slotIndex: number, rank: number | null) {
 function clearLineupSlot(slotIndex: number) {
   lineup.value.slots[slotIndex].heroId = null;
   lineup.value.slots[slotIndex].priorityRank = null;
+}
+
+function openResetCollection() {
+  isResetCollectionOpen.value = true;
+}
+
+function closeResetCollection() {
+  isResetCollectionOpen.value = false;
+}
+
+function resetCollection() {
+  ownedHeroes.value = HEROES.map((hero) => ({
+    heroId: hero.id,
+    levelIndex: defaultLevelForHero(hero.id)
+  }));
+  lineup.value.slots.forEach((slot) => {
+    slot.heroId = null;
+    slot.priorityRank = null;
+  });
+  ownedExportStatus.value = null;
+  closeResetCollection();
+}
+
+async function waitForImages(root: HTMLElement) {
+  const imgs = Array.from(root.querySelectorAll("img"));
+  await Promise.all(
+    imgs.map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          if (img.complete) return resolve();
+          img.addEventListener("load", () => resolve(), { once: true });
+          img.addEventListener("error", () => resolve(), { once: true });
+        })
+    )
+  );
+}
+
+async function copyOwnedHeroesImage() {
+  if (!ownedExportRef.value) return;
+  ownedExportStatus.value = null;
+  ownedExportDate.value = formatExportDate(new Date());
+  const exportWidth = 650;
+  const prevWidth = ownedExportRef.value.style.width;
+  const prevMaxWidth = ownedExportRef.value.style.maxWidth;
+  ownedExportRef.value.style.width = `${exportWidth}px`;
+  ownedExportRef.value.style.maxWidth = `${exportWidth}px`;
+  ownedExporting.value = true;
+  await nextTick();
+  if (typeof document !== "undefined" && (document as any).fonts?.ready) {
+    await (document as any).fonts.ready;
+    if ((document as any).fonts?.load) {
+      await (document as any).fonts.load('900 12px "Font Awesome 6 Free"');
+    }
+  }
+  await waitForImages(ownedExportRef.value);
+  const bounds = ownedExportRef.value.getBoundingClientRect();
+  const canvas = await html2canvas(ownedExportRef.value, {
+    backgroundColor: null,
+    scale: 2,
+    useCORS: true,
+    width: Math.ceil(bounds.width),
+    height: Math.ceil(bounds.height)
+  });
+  ownedExportRef.value.style.width = prevWidth;
+  ownedExportRef.value.style.maxWidth = prevMaxWidth;
+  ownedExporting.value = false;
+
+  const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+  if (!blob) return;
+  if (navigator.clipboard && window.ClipboardItem) {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    ownedExportStatus.value = "Owned heroes image copied.";
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "owned-heroes.png";
+  link.click();
+  URL.revokeObjectURL(url);
+  ownedExportStatus.value = "Owned heroes image downloaded.";
+}
+
+function setLineupSlotHero(slotIndex: number, heroId: string) {
+  if (!heroId) return;
+  if (lineupHeroIds.value.has(heroId)) return;
+  const slot = lineup.value.slots[slotIndex];
+  if (!slot) return;
+  slot.heroId = heroId;
 }
 
 function toggleRoleFilter(role: Role) {
@@ -820,8 +1041,7 @@ function closeNav() {
   navOpen.value = false;
 }
 
-function handleNavLink(link?: { external?: boolean }) {
-  if (link?.external) return;
+function handleNavLink() {
   closeNav();
 }
 
@@ -930,31 +1150,27 @@ function toggleTheme() {
             :key="tab.id"
             type="button"
             class="tool-tab"
-            :class="{ active: activeTool === tab.id, disabled: tab.id === 'tiers' && isTierDisabled }"
-            :disabled="tab.id === 'tiers' && isTierDisabled"
+            :class="{
+              active: activeTool === tab.id,
+              disabled:
+                (tab.id === 'tiers' && isTierDisabled) ||
+                (tab.id === 'lineups' && isLineupDisabled)
+            }"
+            :disabled="
+              (tab.id === 'tiers' && isTierDisabled) ||
+              (tab.id === 'lineups' && isLineupDisabled)
+            "
             @click="setActiveTool(tab.id)"
           >
             {{ tab.label }}
             <span
-              v-if="tab.id === 'arbor' && hasPendingHeroes"
+              v-if="tab.id === 'collection' && hasPendingHeroes"
               class="pending-counter"
             >
               {{ untrackedHeroesCount }}
             </span>
           </button>
         </div>
-        <nav class="desktop-nav" v-if="isArborView && !isMobileNav">
-          <a
-            v-for="link in NAV_LINKS"
-            :key="link.href"
-            :href="link.href"
-            :target="link.external ? '_blank' : undefined"
-            :rel="link.external ? 'noreferrer' : undefined"
-            @click="handleNavLink(link)"
-          >
-            {{ link.label }}
-          </a>
-        </nav>
       </div>
       <div
         v-if="navOpen && isMobileNav"
@@ -968,13 +1184,21 @@ function toggleTheme() {
             :key="`mobile-${tab.id}`"
             type="button"
             class="tool-tab"
-            :class="{ active: activeTool === tab.id, disabled: tab.id === 'tiers' && isTierDisabled }"
-            :disabled="tab.id === 'tiers' && isTierDisabled"
+            :class="{
+              active: activeTool === tab.id,
+              disabled:
+                (tab.id === 'tiers' && isTierDisabled) ||
+                (tab.id === 'lineups' && isLineupDisabled)
+            }"
+            :disabled="
+              (tab.id === 'tiers' && isTierDisabled) ||
+              (tab.id === 'lineups' && isLineupDisabled)
+            "
             @click="setActiveTool(tab.id)"
           >
             {{ tab.label }}
             <span
-              v-if="tab.id === 'arbor' && hasPendingHeroes"
+              v-if="tab.id === 'collection' && hasPendingHeroes"
               class="pending-counter"
             >
               {{ untrackedHeroesCount }}
@@ -984,18 +1208,6 @@ function toggleTheme() {
         <div v-if="hasPendingHeroes" class="mobile-pending">
           <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
           <span>{{ untrackedHeroesCount }} hero<span v-if="untrackedHeroesCount !== 1">es</span> still untracked.</span>
-        </div>
-        <div v-if="isArborView" class="mobile-section-links">
-          <a
-            v-for="link in NAV_LINKS"
-            :key="`mobile-${link.href}`"
-            :href="link.href"
-            :target="link.external ? '_blank' : undefined"
-            :rel="link.external ? 'noreferrer' : undefined"
-            @click="handleNavLink(link)"
-          >
-            {{ link.label }}
-          </a>
         </div>
         <button
           class="btn btn-sm btn-discord"
@@ -1062,7 +1274,7 @@ function toggleTheme() {
               <li>The calculator stores hero levels, lineup, and preference for priority targets so the best buffs are recomputed instantly.</li>
             </ul>
             <div class="intro-actions">
-              <a class="link-btn" href="#hero-collection">Track heroes now</a>
+              <a class="link-btn" href="#collection">Track heroes now</a>
               <button class="btn btn-sm btn-secondary" type="button" @click="openIntroImage">
                 View Example Arbor
               </button>
@@ -1079,6 +1291,7 @@ function toggleTheme() {
               :untracked-count="untrackedHeroesCount"
               @set-rank="setPriorityRank"
               @clear-slot="clearLineupSlot"
+              @set-hero="setLineupSlotHero"
             />
           </div>
         </section>
@@ -1114,6 +1327,36 @@ function toggleTheme() {
           </div>
         </section>
 
+
+      </div>
+      <div v-else-if="isLineupView" class="tool-view lineup-view" id="lineup">
+        <LineupBuilder :heroes="HEROES" :owned="ownedHeroes" />
+      </div>
+      <div v-else-if="isSummonView" class="tool-view summon-view" id="summon">
+        <section class="panel summon-panel-wrapper">
+          <div class="panel-body">
+            <div
+              v-if="hasPendingHeroes"
+              class="collection-warning"
+            >
+              <div class="warning-text">
+                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                <span>
+                  {{ untrackedHeroesCount }} hero<span v-if="untrackedHeroesCount !== 1">es</span> still need star levels. Optimizer and simulator data stay in sync, so update them in the hero collection first.
+                </span>
+              </div>
+              <a href="#collection" class="link-btn" @click.prevent="jumpToHeroCollection">
+                Track heroes
+              </a>
+            </div>
+            <SummonSimulator :heroes="HEROES" />
+          </div>
+        </section>
+      </div>
+      <div v-else-if="isTierView" class="tool-view tier-view" id="tier">
+        <TierListBuilder />
+      </div>
+      <div v-else-if="isCollectionView" class="tool-view collection-view" id="collection">
         <section
           class="panel filters-panel"
           id="filters"
@@ -1157,10 +1400,32 @@ function toggleTheme() {
             />
           </div>
         </section>
-
-        <section class="panel hero-panel" id="hero-collection">
+        <section class="panel hero-panel">
           <div class="panel-header">
             <div class="panel-title">Hero Collection</div>
+            <div class="panel-actions">
+              <label class="owned-export-name-input">
+                <span class="sr-only">Screen name</span>
+                <input
+                  v-model="screenName"
+                  type="text"
+                  placeholder="Screen name"
+                  aria-label="Screen name"
+                />
+              </label>
+              <button
+                class="btn btn-sm btn-secondary"
+                type="button"
+                :disabled="ownedExporting"
+                @click="copyOwnedHeroesImage"
+              >
+                {{ ownedExporting ? "Copying..." : "Copy owned heroes" }}
+              </button>
+              <button class="btn btn-sm btn-ghost" type="button" @click="openResetCollection">
+                Reset collection
+              </button>
+              <span v-if="ownedExportStatus" class="owned-export-status">{{ ownedExportStatus }}</span>
+            </div>
           </div>
           <div class="panel-body">
             <HeroCollection
@@ -1182,32 +1447,52 @@ function toggleTheme() {
               @clear-filters="clearFilters"
               @update:ownershipFilter="setOwnershipFilter"
             />
-          </div>
-        </section>
-      </div>
-      <div v-else-if="isSummonView" class="tool-view summon-view" id="summon">
-        <section class="panel summon-panel-wrapper">
-          <div class="panel-body">
-            <div
-              v-if="hasPendingHeroes"
-              class="collection-warning"
-            >
-              <div class="warning-text">
-                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                <span>
-                  {{ untrackedHeroesCount }} hero<span v-if="untrackedHeroesCount !== 1">es</span> still need star levels. Optimizer and simulator data stay in sync, so update them in the hero collection first.
-                </span>
+            <div ref="ownedExportRef" class="owned-export" aria-hidden="true">
+              <div class="owned-export-title-row">
+                <div class="owned-export-title">
+                  {{ screenName ? `${screenName}'s Hero Collection` : "Hero Collection" }}
+                </div>
+                <div class="owned-export-date">{{ ownedExportDate }}</div>
               </div>
-              <a href="#hero-collection" class="link-btn" @click.prevent="jumpToHeroCollection">
-                Track heroes
-              </a>
+              <div
+                v-for="group in ownedExportGroups"
+                :key="group.rarity"
+                class="owned-export-group"
+              >
+                <div class="owned-export-header">{{ group.rarity }}</div>
+                <div class="owned-export-grid">
+                  <div
+                    v-for="hero in group.heroes"
+                    :key="hero.id"
+                    class="owned-export-card"
+                    :style="ownedExportCardStyle(hero)"
+                    :class="[`rarity-${hero.rarity.toLowerCase()}`, { 'is-not-owned': !hero.owned }]"
+                  >
+                    <div class="owned-export-avatar">
+                      <img :src="avatarUrl(hero.id, hero.name)" :alt="hero.name" />
+                    </div>
+                    <div class="owned-export-name">{{ hero.name }}</div>
+                    <div v-if="hero.owned && hero.level" class="owned-export-levels">
+                      <template v-for="token in tokenizeLevel(hero.level)" :key="`${hero.id}-${token.type}`">
+                        <i
+                          v-for="countIndex in token.count"
+                          :key="`${hero.id}-${token.type}-${countIndex}`"
+                          class="level-icon"
+                          :class="levelIconClass(token.type)"
+                          aria-hidden="true"
+                        ></i>
+                      </template>
+                    </div>
+                    <div v-else class="owned-export-not-owned">Not owned</div>
+                  </div>
+                </div>
+              </div>
+              <div class="owned-export-callout">
+                Track and share your own Hero Collection at: https://wdtoolbox.com
+              </div>
             </div>
-            <SummonSimulator :heroes="HEROES" />
           </div>
         </section>
-      </div>
-      <div v-else-if="isTierView" class="tool-view tier-view" id="tier">
-        <TierListBuilder />
       </div>
     </main>
 
@@ -1261,6 +1546,25 @@ function toggleTheme() {
         <button class="btn btn-sm btn-secondary" type="button" @click="closeIntroImage">
           Close
         </button>
+      </div>
+    </div>
+    <div
+      v-if="isResetCollectionOpen"
+      class="intro-modal-backdrop"
+      role="presentation"
+      @click="closeResetCollection"
+    >
+      <div class="intro-modal" role="dialog" aria-modal="true" aria-label="Reset hero collection" @click.stop>
+        <div class="panel-title">Reset hero collection?</div>
+        <p>This will clear all owned heroes and star levels. You can’t undo this.</p>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-secondary" type="button" @click="closeResetCollection">
+            Cancel
+          </button>
+          <button class="btn btn-sm btn-ghost" type="button" @click="resetCollection">
+            Reset
+          </button>
+        </div>
       </div>
     </div>
   </div>

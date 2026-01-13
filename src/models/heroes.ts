@@ -31,18 +31,18 @@ const COMMON_PERCENTS: HeroDef["percents"] = { "0S": 0.1 };
 
 const SUBLIME_HEROES: HeroDef[] = [
   {
-    id: "VW",
-    name: "Void Witch",
-    rarity: "Sublime",
-    role: "Mage",
-    element: "Xeno",
-    percents: SUBLIME_PERCENTS
-  },
-  {
     id: "SW",
     name: "Starlight Weaver",
     rarity: "Sublime",
     role: "Support",
+    element: "Xeno",
+    percents: SUBLIME_PERCENTS
+  },
+  {
+    id: "VW",
+    name: "Void Witch",
+    rarity: "Sublime",
+    role: "Mage",
     element: "Xeno",
     percents: SUBLIME_PERCENTS
   },
@@ -79,7 +79,7 @@ const MYTHIC_HEROES: HeroDef[] = [
   },
   {
     id: "WR",
-    name: "Windborn Ranger",
+    name: "Windborne Ranger",
     rarity: "Mythic",
     role: "Ranger",
     element: "Wind",
@@ -155,6 +155,16 @@ const MYTHIC_HEROES: HeroDef[] = [
     element: "Fire",
     percents: MYTHIC_PERCENTS,
     isRateUpHero: true,
+    isWishlistHero: true
+  },
+  {
+    id: "Robot",
+    name: "Robot",
+    rarity: "Mythic",
+    role: "Fighter",
+    element: "Electro",
+    percents: MYTHIC_PERCENTS,
+    isRateUpHero: false,
     isWishlistHero: true
   },
   {
@@ -246,40 +256,10 @@ const MYTHIC_HEROES: HeroDef[] = [
     percents: MYTHIC_PERCENTS,
     isRateUpHero: false,
     isWishlistHero: true
-  },
-  {
-    id: "Robot",
-    name: "Robot",
-    rarity: "Mythic",
-    role: "Fighter",
-    element: "Electro",
-    percents: MYTHIC_PERCENTS,
-    isRateUpHero: false,
-    isWishlistHero: true
   }
 ];
 
 const LEGENDARY_HEROES: HeroDef[] = [
-  {
-    id: "Seraph",
-    name: "Seraph",
-    rarity: "Legendary",
-    role: "Support",
-    element: "Electro",
-    percents: LEGENDARY_PERCENTS,
-    isRateUpHero: false,
-    isWishlistHero: false
-  },
-  {
-    id: "FM",
-    name: "Fire Mage",
-    rarity: "Legendary",
-    role: "Mage",
-    element: "Fire",
-    percents: LEGENDARY_PERCENTS,
-    isRateUpHero: false,
-    isWishlistHero: false
-  },
   {
     id: "DH",
     name: "Demon Hunter",
@@ -311,11 +291,31 @@ const LEGENDARY_HEROES: HeroDef[] = [
     isWishlistHero: false
   },
   {
+    id: "Seraph",
+    name: "Seraph",
+    rarity: "Legendary",
+    role: "Support",
+    element: "Electro",
+    percents: LEGENDARY_PERCENTS,
+    isRateUpHero: false,
+    isWishlistHero: false
+  },
+  {
     id: "HP",
     name: "High Priest",
     rarity: "Legendary",
     role: "Mage",
     element: "Electro",
+    percents: LEGENDARY_PERCENTS,
+    isRateUpHero: false,
+    isWishlistHero: false
+  },
+  {
+    id: "FM",
+    name: "Fire Mage",
+    rarity: "Legendary",
+    role: "Mage",
+    element: "Fire",
     percents: LEGENDARY_PERCENTS,
     isRateUpHero: false,
     isWishlistHero: false

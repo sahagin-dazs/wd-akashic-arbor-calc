@@ -1,4 +1,4 @@
-import type { TierDocument, TierData } from "../models/tierList";
+import type { LineupData, LineupDocument } from "../models/lineupList";
 
 const DEFAULT_API_BASE = "/api";
 const FALLBACK_API_BASE = "https://wdtools-api.azurewebsites.net/api";
@@ -32,10 +32,10 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function createTierList(payload: {
+export async function createLineup(payload: {
   title: string;
-  data: TierData;
-}): Promise<TierDocument & { editToken: string }> {
+  data: LineupData;
+}): Promise<LineupDocument & { editToken: string }> {
   const res = await fetch(`${API_BASE}/items`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -44,17 +44,17 @@ export async function createTierList(payload: {
   return handleResponse(res);
 }
 
-export async function fetchTierList(id: string): Promise<TierDocument> {
+export async function fetchLineup(id: string): Promise<LineupDocument> {
   const res = await fetch(`${API_BASE}/items/${encodeURIComponent(id)}`);
   return handleResponse(res);
 }
 
-export async function updateTierList(payload: {
+export async function updateLineup(payload: {
   id: string;
   editToken: string;
   title: string;
-  data: TierData;
-}): Promise<TierDocument> {
+  data: LineupData;
+}): Promise<LineupDocument> {
   const { id, editToken, ...rest } = payload;
   const res = await fetch(`${API_BASE}/items/${encodeURIComponent(id)}`, {
     method: "POST",

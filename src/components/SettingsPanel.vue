@@ -187,7 +187,7 @@ function upcomingDelta(node: NodeKey) {
             <span>
               {{ untrackedSummary }} still need a star level or ownership setting.
             </span>
-            <a class="hint-link" href="#hero-collection">
+            <a class="hint-link" href="#collection">
               Jump to hero collection
             </a>
           </p>

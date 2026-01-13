@@ -1308,22 +1308,20 @@ onErrorCaptured((err, instance, info) => {
               >
                 +
               </button>
-              <div v-if="entry?.rowId && rowAddOpen[entry.rowId]" class="hero-add-popover" @click.stop>
-                <div class="hero-add-grid">
-                  <button
-                    v-for="(hero, idx) in availableHeroesForRow()"
-                    :key="hero?.id || `add-hero-${idx}`"
+              <div
+                v-if="entry?.rowId && rowAddOpen[entry.rowId]"
+                class="hero-add-backdrop"
+                @click="rowAddOpen[entry.rowId] = false"
+              >
+                <div class="hero-add-popover" @click.stop>
+                  <div class="hero-add-grid">
+                    <button
+                      v-for="(hero, idx) in availableHeroesForRow()"
+                      :key="hero?.id || `add-hero-${idx}`"
                     class="hero-add-card"
-                    :class="{ sublime: hero?.rarity === 'Sublime' }"
                     type="button"
                     :disabled="isLocked"
-                    :style="{
-                      borderColor: typeof rarityBorder(hero) === 'string' ? rarityBorder(hero) : undefined,
-                      background: 'var(--hero-card-bg)',
-                      borderImage: 'none',
-                      '--sublime-border': rarityBorder(hero)?.startsWith('linear-gradient') ? rarityBorder(hero) : '',
-                      '--stack-count': heroStack(hero).length
-                    }"
+                    :style="{ '--stack-count': heroStack(hero).length }"
                     @click="() => { if (!isLocked && entry?.rowId && hero?.id) { assignHero(hero.id, entry.rowId); rowAddOpen[entry.rowId] = false; } }"
                   >
                     <div class="hero-stack" :class="{ linked: isLinkedHero(hero) }" :style="{ '--stack-count': heroStack(hero).length }">
@@ -1335,7 +1333,9 @@ onErrorCaptured((err, instance, info) => {
                         :style="{ '--stack-index': stackIdx }"
                       />
                     </div>
+                    <span>{{ heroDisplayName(hero) }}</span>
                   </button>
+                  </div>
                 </div>
               </div>
               <p v-if="entry.heroes.length === 0 && entry?.rowId && !rowAddOpen[entry.rowId]" class="muted empty-row">No heroes in this row.</p>
@@ -1472,6 +1472,9 @@ onErrorCaptured((err, instance, info) => {
             <div class="tier-export-notes-body" v-text="draft.notes"></div>
           </div>
         </div>
+        <p v-if="exporting" class="tool-callout">
+          Generate and share your own Tier Lists at: https://wdtoolbox.com
+        </p>
       </div>
 
       <div class="panel" v-if="!isLocked">
