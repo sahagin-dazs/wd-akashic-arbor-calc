@@ -21,6 +21,7 @@ import SummonSimulator from "./components/SummonSimulator.vue";
 import { runOptimization } from "./logic/optimizer";
 import TierListBuilder from "./components/TierListBuilder.vue";
 import LineupBuilder from "./components/LineupBuilder.vue";
+import SkillsExplorer from "./components/SkillsExplorer.vue";
 import { avatarUrl } from "./utils/avatar";
 
 const HERO_STORAGE_KEY = "wd-akashic-owned-heroes";
@@ -41,6 +42,7 @@ const TOOL_TABS = [
   { id: "arbor", label: "Akashic Arbor" },
   { id: "summons", label: "Summon Simulator" },
   { id: "lineups", label: "Lineups" },
+  { id: "skills", label: "Skills Explorer" },
   { id: "tiers", label: "Tier Lists" }
 ] as const;
 type ToolTab = (typeof TOOL_TABS)[number]["id"];
@@ -50,6 +52,8 @@ const HASH_TOOL_MAP: Record<string, ToolTab> = {
   "#arbor": "arbor",
   "#lineup": "lineups",
   "#lineups": "lineups",
+  "#skill": "skills",
+  "#skills": "skills",
   "#tier": "tiers",
   "#tiers": "tiers",
   "#collection": "collection"
@@ -250,6 +254,7 @@ watch(
   (value) => {
     if (typeof window === "undefined") return;
     localStorage.setItem(LINEUP_STORAGE_KEY, JSON.stringify(value));
+    window.dispatchEvent(new Event("wd-akashic-lineup-updated"));
   },
   { deep: true }
 );
@@ -342,7 +347,11 @@ function loadActiveTool(): ToolTab {
   const stored = localStorage.getItem(ACTIVE_TOOL_STORAGE_KEY);
   if (stored === "tiers" && isLegacyHost) return "arbor";
   if (stored === "lineups" && isLegacyHost) return "arbor";
-  return stored === "summons" || stored === "tiers" || stored === "lineups" || stored === "collection"
+  return stored === "summons" ||
+    stored === "tiers" ||
+    stored === "lineups" ||
+    stored === "collection" ||
+    stored === "skills"
     ? (stored as ToolTab)
     : "arbor";
 }
@@ -371,6 +380,12 @@ function syncToolHash(value: ToolTab) {
   if (value === "collection") {
     if (window.location.hash !== "#collection") {
       window.location.hash = "#collection";
+    }
+    return;
+  }
+  if (value === "skills") {
+    if (window.location.hash !== "#skills") {
+      window.location.hash = "#skills";
     }
     return;
   }
@@ -427,6 +442,7 @@ function handleToolHashChange() {
 const isArborView = computed(() => activeTool.value === "arbor");
 const isSummonView = computed(() => activeTool.value === "summons");
 const isLineupView = computed(() => activeTool.value === "lineups");
+const isSkillsView = computed(() => activeTool.value === "skills");
 const isTierView = computed(() => activeTool.value === "tiers");
 const isCollectionView = computed(() => activeTool.value === "collection");
 const isTierDisabled = computed(() => {
@@ -1361,6 +1377,9 @@ function toggleTheme() {
       </div>
       <div v-else-if="isLineupView" class="tool-view lineup-view" id="lineup">
         <LineupBuilder :heroes="HEROES" :owned="ownedHeroes" />
+      </div>
+      <div v-else-if="isSkillsView" class="tool-view skills-view" id="skills">
+        <SkillsExplorer :heroes="HEROES" />
       </div>
       <div v-else-if="isSummonView" class="tool-view summon-view" id="summon">
         <section class="panel summon-panel-wrapper">

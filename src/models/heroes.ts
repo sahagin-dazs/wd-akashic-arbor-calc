@@ -62,6 +62,10 @@ const CHAIN_PARTNERS: Record<string, string> = {
 
 const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
   PD: {
+    base: {
+      name: "Summon: Phoenix Dancer",
+      effect: "Blazing Orb: Throw a fireball that bounces among enemies, dealing area damage"
+    },
     chain: {
       name: "Dance of Flames",
       effect: "Team Burn DMG greatly increased"
@@ -111,7 +115,539 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
       effect: "Blazing Orb AoE increased and gains 20% extra CRIT Rate"
     }
   },
+  SW: {
+    base: {
+      name: "Summon: Starlight Weaver",
+      effect: "Starlit Fall: Summon a comet to bombard enemies. Designate the hero with the highest attack power as the Proxy, and charge the Proxy's Exclusive Weapon Energy by 6 points every 5 seconds."
+    },
+    "awakening-1": {
+      name: "Comet Chain",
+      effect: "Comet may summon another comet upon landing"
+    },
+    "awakening-2": {
+      name: "Comet Burst",
+      effect: "Comet Count +1"
+    },
+    "awakening-3": {
+      name: "Comet Burst",
+      effect: "Comet Count +1"
+    },
+    "awakening-core": {
+      name: "Stellar Descent",
+      effect: "Evolves into Stellar Descent: Increases DMG. Unlease a flurry of Starlit Fragments upon explosion"
+    },
+    "white-1": {
+      name: "Starblast",
+      effect: "Increase comet explosion range"
+    },
+    "white-2": {
+      name: "Stasis Stardust",
+      effect: "Enemies hit by comet explosion reduce Move SPD and skill SPD"
+    },
+    "atk60-1": {
+      name: "Enhanced Comet",
+      effect: "Comet DMG +60%"
+    },
+    "atk60-2": {
+      name: "Enhanced Comet",
+      effect: "Comet DMG +60%"
+    },
+    "blue-1": {
+      name: "Comet Arcana",
+      effect: "Comet DMG +100%"
+    },
+    "blue-2": {
+      name: "Cosmic Scatter",
+      effect: "Starlit Fragment count doubled"
+    },
+    "blue-3": {
+      name: "Soaring Photon",
+      effect: "Starlit Fragment DMG +60%"
+    }
+  },
+  PK: {
+    base: {
+      name: "Summon: Peacekeeper",
+      effect: "Justice Fist: Transform into a Justice Mech to attack nearby enemies; each time Justice Fist is activated, grant a shield equal to 20% of your max HP to the entire team, lasting 5 seconds, max 1 stack."
+    },
+    "awakening-1": {
+      name: "Come at Me!",
+      effect: "Justice Fist taunts nearby enemies to attack the caster"
+    },
+    "awakening-2": {
+      name: "Justice Combo",
+      effect: "Justice Fist Count +1"
+    },
+    "awakening-3": {
+      name: "Justice Combo",
+      effect: "Justice Fist Count +1"
+    },
+    "awakening-core": {
+      name: "Peace Hammer",
+      effect: "Evolves into Peace Hammer. Justice Fist attacks also trigger Peace Hammer"
+    },
+    "white-1": {
+      name: "Justice Judgement",
+      effect: "Justice Fist reduces enemy ATK by 60% for 3s. CD: 10s"
+    },
+    "white-2": {
+      name: "Backup Power",
+      effect: "Each Justice Fish recovers 0.5% Max HP"
+    },
+    "atk60-1": {
+      name: "Overload Boost",
+      effect: "Justice Fist DMG +60%"
+    },
+    "atk60-2": {
+      name: "Overload Boost",
+      effect: "Justice Fist DMG +60%"
+    },
+    "blue-1": {
+      name: "Ultimate Strike",
+      effect: "Peace Hammer DMG +100%"
+    },
+    "blue-2": {
+      name: "Iron Wall",
+      effect: "When casting Peace Hammer, DMG REDUC +10% for 3s"
+    },
+    "blue-3": {
+      name: "Overclock Combo",
+      effect: "Peace Hammer ATK Count +1"
+    }
+  },
+  VW: {
+    base: {
+      name: "Summon: Void Witch",
+      effect: "Xeno Watch: Summons a Piercing Sight to scout the current plane."
+    },
+    "awakening-1": {
+      name: "Omni Vision",
+      effect: "Piercing Sight Projectile Count +1"
+    },
+    "awakening-2": {
+      name: "Interphase Vision",
+      effect: "Piercing Sight Count +2"
+    },
+    "awakening-3": {
+      name: "Interphase Vision",
+      effect: "Piercing Sight Count +2"
+    },
+    "awakening-core": {
+      name: "Xeno Gaze",
+      effect: "Evolves into Xeno Gaze: Fires a continuous laser"
+    },
+    "white-1": {
+      name: "Quantum Disorder",
+      effect: "Piercing Sight inflicts Quantum Disorder, dealing DoT"
+    },
+    "white-2": {
+      name: "Quantum Collapse",
+      effect: "Enemies with Quantum Disorder explode when killed by Piercing Sight"
+    },
+    "atk60-1": {
+      name: "Cosmic Focus",
+      effect: "Piercing Sight DMG +60%"
+    },
+    "atk60-2": {
+      name: "Cosmic Focus",
+      effect: "Piercing Sight DMG +60%"
+    },
+    "blue-1": {
+      name: "Shattered Plane",
+      effect: "Piercing Sight DMG +100%"
+    },
+    "blue-2": {
+      name: "Transplanar Vision",
+      effect: "Piercing Sight Count +4"
+    },
+    "blue-3": {
+      name: "Xeno Sync",
+      effect: "Summon CD -1s"
+    }
+  },
+  Valk: {
+    base: {
+      name: "Summon: Valkyrie",
+      effect: "Tempest Onslaught: Approach enemies and unleash greatsword slashes, dealing area DMG. During the skill, Valkyrie cannot die. Attacks 2 times."
+    },
+    chain: {
+      name: "War blessing",
+      effect: "When own HP is below 15%, Tempest Onslaught will always CRIT until the main skill ends."
+    },
+    "awakening-1": {
+      name: "Valour's Resurgence",
+      effect: "When the skill ends, recover 30% of lost HP."
+    },
+    "awakening-2": {
+      name: "Rapid Strike",
+      effect: "Tempest Onslaught ATK Count +1"
+    },
+    "awakening-3": {
+      name: "Rapid Strike",
+      effect: "Tempest Onslaught ATK Count +1"
+    },
+    "awakening-core": {
+      name: "Thunderborne Ascension",
+      effect: "Evolves into Thunderborne Ascension: Tempest Onslaught's DMG and range greatly increase, attack count +2, attack interval shortened. Enveloped in electric currents that paralyze enemies."
+    },
+    "white-1": {
+      name: "Gloryfeast",
+      effect: "Heal upon killing enemies."
+    },
+    "white-2": {
+      name: "Undying Bloodwar",
+      effect: "Healing upon killing enemies increases."
+    },
+    "atk60-1": {
+      name: "Enhanced Tempest Onslaught",
+      effect: "Tempest Onslaught DMG +60%"
+    },
+    "atk60-2": {
+      name: "Enhanced Tempest Onslaught",
+      effect: "Tempest Onslaught DMG +60%"
+    },
+    "blue-1": {
+      name: "Power Overwhelming",
+      effect: "Tempest Onslaught DMG +100%"
+    },
+    "blue-2": {
+      name: "Stormburst Strike",
+      effect: "Tempest Onslaught ATK Count +2"
+    },
+    "blue-3": {
+      name: "Thunder Overdrive",
+      effect: "Tempest Onslaught CD -1"
+    }
+  },
+  WR: {
+    base: {
+      name: "Summon: Wind Ranger",
+      effect: "Piercing Shot: Continuously release 2 precise piercing arrows from long range."
+    },
+    chain: {
+      name: "Zephyr Grace",
+      effect: "Each time Dodge is triggered, gain 10% DMG bonus for 10s (Cannot stack)."
+    },
+    "awakening-1": {
+      name: "Hawk Eye",
+      effect: "Own CRIT Rate +10%"
+    },
+    "awakening-2": {
+      name: "Stormshot Volley",
+      effect: "Piercing Shot +2 multishot. Slightly extend cooldown time."
+    },
+    "awakening-3": {
+      name: "Stormshot Volley",
+      effect: "Piercing Shot +2 multishot. Slightly extend cooldown time."
+    },
+    "awakening-core": {
+      name: "Typhoon Shot",
+      effect: "Evolves into Typhoon Shot: Piercing Shot +6 multishot. Arrow DMG greatly increases. Greatly reduce shot interval."
+    },
+    "white-1": {
+      name: "Blastbolt",
+      effect: "Every 6 arrows from Piercing Shot triggers 1 Blastbolt."
+    },
+    "white-2": {
+      name: "Zone Blast",
+      effect: "Blastbolt AoE increases."
+    },
+    "atk60-1": {
+      name: "Enhanced Piercing Shot",
+      effect: "Piercing Shot DMG +60%"
+    },
+    "atk60-2": {
+      name: "Enhanced Piercing Shot",
+      effect: "Piercing Shot DMG +60%"
+    },
+    "blue-1": {
+      name: "Sublime Execution",
+      effect: "Piercing Shot DMG +100%"
+    },
+    "blue-2": {
+      name: "Death Drizzle",
+      effect: "Piercing Shot +6 multishot"
+    },
+    "blue-3": {
+      name: "Chain Blast",
+      effect: "Blastbolt Count +2"
+    }
+  },
+  Lich: {
+    base: {
+      name: "Summon: Lich",
+      effect: "Wyvern Call: Summons 1 Frost Wyvern every 10s to aid in battle. Frost Wyvern unleashes break attacks at enemies and is treated as a hero unit. Every 5s, it releases a Frost Vortex that deals DoT and slows enemies within range."
+    },
+    chain: {
+      name: "Freezing Exhale",
+      effect: "Increases Frost Wyvern attack range with a chance to Freeze enemies for 3s."
+    },
+    "awakening-1": {
+      name: "Blizzard Roar",
+      effect: "Wyvern Breath ends with an additional Frost Explosion."
+    },
+    "awakening-2": {
+      name: "Enraged Scourge",
+      effect: "Frost Wyvern's ATK SPD increases."
+    },
+    "awakening-3": {
+      name: "Enraged Scourge",
+      effect: "Frost Wyvern's ATK SPD increases."
+    },
+    "awakening-core": {
+      name: "Elder Frost Wyvern!",
+      effect: "Evolves into Elder Frost Wyvern: Increases skill range and damage, summoning a more powerful Elder Frost Wyvern. Frost Explosion at breath end now spreads 1 time."
+    },
+    "white-1": {
+      name: "Icy Reboot",
+      effect: "Frost Fortex DMG frequency doubles."
+    },
+    "white-2": {
+      name: "Hyperfrost",
+      effect: "Frost Vortex influcts Ice Burn, reducing healing taken by 30%."
+    },
+    "atk60-1": {
+      name: "Frostbite Boost",
+      effect: "Frost Explosion and Wyvern Breath DMG +60%"
+    },
+    "atk60-2": {
+      name: "Frostbite Boost",
+      effect: "Frost Explosion and Wyvern Breath DMG +60%"
+    },
+    "blue-1": {
+      name: "Snowcalypse",
+      effect: "Frost Explosion and Wyvern Breath DMG +100%"
+    },
+    "blue-2": {
+      name: "Cryo Ragnarok",
+      effect: "Frost Explosion at breath end now spreads again."
+    },
+    "blue-3": {
+      name: "Parting Gift",
+      effect: "When Elder Frost Wyvern dies, crelease a ring of Ice Spikes to attack enemies."
+    }
+  },
+  AA: {
+    base: {
+      name: "Summon: Arcane Archer",
+      effect: "Thunder Afterimage: Summon Afterimage to protect allies; Afterimages launches Bouncing Electric Orb to attack enemies."
+    },
+    chain: {
+      name: "Afterimage Tempest",
+      effect: "When Afterimage ends, trigger an extra electric explosion."
+    },
+    "awakening-1": {
+      name: "Electric Sync",
+      effect: "Ally ATK increases by 20% when Afterimage is on the field"
+    },
+    "awakening-2": {
+      name: "Bolt Echo",
+      effect: "Number of Electric Orbs launched by Afterimage +1"
+    },
+    "awakening-3": {
+      name: "Bolt Echo",
+      effect: "Number of Electric Orbs launched by Afterimage +1"
+    },
+    "awakening-core": {
+      name: "Pulse Magstorm",
+      effect: "Evolves into Pulse Magstorm: Afterimage deploys Electric Field and unleashes a magstorm when it ends"
+    },
+    "white-1": {
+      name: "Numbing Shock",
+      effect: "Electric Orb and Electric Field inflct Paralysis"
+    },
+    "white-2": {
+      name: "Bouncing Electric Orb",
+      effect: "Electric Orb Bounce Count +2"
+    },
+    "atk60-1": {
+      name: "Enhanced High-Energy Electric Orb",
+      effect: "Orb DMG +60%"
+    },
+    "atk60-2": {
+      name: "Enhanced High-Energy Electric Orb",
+      effect: "Orb DMG +60%"
+    },
+    "blue-1": {
+      name: "Voltage Boost",
+      effect: "Electric field DMG +100%"
+    },
+    "blue-2": {
+      name: "Echo Pulse",
+      effect: "Electric Pulse explosion +1"
+    },
+    "blue-3": {
+      name: "Doom Magstorm",
+      effect: "Electric Pulse DMG +60%"
+    }
+  },
+  FL: {
+    base: {
+      name: "Summon: Frost Lord",
+      effect: "Tune: Summon Tunes to attack enemies, bouncing on contact."
+    },
+    chain: {
+      name: "Blade & Ballad",
+      effect: "Tunes grant 8% Dodge bonus to the team for 5s."
+    },
+    "awakening-1": {
+      name: "Stirring Overture",
+      effect: "Tunes increase Team CRIT DMG by 30% for 5s"
+    },
+    "awakening-2": {
+      name: "Prolonged Note",
+      effect: "Tunes Count +2"
+    },
+    "awakening-3": {
+      name: "Prolonged Note",
+      effect: "Tunes Count +2"
+    },
+    "awakening-core": {
+      name: "Sonic Cascade",
+      effect: "Evolces into Sonic Cascade: DMG increases. Summon orbiting Sonic Waves that continuously attack nearby enemies"
+    },
+    "white-1": {
+      name: "Unceasing Echo",
+      effect: "Tunes Bounce +3"
+    },
+    "white-2": {
+      name: "Unceasing Echo",
+      effect: "Tunes Bounce +3"
+    },
+    "atk60-1": {
+      name: "Enhanced Tune",
+      effect: "Tune DMG +60%"
+    },
+    "atk60-2": {
+      name: "Enhanced Tune",
+      effect: "Tune DMG +60%"
+    },
+    "blue-1": {
+      name: "Forte Variation",
+      effect: "Tunes and Sonic Waves DMG +100%"
+    },
+    "blue-2": {
+      name: "Rapid Tempo",
+      effect: "Sonic Waves reduces Team Skill CD by 20% for 5s"
+    },
+    "blue-3": {
+      name: "Surging Soundwave",
+      effect: "Sonic Waves periodically trigger Resonance Waves, each with a 20% chance to Stun."
+    }
+  },
+  SR: {
+    base: {
+      name: "Summon: Scarlet Reaper",
+      effect: "Soulflare Blade: Unleash a slash to sever enemies' souls."
+    },
+    chain: {
+      name: "Evil Cleaver",
+      effect: "Soulflare Blade also casts Evil Cleaver around."
+    },
+    "awakening-1": {
+      name: "Raging Squall",
+      effect: "Slash speed increases"
+    },
+    "awakening-2": {
+      name: "Unyielding Onslaught",
+      effect: "Soulflare Blade ATK Count +2"
+    },
+    "awakening-3": {
+      name: "Unyielding Onslaught",
+      effect: "Soulflare Blade ATK Count +2"
+    },
+    "awakening-core": {
+      name: "Soulflare Overdrive",
+      effect: "Evolves into Soulflare Overdrive: DMG increases and cast extra Soulchaser Slash."
+    },
+    "white-1": {
+      name: "Demonblade Burst",
+      effect: "If HP is above 50%, each slash has a chance to increase ATK."
+    },
+    "white-2": {
+      name: "Infinite Potential",
+      effect: "ATK bonus is stackable"
+    },
+    "atk60-1": {
+      name: "Enhanced Soulflare",
+      effect: "Soulflare Blade DMG +60%"
+    },
+    "atk60-2": {
+      name: "Enhanced Soulflare",
+      effect: "Soulflare Blade DMG +60%"
+    },
+    "blue-1": {
+      name: "Supreme Edge",
+      effect: "Soulflare Blade DMG +100%"
+    },
+    "blue-2": {
+      name: "Enhanced Soulchaser",
+      effect: "Soulflare Blade CD -1"
+    },
+    "blue-3": {
+      name: "Soulchaser Combo",
+      effect: "Soulflare Blade ATK Count +4"
+    }
+  },
+  Cheffy: {
+    base: {
+      name: "Summon: Cheffy",
+      effect: "Bunzooka: Throw Bunzooka to heal all allies every 5s"
+    },
+    chain: {
+      name: "Flavor Symphony",
+      effect: "Bunzooka ignites Burning Ground on landing"
+    },
+    "awakening-1": {
+      name: "Boundless Bliss",
+      effect: "Bunzooka launches Mini-Bun on landing"
+    },
+    "awakening-2": {
+      name: "Bun Boom!",
+      effect: "Bunzooka Count +1"
+    },
+    "awakening-3": {
+      name: "Bun Boom!",
+      effect: "Bunzooka Count +1"
+    },
+    "awakening-core": {
+      name: "Bun-anza",
+      effect: "Evolves into Bun-anza: Bigger bun, higher DMG, tastier flavor."
+    },
+    "white-1": {
+      name: "Bun Waltz",
+      effect: "Bunzooka Bounce +1"
+    },
+    "white-2": {
+      name: "Bun Waltz",
+      effect: "Bunzooka Bounce +1"
+    },
+    "atk60-1": {
+      name: "Culinary Blast",
+      effect: "Bunzooka DMG +60%"
+    },
+    "atk60-2": {
+      name: "Culinary Blast",
+      effect: "Bunzooka DMG +60%"
+    },
+    "blue-1": {
+      name: "Yummy Bite",
+      effect: "Bun-anza DMG +100%"
+    },
+    "blue-2": {
+      name: "Sticky Dough",
+      effect: "Bun-anza reduces target's Moe SPD by 30%"
+    },
+    "blue-3": {
+      name: "Hearty Serve",
+      effect: "Bun-anza AoE increases"
+    }
+  },
   VG: {
+    base: {
+      name: "Summon: Vermilion Guard",
+      effect: "Firestream: Fires compressed flame stream in a straight line"
+    },
     chain: {
       name: "Focused Fireball",
       effect: "Firestream emits Focused Fireballs"
@@ -161,177 +697,11 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
       effect: "Firestream continuously pulls in nearby enemies"
     }
   },
-  SW: {
-    "awakening-1": { name: "Comet Chain", effect: "Comet may summon another comet upon landing" },
-    "awakening-2": { name: "Comet Burst", effect: "Coment Count +1" },
-    "awakening-3": { name: "Comet Burst", effect: "Coment Count +1" },
-    "awakening-core": { name: "Stellar Descent", effect: "Evolves into Stellar Descent: Increases DMG. Unlease a flurry of Starlit Fragments upon explosion" },
-    "white-1": { name: "Starblast", effect: "Increase comet explosion range" },
-    "white-2": { name: "Stasis Stardust", effect: "Enemies hit by comet explosion reduce Move SPD and skill SPD" },
-    "atk60-1": { name: "Enhanced Comet", effect: "Comet DMG +60%" },
-    "atk60-2": { name: "Enhanced Comet", effect: "Comet DMG +60%" },
-    "blue-1": { name: "Comet Arcana", effect: "Comet DMG +100%" },
-    "blue-2": { name: "Cosmic Scatter", effect: "Starlit Fragment count doubled" },
-    "blue-3": { name: "Soaring Photon", effect: "Starlit Fragment DMG +60%" }
-  },
-  PK: {
-    "awakening-1": { name: "Come at Me!", effect: "Justice Fist taunts nearby enemies to attack the caster" },
-    "awakening-2": { name: "Justice Combo", effect: "Justice Fist Count +1" },
-    "awakening-3": { name: "Justice Combo", effect: "Justice Fist Count +1" },
-    "awakening-core": { name: "Peace Hammer", effect: "Evolves into Peace Hammer. Justice Fist attacks also trigger Peace Hammer" },
-    "white-1": { name: "Justice Judgement", effect: "Justice Fist reduces enemy ATK by 60% for 3s. CD: 10s" },
-    "white-2": { name: "Backup Power", effect: "Each Justice Fish recovers 0.5% Max HP" },
-    "atk60-1": { name: "Overload Boost", effect: "Justice Fist DMG +60%" },
-    "atk60-2": { name: "Overload Boost", effect: "Justice Fist DMG +60%" },
-    "blue-1": { name: "Ultimate Strike", effect: "Peace Hammer DMG +100%" },
-    "blue-2": { name: "Iron Wall", effect: "When casting Peace Hammer, DMG REDUC +10% for 3s" },
-    "blue-3": { name: "Overclock Combo", effect: "Peace Hammer ATK Count +1" }
-  },
-  VW: {
-    "awakening-1": {
-      name: "Omni Vision",
-      effect: "Piercing Sight Projectile Count +1"
-    },
-    "awakening-2": {
-      name: "Interphase Vision",
-      effect: "Piercing Sight Count +2"
-    },
-    "awakening-3": {
-      name: "Interphase Vision",
-      effect: "Piercing Sight Count +2"
-    },
-    "awakening-core": {
-      name: "Xeno Gaze",
-      effect: "Evolves into Xeno Gaze: Fires a continuous laser"
-    },
-    "white-1": {
-      name: "Quantum Disorder",
-      effect: "Piercing Sight inflicts Quantum Disorder, dealing DoT"
-    },
-    "white-2": {
-      name: "Quantum Collapse",
-      effect: "Enemies with Quantum Disorder explode when killed by Piercing Sight"
-    },
-    "atk60-1": {
-      name: "Cosmic Focus",
-      effect: "Piercing Sight DMG +60%"
-    },
-    "atk60-2": {
-      name: "Cosmic Focus",
-      effect: "Piercing Sight DMG +60%"
-    },
-    "blue-1": {
-      name: "Shattered Plane",
-      effect: "Piercing Sight DMG +100%"
-    },
-    "blue-2": {
-      name: "Transplanar Vision",
-      effect: "Piercing Sight Count +4"
-    },
-    "blue-3": {
-      name: "Xeno Sync",
-      effect: "Summon CD -1s"
-    }
-  },
-  Valk: {
-    chain: { name: "War blessing", effect: "When own HP is below 15%, Tempest Onslaught will always CRIT until the main skill ends." },
-    "awakening-1": { name: "Valour's Resurgence", effect: "When the skill ends, recover 30% of lost HP." },
-    "awakening-2": { name: "Rapid Strike", effect: "Tempest Onslaught ATK Count +1" },
-    "awakening-3": { name: "Rapid Strike", effect: "Tempest Onslaught ATK Count +1" },
-    "awakening-core": { name: "Thunderborne Ascension", effect: "Evolves into Thunderborne Ascension: Tempest Onslaught's DMG and range greatly increase, attack count +2, attack interval shortened. Enveloped in electric currents that paralyze enemies." },
-    "white-1": { name: "Gloryfeast", effect: "Heal upon killing enemies." },
-    "white-2": { name: "Undying Bloodwar", effect: "Healing upon killing enemies increases." },
-    "atk60-1": { name: "Enhanced Tempest Onslaught", effect: "Tempest Onslaught DMG +60%" },
-    "atk60-2": { name: "Enhanced Tempest Onslaught", effect: "Tempest Onslaught DMG +60%" },
-    "blue-1": { name: "Power Overwhelming", effect: "Tempest Onslaught DMG +100%" },
-    "blue-2": { name: "Stormburst Strike", effect: "Tempest Onslaught ATK Count +2" },
-    "blue-3": { name: "Thunder Overdrive", effect: "Tempest Onslaught CD -1" }
-  },
-  WR: {
-    chain: { name: "Zephyr Grace", effect: "Each time Dodge is triggered, gain 10% DMG bonus for 10s (Cannot stack)." },
-    "awakening-1": { name: "Hawk Eye", effect: "Own CRIT Rate +10%" },
-    "awakening-2": { name: "Stormshot Volley", effect: "Piercing Shot +2 multishot. Slightly extend cooldown time." },
-    "awakening-3": { name: "Stormshot Volley", effect: "Piercing Shot +2 multishot. Slightly extend cooldown time." },
-    "awakening-core": { name: "Typhoon Shot", effect: "Evolves into Typhoon Shot: Piercing Shot +6 multishot. Arrow DMG greatly increases. Greatly reduce shot interval." },
-    "white-1": { name: "Blastbolt", effect: "Every 6 arrows from Piercing Shot triggers 1 Blastbolt." },
-    "white-2": { name: "Zone Blast", effect: "Blastbolt AoE increases." },
-    "atk60-1": { name: "Enhanced Piercing Shot", effect: "Piercing Shot DMG +60%" },
-    "atk60-2": { name: "Enhanced Piercing Shot", effect: "Piercing Shot DMG +60%" },
-    "blue-1": { name: "Sublime Execution", effect: "Piercing Shot DMG +100%" },
-    "blue-2": { name: "Death Drizzle", effect: "Piercing Shot +6 multishot" },
-    "blue-3": { name: "Chain Blast", effect: "Blastbolt Count +2" }
-  },
-  Lich: {
-    chain: { name: "Freezing Exhale", effect: "Increases Frost Wyvern attack range with a chance to Freeze enemies for 3s." },
-    "awakening-1": { name: "Blizzard Roar", effect: "Wyvern Breath ends with an additional Frost Explosion." },
-    "awakening-2": { name: "Enraged Scourge", effect: "Frost Wyvern's ATK SPD increases." },
-    "awakening-3": { name: "Enraged Scourge", effect: "Frost Wyvern's ATK SPD increases." },
-    "awakening-core": { name: "Elder Frost Wyvern!", effect: "Evolves into Elder Frost Wyvern: Increases skill range and damage, summoning a more powerful Elder Frost Wyvern. Frost Explosion at breath end now spreads 1 time." },
-    "white-1": { name: "Icy Reboot", effect: "Frost Fortex DMG frequency doubles." },
-    "white-2": { name: "Hyperfrost", effect: "Frost Vortex influcts Ice Burn, reducing healing taken by 30%." },
-    "atk60-1": { name: "Frostbite Boost", effect: "Frost Explosion and Wyvern Breath DMG +60%" },
-    "atk60-2": { name: "Frostbite Boost", effect: "Frost Explosion and Wyvern Breath DMG +60%" },
-    "blue-1": { name: "Snowcalypse", effect: "Frost Explosion and Wyvern Breath DMG +100%" },
-    "blue-2": { name: "Cryo Ragnarok", effect: "Frost Explosion at breath end now spreads again." },
-    "blue-3": { name: "Parting Gift", effect: "When Elder Frost Wyvern dies, crelease a ring of Ice Spikes to attack enemies." }
-  },
-  AA: {
-    chain: { name: "Afterimage Tempest", effect: "When Afterimage ends, trigger an extra electric explosion." },
-    "awakening-1": { name: "Electric Sync", effect: "Ally ATK increases by 20% when Afterimage is on the field" },
-    "awakening-2": { name: "Bolt Echo", effect: "Number of Electric Orbs launched by Afterimage +1" },
-    "awakening-3": { name: "Bolt Echo", effect: "Number of Electric Orbs launched by Afterimage +1" },
-    "awakening-core": { name: "Pulse Magstorm", effect: "Evolves into Pulse Magstorm: Afterimage deploys Electric Field and unleashes a magstorm when it ends" },
-    "white-1": { name: "Numbing Shock", effect: "Electric Orb and Electric Field inflct Paralysis" },
-    "white-2": { name: "Bouncing Electric Orb", effect: "Electric Orb Bounce Count +2" },
-    "atk60-1": { name: "Enhanced High-Energy Electric Orb", effect: "Orb DMG +60%" },
-    "atk60-2": { name: "Enhanced High-Energy Electric Orb", effect: "Orb DMG +60%" },
-    "blue-1": { name: "Voltage Boost", effect: "Electric field DMG +100%" },
-    "blue-2": { name: "Echo Pulse", effect: "Electric Pulse explosion +1" },
-    "blue-3": { name: "Doom Magstorm", effect: "Electric Pulse DMG +60%" }
-  },
-  FL: {
-    chain: { name: "Blade & Ballad", effect: "Tunes grant 8% Dodge bonus to the team for 5s." },
-    "awakening-1": { name: "Stirring Overture", effect: "Tunes increase Team CRIT DMG by 30% for 5s" },
-    "awakening-2": { name: "Prolonged Note", effect: "Tunes Count +2" },
-    "awakening-3": { name: "Prolonged Note", effect: "Tunes Count +2" },
-    "awakening-core": { name: "Sonic Cascade", effect: "Evolces into Sonic Cascade: DMG increases. Summon orbiting Sonic Waves that continuously attack nearby enemies" },
-    "white-1": { name: "Unceasing Echo", effect: "Tunes Bounce +3" },
-    "white-2": { name: "Unceasing Echo", effect: "Tunes Bounce +3" },
-    "atk60-1": { name: "Enhanced Tune", effect: "Tune DMG +60%" },
-    "atk60-2": { name: "Enhanced Tune", effect: "Tune DMG +60%" },
-    "blue-1": { name: "Forte Variation", effect: "Tunes and Sonic Waves DMG +100%" },
-    "blue-2": { name: "Rapid Tempo", effect: "Sonic Waves reduces Team Skill CD by 20% for 5s" },
-    "blue-3": { name: "Surging Soundwave", effect: "Sonic Waves periodically trigger Resonance Waves, each with a 20% chance to Stun." }
-  },
-  SR: {
-    chain: { name: "Evil Cleaver", effect: "Soulflare Blade also casts Evil Cleaver around." },
-    "awakening-1": { name: "Raging Squall", effect: "Slash speed increases" },
-    "awakening-2": { name: "Unyielding Onslaught", effect: "Soulflare Blade ATK Count +2" },
-    "awakening-3": { name: "Unyielding Onslaught", effect: "Soulflare Blade ATK Count +2" },
-    "awakening-core": { name: "Soulflare Overdrive", effect: "Evolves into Soulflare Overdrive: DMG increases and cast extra Soulchaser Slash." },
-    "white-1": { name: "Demonblade Burst", effect: "If HP is above 50%, each slash has a chance to increase ATK." },
-    "white-2": { name: "Infinite Potential", effect: "ATK bonus is stackable" },
-    "atk60-1": { name: "Enhanced Soulflare", effect: "Soulflare Blade DMG +60%" },
-    "atk60-2": { name: "Enhanced Soulflare", effect: "Soulflare Blade DMG +60%" },
-    "blue-1": { name: "Supreme Edge", effect: "Soulflare Blade DMG +100%" },
-    "blue-2": { name: "Enhanced Soulchaser", effect: "Soulflare Blade CD -1" },
-    "blue-3": { name: "Soulchaser Combo", effect: "Soulflare Blade ATK Count +4" }
-  },
-  Cheffy: {
-    chain: { name: "Flavor Symphony", effect: "Bunzooka ignites Burning Ground on landing" },
-    "awakening-1": { name: "Boundless Bliss", effect: "Bunzooka launches Mini-Bun on landing" },
-    "awakening-2": { name: "Bun Boom!", effect: "Bunzooka Count +1" },
-    "awakening-3": { name: "Bun Boom!", effect: "Bunzooka Count +1" },
-    "awakening-core": { name: "Bun-anza", effect: "Evolves into Bun-anza: Bigger bun, higher DMG, tastier flavor." },
-    "white-1": { name: "Bun Waltz", effect: "Bunzooka Bounce +1" },
-    "white-2": { name: "Bun Waltz", effect: "Bunzooka Bounce +1" },
-    "atk60-1": { name: "Culinary Blast", effect: "Bunzooka DMG +60%" },
-    "atk60-2": { name: "Culinary Blast", effect: "Bunzooka DMG +60%" },
-    "blue-1": { name: "Yummy Bite", effect: "Bun-anza DMG +100%" },
-    "blue-2": { name: "Sticky Dough", effect: "Bun-anza reduces target's Moe SPD by 30%" },
-    "blue-3": { name: "Hearty Serve", effect: "Bun-anza AoE increases" }
-  },
   IQ: {
+    base: {
+      name: "Summon: Ice Queen",
+      effect: "Ice Storm: Channels an ice storm to continuously attack enemies"
+    },
     chain: {
       name: "Icicle Storm",
       effect: "Frost Summon's Summoned Unit and Ice Storm attacks generate massive Icicle Storm"
@@ -382,6 +752,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   Robot: {
+    base: {
+      name: "Summon: Robot",
+      effect: "Volt Fist: Charges at enemies and releases an electrified punch"
+    },
     chain: {
       name: "Lightning Orb",
       effect: "Pulse Laser and Volt Fist hits generate Lightning Orbs"
@@ -432,6 +806,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   PC: {
+    base: {
+      name: "Summon: Poseidon Commander",
+      effect: "Tide: Summons waves to attack."
+    },
     chain: {
       name: "Icebound Abyss",
       effect: "Summoned Units in Tide can Freeze enemies"
@@ -482,6 +860,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   SS: {
+    base: {
+      name: "Summon: Sword Saint",
+      effect: "Flying Sword: Summons multiple Flying Swords to automatically attack enemies"
+    },
     chain: {
       name: "Blade Tempest",
       effect: "Casting Flying Sword also summons falling Flying Swords"
@@ -532,6 +914,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   NB: {
+    base: {
+      name: "Summon: Nightmare Bringer",
+      effect: "Thrust: Deals piercing DMG to enemies in front."
+    },
     chain: {
       name: "Wind Blade",
       effect: "Whirlwind Slash and Thrust continuously spawn Wind Blades"
@@ -582,6 +968,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   Odin: {
+    base: {
+      name: "Summon: Odin",
+      effect: "Lightning Chain: Continuously fires lightning at enemies. Lightning bounces multiple times."
+    },
     chain: {
       name: "Multi Lightning",
       effect: "Lightning Chain hits may trigger Multi Lightning"
@@ -600,8 +990,7 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     },
     "awakening-core": {
       name: "Infinity Spear",
-      effect:
-        "Evolves into Infinity Spear. After Lightning Chain ends, summons Infinity Spear to continuously strike nearby enemies with lightning."
+      effect: "Evolves into Infinity Spear. After Lightning Chain ends, summons Infinity Spear to continuously strike nearby enemies with lightning."
     },
     "white-1": {
       name: "Godstorm Boost",
@@ -633,6 +1022,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   BA: {
+    base: {
+      name: "Summon: Blazing Archer",
+      effect: "Flame Arrow: Shoots flaming arrows. Periodically enters a frenzy, greatly increasing shooting speed."
+    },
     chain: {
       name: "Burning Ground",
       effect: "Flame Blade and Flame Arrow hits ignite Burning Ground"
@@ -683,6 +1076,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   SM: {
+    base: {
+      name: "Summon: Shadow Master",
+      effect: "Whilrwind Slash: Teleports to a random enemy for a wide AoE attack"
+    },
     chain: {
       name: "Wind Blade",
       effect: "Whirlwind Slash and Thrust continuously spawn Wind Blades"
@@ -733,6 +1130,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   Pharaoh: {
+    base: {
+      name: "Summon: Pharaoh",
+      effect: "Pulse Laser: Deals continuous DMG to all enemies in a line."
+    },
     chain: {
       name: "Lightning Orb",
       effect: "Pulse Laser and Volt Fist hits generate Lightning Orbs"
@@ -783,6 +1184,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   ID: {
+    base: {
+      name: "Summon: Ice Demon",
+      effect: "Frost Summon: Summons Frost Troll to assist in battle for 10s. Frost Troll inherits 50% of Ice Demon's ATK and HP."
+    },
     chain: {
       name: "Icicle Storm",
       effect: "Frost Summon's Summoned Unit and Ice Storm attacks generate massive Icicle Storm"
@@ -833,6 +1238,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   DS: {
+    base: {
+      name: "Summon: Demon Spawn",
+      effect: "Flame Blade: Slashes enemies with fire waves"
+    },
     chain: {
       name: "Burning Ground",
       effect: "Flame Blade and Flame Arrow hits ignite Burning Ground"
@@ -883,6 +1292,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   DH: {
+    base: {
+      name: "Summon: Demon Hunter",
+      effect: "Musket Burst: Fires a barrage of projectiles at the nearest enemy."
+    },
     chain: {
       name: "Scatter Shot",
       effect: "Musket Burst and Dart hits trigger Scatter Shot, attacking random enemies"
@@ -933,6 +1346,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   Cat: {
+    base: {
+      name: "Summon: Cat",
+      effect: "Dart: Throws darts at the nearest enemies"
+    },
     chain: {
       name: "Scatter Shot",
       effect: "Musket Burst and Dart hits trigger Scatter Shot, attacking random enemies"
@@ -983,6 +1400,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   IM: {
+    base: {
+      name: "Summon: Ice Mage",
+      effect: "Frost Nova: Deals AoE DMG to random enemies."
+    },
     chain: {
       name: "Ice Shard",
       effect: "Frost Nova and Icicle Sweep spawn Ice Shards"
@@ -1033,6 +1454,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   Seraph: {
+    base: {
+      name: "Summon: Seraph",
+      effect: "Thunderfall: Calls down lightning to strike random enemies. Each bolt has a chance to heal allies. Healing scales with Seraph's ATK."
+    },
     chain: {
       name: "Conductive",
       effect: "Casting Thunderfall or Spinning Orb triggers Conductive"
@@ -1083,6 +1508,10 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   HP: {
+    base: {
+      name: "Summon: Holy Priest",
+      effect: "Spinning Orb: Releases rotating lightning orbs around."
+    },
     chain: {
       name: "Conductive",
       effect: "Casting Thunderfall or Spinning Orb triggers Conductive"
@@ -1133,23 +1562,64 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   FM: {
-    chain: { name: "Fireball Splash", effect: "Boulder and Meteor generate Splash Fireballs" },
-    "awakening-1": { name: "Heavy Boulder", effect: "Boulder stuns enemies for 3s" },
-    "awakening-2": { name: "Multi Boulders", effect: "Boulder Count +1" },
-    "awakening-3": { name: "Multi Boulders", effect: "Boulder Count +1" },
+    base: {
+      name: "Summon: Fire Mage",
+      effect: "Bounder: Release Boulders to crush enemies in a line."
+    },
+    chain: {
+      name: "Fireball Splash",
+      effect: "Boulder and Meteor generate Splash Fireballs"
+    },
+    "awakening-1": {
+      name: "Heavy Boulder",
+      effect: "Boulder stuns enemies for 3s"
+    },
+    "awakening-2": {
+      name: "Multi Boulders",
+      effect: "Boulder Count +1"
+    },
+    "awakening-3": {
+      name: "Multi Boulders",
+      effect: "Boulder Count +1"
+    },
     "awakening-core": {
       name: "Giant Boulder",
       effect: "Evolves into Giant Boulder: DMG increases with continuous explosions."
     },
-    "white-1": { name: "Boulder Speed Up", effect: "Boulder CD -10%" },
-    "white-2": { name: "Boulder Assault", effect: "Boulder SPD Up with stronger knockback" },
-    "atk60-1": { name: "Boulder DMG Bonus", effect: "Boulder DMG +60%" },
-    "atk60-2": { name: "Boulder DMG Bonus", effect: "Boulder DMG +60%" },
-    "blue-1": { name: "Boulder Master", effect: "Boulder DMG +100%" },
-    "blue-2": { name: "Boulder Burst", effect: "Boulder CD -25%" },
-    "blue-3": { name: "Backup Boulder", effect: "Counter with boulder when attacked. CD: 6s" }
+    "white-1": {
+      name: "Boulder Speed Up",
+      effect: "Boulder CD -10%"
+    },
+    "white-2": {
+      name: "Boulder Assault",
+      effect: "Boulder SPD Up with stronger knockback"
+    },
+    "atk60-1": {
+      name: "Boulder DMG Bonus",
+      effect: "Boulder DMG +60%"
+    },
+    "atk60-2": {
+      name: "Boulder DMG Bonus",
+      effect: "Boulder DMG +60%"
+    },
+    "blue-1": {
+      name: "Boulder Master",
+      effect: "Boulder DMG +100%"
+    },
+    "blue-2": {
+      name: "Boulder Burst",
+      effect: "Boulder CD -25%"
+    },
+    "blue-3": {
+      name: "Backup Boulder",
+      effect: "Counter with boulder when attacked. CD: 6s"
+    }
   },
   IW: {
+    base: {
+      name: "Summon: Ice Witch",
+      effect: "Icicle Sweep: Fires rotating icicles to sweep enemies"
+    },
     chain: {
       name: "Ice Shard",
       effect: "Frost Nova and Icicle Sweep spawn Ice Shards"
@@ -1200,21 +1670,58 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     }
   },
   FW: {
-    chain: { name: "Fireball Splash", effect: "Boulder and Meteor generate Splash Fireballs" },
-    "awakening-1": { name: "Meteor Ignition", effect: "Meteors ignite the ground" },
-    "awakening-2": { name: "Meteor Burst", effect: "Meteor Count +1" },
-    "awakening-3": { name: "Meteor Burst", effect: "Meteor Count +1" },
+    base: {
+      name: "Summon: Flame Wizard",
+      effect: "Meteor: Summons meteors at random locations."
+    },
+    chain: {
+      name: "Fireball Splash",
+      effect: "Boulder and Meteor generate Splash Fireballs"
+    },
+    "awakening-1": {
+      name: "Meteor Ignition",
+      effect: "Meteors ignite the ground"
+    },
+    "awakening-2": {
+      name: "Meteor Burst",
+      effect: "Meteor Count +1"
+    },
+    "awakening-3": {
+      name: "Meteor Burst",
+      effect: "Meteor Count +1"
+    },
     "awakening-core": {
       name: "Meteor Rain",
       effect: "Evolves into Meteor Rain: DMG increases and summons large AoE Meteor shower."
     },
-    "white-1": { name: "Fast Meteor", effect: "Meteor DMG +20%, CD -10%" },
-    "white-2": { name: "Meteor Enlarge", effect: "Meteor Size Up" },
-    "atk60-1": { name: "Meteor DMG Bonus", effect: "Meteor DMG +60%" },
-    "atk60-2": { name: "Meteor DMG Bonus", effect: "Meteor DMG +60%" },
-    "blue-1": { name: "Astrology Master", effect: "Meteor DMG +100%" },
-    "blue-2": { name: "Meteor Smash", effect: "Meteors stun enemies for 1s, DMG +30%" },
-    "blue-3": { name: "Meteor Barrage", effect: "Meteor Count +2" }
+    "white-1": {
+      name: "Fast Meteor",
+      effect: "Meteor DMG +20%, CD -10%"
+    },
+    "white-2": {
+      name: "Meteor Enlarge",
+      effect: "Meteor Size Up"
+    },
+    "atk60-1": {
+      name: "Meteor DMG Bonus",
+      effect: "Meteor DMG +60%"
+    },
+    "atk60-2": {
+      name: "Meteor DMG Bonus",
+      effect: "Meteor DMG +60%"
+    },
+    "blue-1": {
+      name: "Astrology Master",
+      effect: "Meteor DMG +100%"
+    },
+    "blue-2": {
+      name: "Meteor Smash",
+      effect: "Meteors stun enemies for 1s, DMG +30%"
+    },
+    "blue-3": {
+      name: "Meteor Barrage",
+      effect: "Meteor Count +2"
+    }
   }
 };
 
@@ -1634,7 +2141,14 @@ HEROES.forEach((hero) => {
   if (partnerId) {
     hero.chainPartnerId = partnerId;
   }
-  hero.skillMeta = SKILL_META_SCAFFOLD[hero.id];
+  const baseMeta = {
+    name: `Summon: ${hero.name}`,
+    effect: ""
+  };
+  const scaffold = SKILL_META_SCAFFOLD[hero.id];
+  hero.skillMeta = scaffold
+    ? { base: baseMeta, ...scaffold }
+    : { base: baseMeta };
   if (hero.hasArgentSkin == null) {
     hero.hasArgentSkin = true;
   }

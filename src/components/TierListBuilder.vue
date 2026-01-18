@@ -261,16 +261,18 @@ function heroImg(hero?: (typeof HEROES)[number]) {
 }
 const rarityStyles: Record<string, { border: string; bg: string }> = {
   Sublime: {
-    border: "linear-gradient(135deg, #06b6d4, #ec4899)",
-    bg: "linear-gradient(135deg, rgba(6,182,212,0.38), rgba(236,72,153,0.38))"
+    border:
+      "linear-gradient(135deg, #90d4fe 0%, #cd95f3 19%, #ff72fa 36%, #fcfcff 56%, #eee9ff 76%, #82acff 100%)",
+    bg:
+      "linear-gradient(135deg, rgba(144,212,254,0.38) 0%, rgba(205,149,243,0.36) 19%, rgba(255,114,250,0.32) 36%, rgba(252,252,255,0.28) 56%, rgba(238,233,255,0.3) 76%, rgba(130,172,255,0.34) 100%)"
   },
   Mythic: {
-    border: "#ef4444",
-    bg: "rgba(239,68,68,0.32)"
+    border: "linear-gradient(135deg, #ff0036, #ff4f74)",
+    bg: "linear-gradient(135deg, rgba(255,0,54,0.32), rgba(255,79,116,0.32))"
   },
   Legendary: {
-    border: "#facc15",
-    bg: "rgba(250,204,21,0.32)"
+    border: "linear-gradient(135deg, #ffd945, #f7e400)",
+    bg: "linear-gradient(135deg, rgba(255,217,69,0.32), rgba(247,228,0,0.32))"
   },
   Epic: {
     border: "#38bdf8",
@@ -279,9 +281,10 @@ const rarityStyles: Record<string, { border: string; bg: string }> = {
 };
 
 const rarityPreviewBg: Record<string, string> = {
-  Sublime: "linear-gradient(135deg, rgba(6, 182, 212, 0.85), rgba(236, 72, 153, 0.85))",
-  Mythic: "rgba(225, 29, 72, 0.88)",
-  Legendary: "rgba(250, 204, 21, 0.9)",
+  Sublime:
+    "linear-gradient(135deg, rgba(144,212,254,0.85) 0%, rgba(205,149,243,0.85) 19%, rgba(255,114,250,0.82) 36%, rgba(252,252,255,0.78) 56%, rgba(238,233,255,0.8) 76%, rgba(130,172,255,0.85) 100%)",
+  Mythic: "linear-gradient(135deg, rgba(255,0,54,0.88), rgba(255,79,116,0.88))",
+  Legendary: "linear-gradient(135deg, rgba(255,217,69,0.9), rgba(247,228,0,0.9))",
   Epic: "rgba(168, 85, 247, 0.82)",
   Common: "rgba(59, 130, 246, 0.82)"
 };

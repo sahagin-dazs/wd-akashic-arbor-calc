@@ -17,6 +17,7 @@ const LOCAL_STORAGE_KEY = "wdtools-lineup-draft";
 const TOKEN_STORAGE_KEY = "wdtools-lineup-tokens";
 const LOCAL_SAVED_KEY = "wdtools-lineup-saved";
 const GUILD_BOSS_COLLAPSE_KEY = "wdtools-lineup-guildboss-collapse";
+const AKASHIC_LINEUP_STORAGE_KEY = "wd-akashic-lineup";
 
 type DraftState = {
   id: string | null;
@@ -25,6 +26,10 @@ type DraftState = {
   slots: LineupSlot[];
   notes: string;
   guildBoss: GuildBossData;
+};
+
+type AkashicLineupSlot = {
+  heroId: string | null;
 };
 
 type SavedLineup = {
@@ -239,6 +244,26 @@ function normalizeDraft(raw?: Partial<DraftState> | null): DraftState {
   };
 }
 
+function loadAkashicLineupSlots(): AkashicLineupSlot[] {
+  const emptySlots = Array.from({ length: HERO_LIMIT_PER_TEAM }, () => ({ heroId: null }));
+  if (typeof window === "undefined") return emptySlots;
+  try {
+    const stored = localStorage.getItem(AKASHIC_LINEUP_STORAGE_KEY);
+    if (!stored) return emptySlots;
+    const parsed = JSON.parse(stored) as { slots?: AkashicLineupSlot[] };
+    if (!Array.isArray(parsed?.slots)) return emptySlots;
+    const normalized = parsed.slots.slice(0, HERO_LIMIT_PER_TEAM).map((slot) => ({
+      heroId: typeof slot?.heroId === "string" ? slot.heroId : null
+    }));
+    while (normalized.length < HERO_LIMIT_PER_TEAM) {
+      normalized.push({ heroId: null });
+    }
+    return normalized;
+  } catch {
+    return emptySlots;
+  }
+}
+
 function loadDraft(): DraftState {
   if (typeof window === "undefined") return normalizeDraft(null);
   try {
@@ -320,8 +345,11 @@ const rootRef = ref<HTMLElement | null>(null);
 const showPreviewNames = ref(true);
 const showPreviewLevels = ref(true);
 const isMobile = ref(false);
+const akashicLineupSlots = ref<AkashicLineupSlot[]>(loadAkashicLineupSlots());
 let lineupMediaQuery: MediaQueryList | null = null;
 let lineupMediaListener: ((event: MediaQueryListEvent) => void) | null = null;
+let akashicStorageListener: ((event: StorageEvent) => void) | null = null;
+let akashicLineupListener: (() => void) | null = null;
 
 const ALLOWED_HERO_RARITIES = new Set(["Sublime", "Mythic", "Legendary"]);
 
@@ -554,6 +582,7 @@ function newLineup() {
   shareUrl.value = null;
   editUrl.value = null;
   activeSlotPopoverId.value = null;
+  error.value = null;
   success.value = "Started a new lineup.";
 }
 
@@ -578,6 +607,19 @@ function clearSlot(index: number) {
   draft.slots[index].heroId = null;
 }
 
+function clearLineup() {
+  draft.slots.forEach((slot) => {
+    slot.heroId = null;
+  });
+  activeSlotPopoverId.value = null;
+  success.value = "Lineup cleared.";
+  error.value = null;
+}
+
+function refreshAkashicLineup() {
+  akashicLineupSlots.value = loadAkashicLineupSlots();
+}
+
 const filledHeroCount = computed(
   () => draft.slots.filter((slot) => Boolean(slot.heroId)).length
 );
@@ -587,6 +629,11 @@ const totalHeroLimit = computed(() => {
   return HERO_LIMIT_PER_TEAM;
 });
 const isLineupFull = computed(() => filledHeroCount.value >= totalHeroLimit.value);
+const hasAkashicLineup = computed(
+  () =>
+    akashicLineupSlots.value.length === HERO_LIMIT_PER_TEAM &&
+    akashicLineupSlots.value.every((slot) => Boolean(slot.heroId))
+);
 const teamHeroCounts = computed(() => {
   if (draft.format !== "gvg" && draft.format !== "nightmare") return [filledHeroCount.value];
   const teamCount = draft.format === "gvg" ? GVG_TEAM_COUNT : NIGHTMARE_TEAM_COUNT;
@@ -681,6 +728,29 @@ function setSlotHero(slot: LineupSlot, heroId: string | null) {
     }
   }
   slot.heroId = heroId;
+}
+
+function copyFromAkashicLineup() {
+  if (draft.format !== "pve" && draft.format !== "guildboss") {
+    success.value = null;
+    error.value = "Switch to PvE or Guild Boss format to copy from Akashic Arbor.";
+    return;
+  }
+  refreshAkashicLineup();
+  if (!hasAkashicLineup.value) {
+    success.value = null;
+    error.value = "Fill all 5 Akashic Arbor lineup slots to copy them here.";
+    return;
+  }
+  const slots = akashicLineupSlots.value.map((slot) => ({
+    id: newId(),
+    heroId: slot.heroId
+  }));
+  const targetFormat = draft.format === "guildboss" ? "guildboss" : "pve";
+  draft.slots = normalizeSlots(slots, targetFormat);
+  activeSlotPopoverId.value = null;
+  error.value = null;
+  success.value = "Copied lineup from Akashic Arbor.";
 }
 
 function getHero(heroId: string | null) {
@@ -1037,7 +1107,7 @@ async function copyLineupImage() {
 
 function jumpToHeroLevels() {
   if (typeof window === "undefined") return;
-  window.location.hash = "#arbor";
+  window.location.hash = "#collection";
   window.setTimeout(() => {
     document.getElementById("hero-collection")?.scrollIntoView({ behavior: "smooth" });
   }, 200);
@@ -1165,6 +1235,17 @@ onMounted(() => {
   };
   isMobile.value = lineupMediaQuery.matches;
   lineupMediaQuery.addEventListener("change", lineupMediaListener);
+  refreshAkashicLineup();
+  akashicStorageListener = (event) => {
+    if (event.key === AKASHIC_LINEUP_STORAGE_KEY) {
+      refreshAkashicLineup();
+    }
+  };
+  window.addEventListener("storage", akashicStorageListener);
+  akashicLineupListener = () => {
+    refreshAkashicLineup();
+  };
+  window.addEventListener("wd-akashic-lineup-updated", akashicLineupListener);
   const hash = window.location.hash.replace("#", "");
   if (hash.startsWith("lineup=")) {
     const params = new URLSearchParams(hash);
@@ -1185,6 +1266,12 @@ onBeforeUnmount(() => {
   }
   if (lineupMediaQuery && lineupMediaListener) {
     lineupMediaQuery.removeEventListener("change", lineupMediaListener);
+  }
+  if (akashicStorageListener && typeof window !== "undefined") {
+    window.removeEventListener("storage", akashicStorageListener);
+  }
+  if (akashicLineupListener && typeof window !== "undefined") {
+    window.removeEventListener("wd-akashic-lineup-updated", akashicLineupListener);
   }
 });
 </script>
@@ -1269,7 +1356,18 @@ onBeforeUnmount(() => {
     <div class="panel">
       <div class="rows-header">
         <strong>Lineup slots</strong>
-        <span v-if="isLineupFull" class="pill success">Lineup full</span>
+        <div class="row-header-actions">
+          <button class="ghost" :disabled="isLocked" @click="clearLineup">Clear lineup</button>
+          <button
+            v-if="draft.format === 'pve' || draft.format === 'guildboss'"
+            class="ghost"
+            :disabled="isLocked || !hasAkashicLineup"
+            @click="copyFromAkashicLineup"
+          >
+            Copy from Akashic Arbor
+          </button>
+          <span v-if="isLineupFull" class="pill success">Lineup full</span>
+        </div>
       </div>
       <div v-if="draft.format === 'gvg' || draft.format === 'nightmare'" class="lineup-team-groups">
         <div
@@ -1755,7 +1853,10 @@ onBeforeUnmount(() => {
             <div v-else-if="!slot.heroId" class="lineup-export-empty" aria-hidden="true"></div>
           </div>
         </div>
-        <div v-if="draft.format === 'guildboss'" class="guildboss-export-skills">
+        <div
+          v-if="draft.format === 'guildboss' && guildBossSkillCount > 0"
+          class="guildboss-export-skills"
+        >
           <div class="lineup-export-notes-title">Skills</div>
           <div
             v-for="heroId in guildBossHeroIds.filter(shouldShowGuildBossPreviewHero)"

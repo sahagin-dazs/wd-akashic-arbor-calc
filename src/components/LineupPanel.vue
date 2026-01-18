@@ -172,14 +172,28 @@ function onAvatarError(heroId: string | null) {
 
 function slotStyle(heroId: string | null) {
   if (!heroId) return {};
-  const element = getHeroElement(heroId);
-  if (!element) return {};
+  const hero = getHero(heroId);
+  if (!hero) return {};
+  if (hero.rarity === "Sublime") {
+    return {
+      background:
+        "linear-gradient(135deg, #90d4fe 0%, #cd95f3 19%, #ff72fa 36%, #fcfcff 56%, #eee9ff 76%, #82acff 100%)",
+      borderColor: "rgba(125, 211, 252, 0.7)",
+      color: "#0f172a"
+    };
+  }
+  const element = hero.element;
   const colors = ELEMENT_BACKGROUNDS[element];
   if (!colors) return {};
   return {
     background: colors.background,
     borderColor: colors.border
   };
+}
+
+function isSublime(heroId: string | null) {
+  const hero = getHero(heroId);
+  return hero?.rarity === "Sublime";
 }
 
 function clearSlot(idx: number) {
@@ -275,7 +289,7 @@ function elementMeta(heroId: string | null) {
         v-for="(slot, idx) in lineup.slots"
         :key="idx"
         class="lineup-slot"
-        :class="{ filled: !!slot.heroId, 'slot-empty-shell': !slot.heroId }"
+        :class="{ filled: !!slot.heroId, 'slot-empty-shell': !slot.heroId, sublime: isSublime(slot.heroId) }"
         :style="slotStyle(slot.heroId)"
       >
         <template v-if="slot.heroId">

@@ -36,6 +36,36 @@
   --meta-pill-bg: #ffffff0d;
   --meta-pill-contrast-bg: #ffffff2e;
   --meta-pill-contrast-text: #0f172a;
+  --rarity-mythic-gradient: linear-gradient(135deg, #ff0036, #ff4f74);
+  --rarity-mythic-gradient-soft: linear-gradient(
+    135deg,
+    rgba(255, 0, 54, 0.24),
+    rgba(255, 79, 116, 0.24)
+  );
+  --rarity-legendary-gradient: linear-gradient(135deg, #ffd945, #f7e400);
+  --rarity-legendary-gradient-soft: linear-gradient(
+    135deg,
+    rgba(255, 217, 69, 0.24),
+    rgba(247, 228, 0, 0.24)
+  );
+  --rarity-sublime-gradient: linear-gradient(
+    135deg,
+    #90d4fe 0%,
+    #cd95f3 19%,
+    #ff72fa 36%,
+    #fcfcff 56%,
+    #eee9ff 76%,
+    #82acff 100%
+  );
+  --rarity-sublime-gradient-soft: linear-gradient(
+    135deg,
+    rgba(144, 212, 254, 0.22) 0%,
+    rgba(205, 149, 243, 0.22) 19%,
+    rgba(255, 114, 250, 0.2) 36%,
+    rgba(252, 252, 255, 0.18) 56%,
+    rgba(238, 233, 255, 0.2) 76%,
+    rgba(130, 172, 255, 0.22) 100%
+  );
 }
 
 html {
@@ -108,7 +138,7 @@ body {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  max-width: 1400px;
+  max-width: 1520px;
   margin: 0 auto;
 }
 
@@ -636,6 +666,12 @@ body {
 @media (min-width: 1200px) {
   .hero-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1199px) and (min-width: 821px) {
+  .hero-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1453,6 +1489,7 @@ body {
   color: var(--text-muted);
 }
 
+
 .summon-results {
   border-radius: 16px;
   border: 1px solid var(--border-soft);
@@ -1505,18 +1542,40 @@ body {
 }
 
 .summon-pull-card.rarity-mythic {
-  background: linear-gradient(135deg, rgba(225, 29, 72, 0.85), rgba(225, 29, 72, 0.65));
+  background: var(--rarity-mythic-gradient);
   box-shadow: 0 0 12px rgba(225, 29, 72, 0.25);
 }
 
 .summon-pull-card.rarity-sublime {
-  background-image: linear-gradient(135deg, #27e0f6, #c084fc);
+  background: var(--rarity-sublime-gradient);
   box-shadow: 0 0 16px rgba(34, 211, 238, 0.35);
 }
 
+.summon-pull-card.rarity-sublime {
+  color: #0f172a;
+}
+
+.summon-pull-card.rarity-sublime .pull-quantity,
+.summon-pull-card.rarity-sublime .token-icon {
+  color: #0f172a;
+}
+
+.summon-pull-card.rarity-sublime .token-icon {
+  border-color: rgba(15, 23, 42, 0.35);
+}
+
 .summon-pull-card.rarity-legendary {
-  background: linear-gradient(135deg, rgba(250, 204, 21, 0.85), rgba(250, 204, 21, 0.65));
+  background: var(--rarity-legendary-gradient);
   box-shadow: 0 0 12px rgba(250, 204, 21, 0.25);
+}
+
+.summon-pull-card.rarity-legendary .pull-quantity,
+.summon-pull-card.rarity-legendary .token-icon {
+  color: #0f172a;
+}
+
+.summon-pull-card.rarity-legendary .token-icon {
+  border-color: rgba(15, 23, 42, 0.35);
 }
 
 .summon-pull-card.rarity-epic {
@@ -1682,6 +1741,7 @@ body {
   color: var(--text-main);
 }
 
+
 .featured-count-badge {
   font-size: 22px;
   font-weight: 700;
@@ -1694,7 +1754,7 @@ body {
 .featured-count-card.rarity-sublime {
   border-color: transparent;
   background-image: linear-gradient(var(--mini-card-bg), var(--mini-card-bg)),
-    linear-gradient(135deg, #22d3ee, #c084fc);
+    var(--rarity-sublime-gradient);
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 16px rgba(34, 211, 238, 0.3);
@@ -1751,7 +1811,7 @@ body {
 .featured-count-card.highlight-sublime {
   border-color: transparent;
   background-image: linear-gradient(var(--mini-card-bg), var(--mini-card-bg)),
-    linear-gradient(135deg, #27e0f6, #c084fc);
+    var(--rarity-sublime-gradient);
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 24px rgba(34, 211, 238, 0.65);
@@ -1886,23 +1946,21 @@ body {
 }
 
 .badge-legendary {
-  border-color: #f97316;
-  color: #9a3412;
-  background: rgba(249, 115, 22, 0.18);
+  border-color: #c2410c;
+  color: #1f2937;
+  background: var(--rarity-legendary-gradient);
 }
 
 .badge-mythic {
-  border-color: #e11d48;
-  color: #9f1239;
-  background: rgba(225, 29, 72, 0.18);
+  border-color: #be123c;
+  color: #fff;
+  background: var(--rarity-mythic-gradient);
 }
 
 .badge-sublime {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(#050816, #050816) padding-box,
-    linear-gradient(130deg, #22d3ee, #c084fc) border-box;
-  color: #a5f3fc;
+  border: 1px solid rgba(130, 172, 255, 0.6);
+  background: var(--rarity-sublime-gradient);
+  color: #0f172a;
   font-weight: 600;
 }
 
@@ -2232,6 +2290,11 @@ body {
   font-weight: 600;
 }
 
+.lineup-slot.sublime .lineup-meta .meta-pill {
+  background: rgba(15, 23, 42, 0.35);
+  color: #f8fafc;
+}
+
 .lineup-level {
   display: flex;
   flex-direction: column;
@@ -2253,6 +2316,19 @@ body {
   font-size: 12px;
   font-weight: 600;
   color: var(--lineup-slot-text);
+}
+
+.lineup-slot.sublime .lineup-level-text {
+  color: #0f172a;
+}
+
+.lineup-slot.sublime .lineup-remove {
+  background: rgba(15, 23, 42, 0.18);
+  color: #0f172a;
+}
+
+.lineup-slot.sublime .rank-select-label {
+  color: #0f172a;
 }
 
 .lineup-remove {
@@ -3315,11 +3391,11 @@ body {
 .rarity-chip.rarity-sublime {
   border-color: rgba(34, 211, 238, 0.9);
   color: var(--text-main);
-  background: rgba(34, 211, 238, 0.25);
+  background: var(--rarity-sublime-gradient-soft);
 }
 
 .rarity-chip.rarity-sublime.active {
-  background: linear-gradient(130deg, #22d3ee, #c084fc);
+  background: var(--rarity-sublime-gradient);
   color: #0f172a;
   border-color: transparent;
 }
@@ -3327,25 +3403,25 @@ body {
 .rarity-chip.rarity-mythic {
   border-color: rgba(225, 29, 72, 0.9);
   color: #9f1239;
-  background: rgba(225, 29, 72, 0.12);
+  background: var(--rarity-mythic-gradient-soft);
 }
 
 .rarity-chip.rarity-mythic.active {
-  background: rgba(225, 29, 72, 0.8);
+  background: var(--rarity-mythic-gradient);
   color: #fff;
-  border-color: rgba(225, 29, 72, 0.8);
+  border-color: transparent;
 }
 
 .rarity-chip.rarity-legendary {
   border-color: rgba(250, 204, 21, 0.9);
   color: #854d0e;
-  background: rgba(250, 204, 21, 0.2);
+  background: var(--rarity-legendary-gradient-soft);
 }
 
 .rarity-chip.rarity-legendary.active {
-  background: rgba(250, 204, 21, 0.85);
+  background: var(--rarity-legendary-gradient);
   color: #0f172a;
-  border-color: rgba(250, 204, 21, 0.85);
+  border-color: transparent;
 }
 
 .rarity-chip.rarity-epic {
@@ -3634,8 +3710,12 @@ body {
   text-align: center;
 }
 
+:root[data-theme="light"] .pity-inline-callout {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+}
+
 .sublime-label {
-  background-image: linear-gradient(135deg, #22d3ee, #c084fc);
+  background-image: var(--rarity-sublime-gradient);
   -webkit-background-clip: text;
   color: transparent;
   font-weight: 700;
@@ -4267,33 +4347,33 @@ body {
 }
 
 .lineup-card .guildboss-skill.skill-blue {
-  background: #2da2e6;
+  background: linear-gradient(135deg, #008ae9, #00bde7);
   border-color: #1d8bd0;
   color: #f8fafc;
 }
 
 .lineup-card .guildboss-skill.skill-white,
 .lineup-card .guildboss-skill.skill-atk60 {
-  background: #d1d5db;
+  background: linear-gradient(135deg, #959595, #d2d2d2);
   border-color: #cbd5f5;
   color: #0f172a;
 }
 
 .lineup-card .guildboss-skill.skill-awakening {
-  background: #d1d5db;
+  background: linear-gradient(135deg, #959595, #d2d2d2);
   border-color: #eab308;
   color: #0f172a;
 }
 
 .lineup-card .guildboss-skill.skill-awakening-core {
-  background: #b12be6;
+  background: linear-gradient(180deg, #ce00ec, #f200e8);
   border-color: #9333ea;
   color: #f8fafc;
   box-shadow: inset 0 0 0 2px rgba(250, 204, 21, 0.75);
 }
 
 .lineup-card .guildboss-skill.skill-chain {
-  background: #e11d48;
+  background: linear-gradient(135deg, #ff0036, #ff4f74);
   border-color: #be123c;
   color: #f8fafc;
 }
@@ -4797,32 +4877,32 @@ body {
 }
 
 .lineup-card .guildboss-export-skill.skill-blue {
-  background: #2da2e6;
+  background: linear-gradient(135deg, #008ae9, #00bde7);
   border-color: #1d8bd0;
   color: #f8fafc;
 }
 
 .lineup-card .guildboss-export-skill.skill-white,
 .lineup-card .guildboss-export-skill.skill-atk60 {
-  background: #d1d5db;
+  background: linear-gradient(135deg, #959595, #d2d2d2);
   border-color: #cbd5f5;
   color: #0f172a;
 }
 
 .lineup-card .guildboss-export-skill.skill-awakening {
-  background: #d1d5db;
+  background: linear-gradient(135deg, #959595, #d2d2d2);
   border-color: #eab308;
   color: #0f172a;
 }
 
 .lineup-card .guildboss-export-skill.skill-awakening-core {
-  background: #b12be6;
+  background: linear-gradient(180deg, #ce00ec, #f200e8);
   border-color: #9333ea;
   color: #f8fafc;
 }
 
 .lineup-card .guildboss-export-skill.skill-chain {
-  background: #e11d48;
+  background: linear-gradient(135deg, #ff0036, #ff4f74);
   border-color: #be123c;
   color: #f8fafc;
 }
@@ -5038,32 +5118,32 @@ body {
 
 
 :root[data-theme="light"] .lineup-card .guildboss-skill.skill-blue {
-  background: #2da2e6;
+  background: linear-gradient(135deg, #008ae9, #00bde7);
   border-color: #1d8bd0;
   color: #f8fafc;
 }
 
 :root[data-theme="light"] .lineup-card .guildboss-skill.skill-white,
 :root[data-theme="light"] .lineup-card .guildboss-skill.skill-atk60 {
-  background: #d1d5db;
+  background: linear-gradient(135deg, #959595, #d2d2d2);
   border-color: #cbd5f5;
   color: #0f172a;
 }
 
 :root[data-theme="light"] .lineup-card .guildboss-skill.skill-awakening {
-  background: #d1d5db;
+  background: linear-gradient(135deg, #959595, #d2d2d2);
   border-color: #eab308;
   color: #0f172a;
 }
 
 :root[data-theme="light"] .lineup-card .guildboss-skill.skill-awakening-core {
-  background: #b12be6;
+  background: linear-gradient(180deg, #ce00ec, #f200e8);
   border-color: #9333ea;
   color: #f8fafc;
 }
 
 :root[data-theme="light"] .lineup-card .guildboss-skill.skill-chain {
-  background: #e11d48;
+  background: linear-gradient(135deg, #ff0036, #ff4f74);
   border-color: #be123c;
   color: #f8fafc;
 }
@@ -5925,24 +6005,28 @@ body {
   border-color: var(--accent);
 }
 .hero-card-mini.rarity-mythic,
+.skills-hero-card.rarity-mythic,
 .linked-hero.rarity-mythic,
 .tier-card .linked-pill.rarity-mythic {
   border-color: rgba(225, 29, 72, 0.95);
-  background: rgba(225, 29, 72, 0.2);
+  background: var(--rarity-mythic-gradient-soft);
 }
 .hero-card-mini.rarity-legendary,
+.skills-hero-card.rarity-legendary,
 .linked-hero.rarity-legendary,
 .tier-card .linked-pill.rarity-legendary {
   border-color: rgba(250, 204, 21, 0.95);
-  background: rgba(250, 204, 21, 0.2);
+  background: var(--rarity-legendary-gradient-soft);
 }
 .hero-card-mini.rarity-sublime,
+.skills-hero-card.rarity-sublime,
 .linked-hero.rarity-sublime,
 .tier-card .linked-pill.rarity-sublime {
   border-color: transparent;
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.22), rgba(236, 72, 153, 0.22));
+  background: var(--rarity-sublime-gradient-soft);
 }
 .hero-card-mini.rarity-sublime::before,
+.skills-hero-card.rarity-sublime::before,
 .linked-hero.rarity-sublime::before,
 .tier-card .linked-pill.rarity-sublime::before {
   content: "";
@@ -5950,7 +6034,7 @@ body {
   inset: 0;
   border-radius: 12px;
   padding: 2px;
-  background: linear-gradient(135deg, #06b6d4, #ec4899);
+  background: var(--rarity-sublime-gradient);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -5987,4 +6071,749 @@ body {
   .tier-card .row-actions {
     justify-content: flex-start;
   }
+}
+
+.skills-explorer-panel .skills-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--meta-pill-bg);
+  border: 1px solid var(--border-soft);
+}
+
+.skills-explorer-panel {
+  max-width: 1174px;
+  margin: 0 auto;
+}
+
+.skills-explorer-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding: 8px 4px 0;
+}
+
+.skills-explorer-header .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0 0 4px;
+}
+
+.skills-explorer-header h2 {
+  margin: 0;
+}
+
+.skills-explorer-header .muted {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.skills-explorer-actions {
+  display: flex;
+  align-items: center;
+}
+
+.skills-explorer-panel .skills-mode-toggle .btn.active {
+  background: var(--accent);
+  color: #f8fafc;
+}
+
+.skills-hero-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skills-hero-selector {
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.skills-hero-selector.is-collapsed {
+  gap: 0;
+}
+
+.skills-hero-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  align-self: stretch;
+}
+
+.skills-hero-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 520px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.skills-hero-rarity-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skills-hero-rarity-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.skills-hero-rarity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.skills-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: var(--hero-card-bg);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.skills-hero-card:hover {
+  border-color: rgba(148, 163, 184, 0.6);
+  transform: translateY(-1px);
+}
+
+.skills-hero-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-strong);
+  transform: translateY(-1px);
+}
+
+.skills-hero-card.active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px var(--accent);
+  pointer-events: none;
+}
+
+.skills-hero-card.rarity-sublime.active::after {
+  box-shadow:
+    0 0 0 2px rgba(144, 212, 254, 0.9),
+    0 0 0 4px rgba(255, 114, 250, 0.55);
+}
+
+.skills-hero-card.rarity-sublime.active {
+  background: var(--rarity-sublime-gradient-soft);
+}
+
+.skills-hero-card img {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--avatar-surface);
+}
+
+.skills-hero-card span {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.skills-hero-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skills-hero-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skills-hero-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skills-hero-summary img {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: var(--avatar-surface);
+}
+
+.skills-hero-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.skills-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.skills-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.skills-export-status {
+  font-size: 0.82rem;
+  color: #22c55e;
+}
+
+.skills-hero-tree {
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skills-export-header {
+  border-bottom: 1px dashed var(--border-soft);
+  padding-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.skills-hero-group-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.skills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.skills-card {
+  flex: 0 1 180px;
+  display: flex;
+  align-items: stretch;
+}
+
+.skills-prereq-arrow {
+  color: var(--text-muted);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+  align-self: center;
+}
+
+@media (max-width: 445px) {
+  .skills-row.skills-row-linked {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .skills-row.skills-row-linked .skills-prereq-arrow {
+    padding: 6px 0;
+    justify-content: center;
+  }
+
+  .skills-row.skills-row-linked .skills-prereq-arrow i {
+    transform: rotate(90deg);
+  }
+}
+
+.skills-skill-card {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  position: relative;
+  height: 100%;
+  min-height: 168px;
+}
+
+.skills-skill-card.skill-blue {
+  background: linear-gradient(135deg, #008ae9, #00bde7);
+  border-color: #1d8bd0;
+  color: #f8fafc;
+}
+
+.skills-skill-card.skill-white,
+.skills-skill-card.skill-atk60 {
+  background: linear-gradient(135deg, #959595, #d2d2d2);
+  border-color: #cbd5f5;
+  color: #0f172a;
+}
+
+.skills-skill-card.skill-awakening {
+  background: linear-gradient(135deg, #959595, #d2d2d2);
+  border-color: #cbd5f5;
+  color: #0f172a;
+}
+
+.skills-skill-card.skill-awakening-core {
+  background: linear-gradient(180deg, #ce00ec, #f200e8);
+  border-color: #9333ea;
+  color: #f8fafc;
+  box-shadow: none;
+}
+
+.skills-skill-card.skill-chain {
+  background: var(--rarity-mythic-gradient);
+  border-color: #be123c;
+  color: #f8fafc;
+}
+
+.skills-skill-card.skill-base {
+  border-color: transparent;
+}
+
+.skills-skill-card.skill-base.skill-base-xeno {
+  background: var(--rarity-sublime-gradient);
+  color: #1f2937;
+}
+
+.skills-skill-card.skill-base.skill-base-mythic {
+  background: var(--rarity-mythic-gradient);
+  color: #f8fafc;
+}
+
+.skills-skill-card.skill-base.skill-base-legendary {
+  background: var(--rarity-legendary-gradient);
+  color: #0f172a;
+}
+
+.skills-skill-category {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.skills-skill-card.skill-blue .skills-skill-category,
+.skills-skill-card.skill-chain .skills-skill-category,
+.skills-skill-card.skill-awakening-core .skills-skill-category {
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.skills-skill-avatar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+  background: var(--avatar-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skills-skill-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.skills-skill-image {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.skills-skill-image img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.skills-skill-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.skills-skill-effect {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.skills-skill-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.skills-skill-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.skills-skill-dots span.filled {
+  background: #f59e0b;
+}
+
+.skills-export-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.skills-export-hero {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skills-export-hero img {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--avatar-surface);
+}
+
+.skills-export-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skills-export-hero-meta .meta-pill,
+.skills-hero-meta .meta-pill {
+  background: rgba(148, 163, 184, 0.35);
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+:root[data-theme="light"] .skills-export-hero-meta .meta-pill,
+:root[data-theme="light"] .skills-hero-meta .meta-pill {
+  background: rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.2);
+}
+
+.skills-hero-tree.exporting .skills-export-title {
+  font-size: 1.15rem;
+}
+
+.skills-hero-tree.exporting .skills-export-hero img {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+.skills-hero-tree.exporting .skills-export-hero-meta .meta-pill,
+.skills-hero-tree.exporting .skills-export-hero-meta .badge {
+  font-size: 12px;
+  padding: 4px 12px;
+}
+
+.skills-hero-tree.exporting .skills-export-hero-meta .meta-pill i {
+  font-size: 13px;
+}
+
+.skills-export-footer {
+  border-top: 1px dashed var(--border-soft);
+  padding-top: 12px;
+  text-align: center;
+}
+
+.skills-export-callout {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.skills-filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.skills-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-muted);
+}
+
+.skills-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.skills-all-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1174px;
+  margin: 0 auto;
+}
+
+.skills-all-group-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.skills-all-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.skills-empty {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+@media (max-width: 960px) {
+  .skills-hero-list {
+    max-height: none;
+  }
+
+  .skills-all-groups {
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .skills-card {
+    flex: 1 1 160px;
+  }
+}
+
+:root[data-theme="light"] .skills-skill-card.skill-blue {
+  background: linear-gradient(135deg, #008ae9, #00bde7);
+  border-color: #136aa0;
+}
+
+:root[data-theme="light"] .skills-skill-card.skill-chain {
+  background: linear-gradient(135deg, #ff0036, #ff4f74);
+  border-color: #991b1b;
+}
+
+:root[data-theme="light"] .skills-skill-card.skill-white,
+:root[data-theme="light"] .skills-skill-card.skill-atk60,
+:root[data-theme="light"] .skills-skill-card.skill-awakening {
+  background: linear-gradient(135deg, #959595, #d2d2d2);
+  border-color: #cbd5f5;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .skills-skill-card.skill-awakening-core {
+  background: linear-gradient(180deg, #ce00ec, #f200e8);
+  border-color: #86198f;
+  color: #f8fafc;
+}
+
+:root[data-theme="light"] .skills-skill-category {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .skills-skill-dots span {
+  background: rgba(15, 23, 42, 0.2);
+}
+
+:root[data-theme="light"] .skills-skill-dots span.filled {
+  background: #f59e0b;
+}
+
+:root[data-theme="light"] .skills-hero-tree.exporting .badge-sublime,
+:root[data-theme="light"] .skills-export-hero-meta .badge-sublime,
+:root[data-theme="light"] .skills-hero-meta .badge-sublime {
+  background: var(--rarity-sublime-gradient);
+  color: #0f172a;
+  border: 1px solid rgba(130, 172, 255, 0.6);
+}
+.skills-hero-list.collapsed .skills-hero-rarity-group {
+  display: none;
+}
+
+.skills-hero-collapse {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: var(--meta-pill-bg);
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.skills-hero-selector .skills-hero-collapse {
+  padding: 6px 14px;
+  height: 100%;
+}
+
+.skills-hero-selector-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.skills-hero-collapse i {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.skills-hero-picker {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: var(--hero-card-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.skills-hero-picker img {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.skills-hero-picker.empty {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.6);
+  background: var(--panel-bg);
+}
+
+.skills-hero-picker .plus {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.skills-hero-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 4px;
+}
+
+.skills-hero-empty-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.skills-hero-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.skills-hero-modal {
+  width: min(920px, 100%);
+  max-height: min(80vh, 760px);
+  overflow: auto;
+  background: var(--overlay-card-bg);
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--panel-shadow);
+  padding: 16px;
+}
+
+.skills-hero-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.skills-hero-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }

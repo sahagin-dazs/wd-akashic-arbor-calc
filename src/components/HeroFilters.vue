@@ -109,14 +109,6 @@ const rarityOptions: Array<{ id: Rarity; label: string }> = [
   {
     id: "Legendary",
     label: "Legendary"
-  },
-  {
-    id: "Epic",
-    label: "Epic"
-  },
-  {
-    id: "Common",
-    label: "Common"
   }
 ];
 

@@ -29,6 +29,14 @@ Main site: **https://wdtoolbox.com**
 
 ---
 
+## **🧭 Skills Explorer**
+- Browse every hero skill + base skills.
+- Filters by element/class/rarity + full-text search.
+- 1‑click **Copy Skill Tree** image.
+**Go here:** https://wdtoolbox.com/#skills
+
+---
+
 ## **🎲 Summon Simulator**
 - Simulate **Warrior**, **Rate‑Up**, **Xenoscape** banners.
 - Pity/guarantee tracking + history.
