@@ -147,6 +147,7 @@ const HERO_LIST_COLLAPSED_KEY = "wd-tools-skills-explorer-collapsed";
 const selectedHeroId = ref<string | null>(null);
 const heroListCollapsed = ref(false);
 const heroPickerOpen = ref(false);
+const heroDetailRef = ref<HTMLElement | null>(null);
 
 const roleFilters = ref<Role[]>([]);
 const elementFilters = ref<Element[]>([]);
@@ -319,6 +320,7 @@ const allSkills = computed(() =>
   visibleHeroes.value.flatMap((hero) =>
     SKILL_DEFS.filter((skill) => {
       if (skill.type === "chain") return heroHasChainSkill(hero);
+      if (skill.id === "atk60-2") return false;
       return true;
     }).map((skill) => {
       const meta = getHeroSkillMeta(hero.id, skill);
@@ -361,9 +363,13 @@ const groupedAllSkills = computed(() => {
   return grouped;
 });
 
-function selectHero(heroId: string) {
+async function selectHero(heroId: string) {
   selectedHeroId.value = heroId;
   heroPickerOpen.value = false;
+  if (typeof window !== "undefined" && window.matchMedia("(max-width: 820px)").matches) {
+    await nextTick();
+    heroDetailRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 function clearSelectedHero() {
@@ -528,7 +534,7 @@ async function copyHeroSkills() {
             </div>
           </div>
         </div>
-        <div class="skills-hero-detail">
+        <div ref="heroDetailRef" class="skills-hero-detail">
           <div v-if="selectedHero" class="skills-hero-header" v-show="!exporting">
             <div class="skills-hero-summary">
               <button
