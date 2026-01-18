@@ -35,6 +35,16 @@ export interface HeroDef {
   isRateUpHero?: boolean;
   isWishlistHero?: boolean;
   isQuest?: boolean;
+  chainPartnerId?: string;
+  hasArgentSkin?: boolean;
+  skillMeta?: Record<
+    string,
+    {
+      name: string;
+      effect: string;
+      imageKey?: string;
+    }
+  >;
 }
 
 export interface OwnedHero {

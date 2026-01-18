@@ -483,6 +483,7 @@ const rateUpConfigLevelLabel = computed(() => {
   );
 });
 const rateUpConfigDisabled = computed(() => rateUpConfigLevel.value === "none");
+const lastRateUpHeroId = ref<string | null>(state.value.rateUp.featuredHeroId ?? null);
 
 type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
 const LEVEL_ICON_CLASS_MAP: Record<LevelIconType, string> = {
@@ -1273,6 +1274,31 @@ function changeTab(tab: SummonTab) {
   activeTab.value = tab;
 }
 
+function hasRateUpStats() {
+  return (
+    state.value.rateUp.summonsUsed > 0 ||
+    state.value.history.some((entry) => entry.banner === "rate")
+  );
+}
+
+function handleRateUpHeroChange(event: Event) {
+  const nextId = (event.target as HTMLSelectElement).value || null;
+  const currentId = lastRateUpHeroId.value;
+  if (nextId === currentId) return;
+  if (hasRateUpStats()) {
+    const ok = window.confirm(
+      "Switching the rate-up hero will clear your current rate-up stats. Continue?"
+    );
+    if (!ok) {
+      state.value.rateUp.featuredHeroId = currentId;
+      return;
+    }
+    clearHistoryForActiveTab();
+  }
+  state.value.rateUp.featuredHeroId = nextId;
+  lastRateUpHeroId.value = nextId;
+}
+
 watch(activeTab, (value) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(SUMMON_TAB_STORAGE_KEY, value);
@@ -1547,10 +1573,12 @@ watch(
   (list) => {
     if (!list.length) {
       state.value.rateUp.featuredHeroId = null;
+      lastRateUpHeroId.value = null;
       return;
     }
     if (!list.some((hero) => hero.id === state.value.rateUp.featuredHeroId)) {
       state.value.rateUp.featuredHeroId = list[0]?.id ?? null;
+      lastRateUpHeroId.value = state.value.rateUp.featuredHeroId;
     }
   },
   { immediate: true }
@@ -1664,7 +1692,7 @@ watch(
     <div v-else-if="activeTab === 'rate'" class="summon-panel">
       <label class="summon-field standalone-field">
         <span>Featured hero</span>
-        <select v-model="state.rateUp.featuredHeroId">
+        <select v-model="state.rateUp.featuredHeroId" @change="handleRateUpHeroChange">
           <option
             v-for="hero in rateUpHeroes"
             :value="hero.id"

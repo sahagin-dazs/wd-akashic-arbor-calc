@@ -112,6 +112,32 @@ body {
   margin: 0 auto;
 }
 
+@media (max-width: 600px) {
+  .app-shell {
+    padding: 8px;
+    gap: 12px;
+  }
+
+  .site-header {
+    padding: 4px 0 8px;
+  }
+
+  .tier-card {
+    padding: 4px;
+    gap: 8px;
+  }
+
+  .tier-card .panel {
+    padding: 4px;
+    gap: 8px;
+  }
+
+  .panel {
+    padding: 4px;
+    gap: 8px;
+  }
+}
+
 .site-header {
   display: flex;
   flex-direction: column;
@@ -3745,6 +3771,7 @@ body {
 }
 .tier-card .pill.success { color: #22c55e; }
 .tier-card .pill.danger { color: var(--danger); }
+.tier-card .pill.warning { color: #f59e0b; }
 .tier-card .share-box {
   display: grid;
   gap: 10px;
@@ -3954,6 +3981,473 @@ body {
   font-size: 0.85rem;
 }
 
+.lineup-card .guildboss-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lineup-card .guildboss-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lineup-card .guildboss-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lineup-card .guildboss-skill-count {
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #e2e8f0;
+}
+
+.lineup-card .guildboss-awakened {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(12, 18, 36, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lineup-card .guildboss-awakened-title {
+  font-weight: 600;
+}
+
+.lineup-card .guildboss-awakened-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lineup-card .guildboss-awakened-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 14px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #e2e8f0;
+  min-height: 46px;
+}
+
+.lineup-card .guildboss-awakened-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.lineup-card .guildboss-awakened-name {
+  font-size: 0.85rem;
+}
+
+.lineup-card .guildboss-heroes {
+  display: grid;
+  gap: 12px;
+}
+
+.lineup-card .guildboss-hero-card {
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(8, 12, 24, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lineup-card .guildboss-hero-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lineup-card .guildboss-hero-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lineup-card .guildboss-hero-name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lineup-card .guildboss-hero-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lineup-card .guildboss-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.2);
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.lineup-card .guildboss-toggle i {
+  transition: transform 0.2s ease;
+}
+
+.lineup-card .guildboss-toggle i.open {
+  transform: rotate(90deg);
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-toggle {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.2);
+  color: #0f172a;
+}
+
+.lineup-card .guildboss-hero-count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.4);
+  color: #e2e8f0;
+}
+
+.lineup-card .guildboss-hero-total {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #cbd5f5;
+}
+
+.lineup-card .ghost.tiny.has-selection {
+  border-color: rgba(34, 197, 94, 0.6);
+  color: #22c55e;
+}
+
+.lineup-card .guildboss-hero-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.lineup-card .guildboss-hero-name {
+  font-weight: 600;
+}
+
+.lineup-card .guildboss-hero-meta {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.lineup-card .guildboss-argent-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #cbd5f5;
+}
+
+.lineup-card .guildboss-awakened-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #facc15;
+}
+
+.lineup-card .guildboss-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 160px));
+  gap: 6px;
+  justify-content: start;
+}
+
+@media (max-width: 600px) {
+  .lineup-card .guildboss-skill-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: center;
+  }
+}
+
+.lineup-card .guildboss-skill-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.lineup-card .guildboss-skill-group {
+  display: grid;
+  gap: 6px;
+}
+
+.lineup-card .guildboss-skill-group-title {
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e2e8f0;
+}
+
+@media (max-width: 600px) {
+  .lineup-card .guildboss-skill-group .guildboss-skill[data-skill-type="awakening-core"] {
+    grid-column: 1 / -1;
+  }
+}
+
+.lineup-card .guildboss-skill {
+  border-radius: 12px;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-height: 150px;
+  position: relative;
+}
+
+.lineup-card .guildboss-skill.selected {
+  border-color: rgba(148, 163, 184, 0.6);
+  box-shadow: none;
+  transform: none;
+  position: relative;
+}
+
+.lineup-card .guildboss-skill.auto {
+  border-color: rgba(148, 163, 184, 0.5);
+  box-shadow: none;
+  transform: none;
+}
+
+.lineup-card .guildboss-skill.selected::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(34, 197, 94, 0.24);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.lineup-card .guildboss-skill.auto::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(34, 197, 94, 0.45);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.lineup-card .guildboss-skill.skill-blue {
+  background: #2da2e6;
+  border-color: #1d8bd0;
+  color: #f8fafc;
+}
+
+.lineup-card .guildboss-skill.skill-white,
+.lineup-card .guildboss-skill.skill-atk60 {
+  background: #d1d5db;
+  border-color: #cbd5f5;
+  color: #0f172a;
+}
+
+.lineup-card .guildboss-skill.skill-awakening {
+  background: #d1d5db;
+  border-color: #eab308;
+  color: #0f172a;
+}
+
+.lineup-card .guildboss-skill.skill-awakening-core {
+  background: #b12be6;
+  border-color: #9333ea;
+  color: #f8fafc;
+  box-shadow: inset 0 0 0 2px rgba(250, 204, 21, 0.75);
+}
+
+.lineup-card .guildboss-skill.skill-chain {
+  background: #e11d48;
+  border-color: #be123c;
+  color: #f8fafc;
+}
+
+.lineup-card .guildboss-skill.skill-blue .guildboss-skill-category,
+.lineup-card .guildboss-skill.skill-chain .guildboss-skill-category,
+.lineup-card .guildboss-skill.skill-awakening-core .guildboss-skill-category {
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.lineup-card .guildboss-skill.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lineup-card .skill-pill-stack {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
+}
+
+.lineup-card .skill-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(15, 23, 42, 0.35);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.lineup-card .skill-pill.auto {
+  background: rgba(255, 255, 255, 0.9);
+  color: #6b21a8;
+  border-color: rgba(107, 33, 168, 0.55);
+}
+
+.lineup-card .guildboss-skill.disabled .guildboss-skill-image img {
+  filter: grayscale(1) brightness(0.75);
+}
+
+.lineup-card .guildboss-skill.selected .guildboss-skill-image {
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.3);
+}
+
+.lineup-card .guildboss-skill.auto .guildboss-skill-image {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+
+.lineup-card .guildboss-skill-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.lineup-card .guildboss-skill-category {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin: 0;
+}
+
+.lineup-card .guildboss-skill-image {
+  width: 74px;
+  height: 74px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+}
+
+.lineup-card .guildboss-skill-image img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.lineup-card .guildboss-skill-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.lineup-card .guildboss-skill-effect {
+  font-size: 0.68rem;
+  color: inherit;
+  opacity: 1;
+  text-shadow: none;
+  text-align: center;
+  margin: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.lineup-card .guildboss-skill-effect.placeholder {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.lineup-card .guildboss-skill-dots {
+  display: inline-flex;
+  gap: 6px;
+  margin: 0;
+}
+
+.lineup-card .guildboss-skill-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 3px solid rgba(250, 204, 21, 0.95);
+  background: #facc15;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.7);
+  opacity: 0.35;
+}
+
+.lineup-card .guildboss-skill-dots span.filled {
+  background: #facc15;
+  border-color: #facc15;
+  box-shadow:
+    0 0 6px rgba(250, 204, 21, 0.6),
+    0 0 0 2px rgba(0, 0, 0, 0.7);
+  opacity: 1;
+}
+
+
 .lineup-card .slot-index {
   font-size: 0.8rem;
   color: #cbd5f5;
@@ -4072,6 +4566,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .lineup-card .lineup-export.exporting {
@@ -4180,6 +4678,156 @@ body {
   max-width: 100%;
 }
 
+.lineup-card .awakened-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #f8fafc;
+  background: #b12be6;
+  box-shadow: 0 0 0 1px #9333ea;
+}
+
+.lineup-card .argent-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #f8fafc;
+  background: #e11d48;
+  box-shadow: 0 0 0 1px #be123c;
+  gap: 4px;
+}
+
+
+.lineup-card .guildboss-export-skills {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.lineup-card .guildboss-export-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(8, 12, 24, 0.65);
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .lineup-card .lineup-export {
+    padding: 8px;
+  }
+
+  .lineup-card .guildboss-export-hero {
+    padding: 6px;
+  }
+}
+
+.lineup-card .guildboss-export-hero-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lineup-card .guildboss-export-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.lineup-card .guildboss-export-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.lineup-card .guildboss-export-skill-tags {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 232px));
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+  justify-content: center;
+  justify-items: stretch;
+}
+
+@media (min-width: 900px) {
+  .lineup-card .guildboss-export-skill-tags {
+    grid-template-columns: repeat(3, minmax(0, 232px));
+  }
+}
+
+.lineup-card .guildboss-export-skill {
+  display: flex;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  min-height: 180px;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
+  height: 100%;
+  width: 100%;
+  max-width: 232px;
+}
+
+.lineup-card .guildboss-export-skill-image {
+  display: none;
+}
+
+.lineup-card .guildboss-export-skill-image img {
+  display: none;
+}
+
+.lineup-card .guildboss-export-skill.skill-blue {
+  background: #2da2e6;
+  border-color: #1d8bd0;
+  color: #f8fafc;
+}
+
+.lineup-card .guildboss-export-skill.skill-white,
+.lineup-card .guildboss-export-skill.skill-atk60 {
+  background: #d1d5db;
+  border-color: #cbd5f5;
+  color: #0f172a;
+}
+
+.lineup-card .guildboss-export-skill.skill-awakening {
+  background: #d1d5db;
+  border-color: #eab308;
+  color: #0f172a;
+}
+
+.lineup-card .guildboss-export-skill.skill-awakening-core {
+  background: #b12be6;
+  border-color: #9333ea;
+  color: #f8fafc;
+}
+
+.lineup-card .guildboss-export-skill.skill-chain {
+  background: #e11d48;
+  border-color: #be123c;
+  color: #f8fafc;
+}
+
+
 .lineup-card .lineup-export-levels {
   display: flex;
   flex-wrap: nowrap;
@@ -4227,7 +4875,7 @@ body {
 .lineup-card .lineup-export-notes-title {
   font-weight: 600;
   font-size: 0.85rem;
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 .lineup-card .lineup-export-notes-body {
@@ -4235,7 +4883,7 @@ body {
   word-break: break-word;
   overflow-wrap: anywhere;
   font-size: 0.85rem;
-  color: #cbd5f5;
+  color: #e2e8f0;
 }
 
 :root[data-theme="light"] .lineup-card .lineup-team-header {
@@ -4305,6 +4953,186 @@ body {
 
 :root[data-theme="light"] .lineup-card .lineup-export-empty {
   color: #94a3b8;
+}
+
+:root[data-theme="light"] .lineup-card .lineup-export-notes-title {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .lineup-export-notes-body {
+  color: #1f2937;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-panel {
+  background: transparent;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill-count {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-awakened {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-awakened-select {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.2);
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-hero-card {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-hero-avatar,
+:root[data-theme="light"] .lineup-card .guildboss-export-avatar {
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-hero-name,
+:root[data-theme="light"] .lineup-card .guildboss-export-name {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-argent-toggle {
+  color: #475569;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-awakened-toggle {
+  color: #92400e;
+}
+
+:root[data-theme="light"] .lineup-card .argent-badge {
+  color: #f8fafc;
+  background: #e11d48;
+  box-shadow: 0 0 0 1px #be123c;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.18);
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill-dots span {
+  border-color: rgba(234, 179, 8, 0.7);
+  background: rgba(234, 179, 8, 0.2);
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill-dots span.filled {
+  background: #eab308;
+  border-color: #eab308;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.selected {
+  box-shadow:
+    0 0 0 3px rgba(15, 23, 42, 0.65),
+    0 10px 20px rgba(15, 23, 42, 0.18);
+  transform: translateY(-2px);
+}
+
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.skill-blue {
+  background: #2da2e6;
+  border-color: #1d8bd0;
+  color: #f8fafc;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.skill-white,
+:root[data-theme="light"] .lineup-card .guildboss-skill.skill-atk60 {
+  background: #d1d5db;
+  border-color: #cbd5f5;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.skill-awakening {
+  background: #d1d5db;
+  border-color: #eab308;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.skill-awakening-core {
+  background: #b12be6;
+  border-color: #9333ea;
+  color: #f8fafc;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.skill-chain {
+  background: #e11d48;
+  border-color: #be123c;
+  color: #f8fafc;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill-group-title {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-hero-count {
+  background: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-hero-total {
+  color: #475569;
+}
+
+:root[data-theme="light"] .lineup-card .ghost.tiny.has-selection {
+  border-color: rgba(22, 163, 74, 0.6);
+  color: #16a34a;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.selected.skill-blue {
+  background: #2da2e6;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.selected.skill-white,
+:root[data-theme="light"] .lineup-card .guildboss-skill.selected.skill-atk60 {
+  background: #d1d5db;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.selected.skill-awakening {
+  background: #d1d5db;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.selected.skill-awakening-core {
+  background: #b12be6;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill.selected.skill-chain {
+  background: #e11d48;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill-image {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill-effect {
+  color: inherit;
+  opacity: 0.88;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill-effect.placeholder {
+  color: inherit;
+  opacity: 0.6;
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-export-hero {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-export-skill {
+  border-color: rgba(15, 23, 42, 0.25);
+}
+
+:root[data-theme="light"] .lineup-card .guildboss-skill .skill-auto {
+  background: rgba(15, 23, 42, 0.12);
+  color: #0f172a;
 }
 
 .owned-export {
@@ -4463,6 +5291,25 @@ body {
   .lineup-card .lineup-grid,
   .lineup-card .lineup-export-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .tier-card {
+    padding: 4px;
+    gap: 8px;
+  }
+
+  .tier-card .panel {
+    padding: 4px;
+    gap: 8px;
+  }
+
+  .panel {
+    padding: 4px;
+    gap: 8px;
+  }
+
+  .lineup-card .lineup-export {
+    padding: 16px;
   }
 
   .lineup-card .lineup-slot-card {

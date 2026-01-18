@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import html2canvas from "html2canvas";
 import type { HeroDef, OwnedHero, Level } from "../models/types";
-import type { LineupData, LineupFormat, LineupSlot } from "../models/lineupList";
+import type { GuildBossData, LineupData, LineupFormat, LineupSlot } from "../models/lineupList";
 import { LEVELS } from "../models/types";
 import { createLineup, fetchLineup, updateLineup } from "../utils/lineupApi";
 import { newId } from "../utils/ids";
@@ -16,6 +16,7 @@ const props = defineProps<{
 const LOCAL_STORAGE_KEY = "wdtools-lineup-draft";
 const TOKEN_STORAGE_KEY = "wdtools-lineup-tokens";
 const LOCAL_SAVED_KEY = "wdtools-lineup-saved";
+const GUILD_BOSS_COLLAPSE_KEY = "wdtools-lineup-guildboss-collapse";
 
 type DraftState = {
   id: string | null;
@@ -23,6 +24,7 @@ type DraftState = {
   format: LineupFormat;
   slots: LineupSlot[];
   notes: string;
+  guildBoss: GuildBossData;
 };
 
 type SavedLineup = {
@@ -34,11 +36,121 @@ type SavedLineup = {
 const SLOT_COUNT_BY_FORMAT: Record<LineupFormat, number> = {
   pve: 5,
   pvp: 10,
-  gvg: 30
+  gvg: 30,
+  guildboss: 5,
+  nightmare: 10
 };
 const HERO_LIMIT_PER_TEAM = 5;
 const GVG_TEAM_COUNT = 3;
 const GVG_TEAM_SLOT_COUNT = 10;
+const NIGHTMARE_TEAM_COUNT = 2;
+const NIGHTMARE_TEAM_SLOT_COUNT = 5;
+const MAX_GUILD_BOSS_SKILLS = 6;
+const GUILD_BOSS_AWAKENING_SKILLS = ["awakening-1", "awakening-2", "awakening-3"] as const;
+const GUILD_BOSS_SKILLS = [
+  {
+    id: "chain",
+    label: "Chain Skill",
+    name: "Chain Skill",
+    effect: "",
+    imageKey: "chain",
+    type: "chain"
+  },
+  {
+    id: "atk60-1",
+    label: "ATK +60% I",
+    name: "ATK +60% I",
+    effect: "",
+    imageKey: "atk60-1",
+    type: "atk60"
+  },
+  {
+    id: "atk60-2",
+    label: "ATK +60% II",
+    name: "ATK +60% II",
+    effect: "",
+    imageKey: "atk60-2",
+    type: "atk60",
+    requires: "atk60-1"
+  },
+  {
+    id: "awakening-1",
+    label: "Awakening Skill I",
+    name: "Awakening Skill I",
+    effect: "",
+    imageKey: "awakening-1",
+    type: "awakening"
+  },
+  {
+    id: "awakening-2",
+    label: "Awakening Skill II",
+    name: "Awakening Skill II",
+    effect: "",
+    imageKey: "awakening-2",
+    type: "awakening"
+  },
+  {
+    id: "awakening-3",
+    label: "Awakening Skill III",
+    name: "Awakening Skill III",
+    effect: "",
+    imageKey: "awakening-3",
+    type: "awakening"
+  },
+  {
+    id: "awakening-core",
+    label: "Awakening",
+    name: "Awakening",
+    effect: "",
+    imageKey: "awaken",
+    type: "awakening-core"
+  },
+  {
+    id: "blue-1",
+    label: "+100% ATK",
+    name: "+100% ATK",
+    effect: "",
+    imageKey: "blue-1",
+    type: "blue"
+  },
+  {
+    id: "blue-2",
+    label: "Blue Skill II",
+    name: "Blue Skill II",
+    effect: "",
+    imageKey: "blue-2",
+    type: "blue"
+  },
+  {
+    id: "blue-3",
+    label: "Blue Skill III",
+    name: "Blue Skill III",
+    effect: "",
+    imageKey: "blue-3",
+    type: "blue"
+  },
+  {
+    id: "white-1",
+    label: "White Skill I",
+    name: "White Skill I",
+    effect: "",
+    imageKey: "white-1",
+    type: "white"
+  },
+  {
+    id: "white-2",
+    label: "White Skill II",
+    name: "White Skill II",
+    effect: "",
+    imageKey: "white-2",
+    type: "white",
+    requires: "white-1"
+  }
+] as const;
+
+type GuildBossSkill = (typeof GUILD_BOSS_SKILLS)[number];
+type GuildBossSkillId = GuildBossSkill["id"];
+const GUILD_BOSS_SKILL_MAP = new Map(GUILD_BOSS_SKILLS.map((skill) => [skill.id, skill]));
 
 function defaultSlots(format: LineupFormat): LineupSlot[] {
   return Array.from({ length: SLOT_COUNT_BY_FORMAT[format] }, () => ({
@@ -48,7 +160,7 @@ function defaultSlots(format: LineupFormat): LineupSlot[] {
 }
 
 function trimToHeroLimit(slots: LineupSlot[], format: LineupFormat) {
-  if (format !== "gvg") {
+  if (format !== "gvg" && format !== "nightmare") {
     let count = 0;
     return slots.map((slot) => {
       if (!slot.heroId) return slot;
@@ -59,11 +171,12 @@ function trimToHeroLimit(slots: LineupSlot[], format: LineupFormat) {
       return { ...slot, heroId: null };
     });
   }
+  const teamSlotCount = format === "gvg" ? GVG_TEAM_SLOT_COUNT : NIGHTMARE_TEAM_SLOT_COUNT;
   return slots.map((slot, index) => {
     if (!slot.heroId) return slot;
-    const teamIndex = Math.floor(index / GVG_TEAM_SLOT_COUNT);
+    const teamIndex = Math.floor(index / teamSlotCount);
     const filledBefore = slots
-      .slice(teamIndex * GVG_TEAM_SLOT_COUNT, index)
+      .slice(teamIndex * teamSlotCount, index)
       .filter((entry) => entry.heroId).length;
     if (filledBefore < HERO_LIMIT_PER_TEAM) return slot;
     return { ...slot, heroId: null };
@@ -83,14 +196,46 @@ function normalizeSlots(rawSlots: LineupSlot[] | undefined, format: LineupFormat
   return trimToHeroLimit(normalized, format);
 }
 
+function normalizeGuildBoss(raw?: Partial<GuildBossData> | null): GuildBossData {
+  const skills: Record<string, string[]> = {};
+  if (raw?.skills) {
+    Object.entries(raw.skills).forEach(([heroId, skillList]) => {
+      if (!Array.isArray(skillList)) return;
+      const filtered = skillList.filter((skillId) => {
+        const skill = GUILD_BOSS_SKILL_MAP.get(skillId as GuildBossSkillId);
+        return Boolean(skill && skill.type !== "awakening-core");
+      });
+      if (filtered.length) {
+        skills[heroId] = filtered;
+      }
+    });
+  }
+  return {
+    awakenedHeroId: raw?.awakenedHeroId ?? null,
+    argentSkins: raw?.argentSkins ?? {},
+    skills,
+    showDescriptions: raw?.showDescriptions ?? true
+  };
+}
+
 function normalizeDraft(raw?: Partial<DraftState> | null): DraftState {
-  const format: LineupFormat = raw?.format === "gvg" ? "gvg" : raw?.format === "pvp" ? "pvp" : "pve";
+  const format: LineupFormat =
+    raw?.format === "gvg"
+      ? "gvg"
+      : raw?.format === "pvp"
+        ? "pvp"
+        : raw?.format === "guildboss"
+          ? "guildboss"
+          : raw?.format === "nightmare"
+            ? "nightmare"
+            : "pve";
   return {
     id: raw?.id ?? null,
     title: raw?.title ?? "New Lineup",
     format,
     slots: normalizeSlots(raw?.slots, format),
-    notes: raw?.notes ?? ""
+    notes: raw?.notes ?? "",
+    guildBoss: normalizeGuildBoss(raw?.guildBoss)
   };
 }
 
@@ -140,7 +285,24 @@ function persistLocalSaved(value: Record<string, SavedLineup>) {
   localStorage.setItem(LOCAL_SAVED_KEY, JSON.stringify(value));
 }
 
-const draft = reactive<DraftState>(normalizeDraft(loadDraft()));
+function loadGuildBossCollapse(): Record<string, boolean> {
+  if (typeof window === "undefined") return {};
+  try {
+    const saved = localStorage.getItem(GUILD_BOSS_COLLAPSE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+}
+
+function persistGuildBossCollapse(value: Record<string, boolean>) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(GUILD_BOSS_COLLAPSE_KEY, JSON.stringify(value));
+}
+
+const initialDraft = normalizeDraft(loadDraft());
+const draft = reactive<DraftState>(initialDraft);
+const showGuildBossDescriptions = ref(initialDraft.guildBoss?.showDescriptions ?? true);
 const saving = ref(false);
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -151,6 +313,7 @@ const openInput = ref("");
 const tokens = ref<Record<string, string>>(loadTokens());
 const localSaved = ref<Record<string, SavedLineup>>(loadLocalSaved());
 const activeSlotPopoverId = ref<string | null>(null);
+const collapsedGuildBossSkills = ref<Record<string, boolean>>(loadGuildBossCollapse());
 const exportRef = ref<HTMLElement | null>(null);
 const exporting = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
@@ -219,7 +382,11 @@ function makePayload(): LineupData {
       id: slot.id,
       heroId: slot.heroId
     })),
-    notes: draft.notes
+    notes: draft.notes,
+    guildBoss: {
+      ...draft.guildBoss,
+      showDescriptions: showGuildBossDescriptions.value
+    }
   };
 }
 
@@ -322,6 +489,8 @@ async function loadExisting(id: string, editToken?: string | null) {
     draft.format = normalized.format;
     draft.slots = normalized.slots;
     draft.notes = normalized.notes || "";
+    draft.guildBoss = normalized.guildBoss;
+    showGuildBossDescriptions.value = normalized.guildBoss.showDescriptions ?? true;
     if (editToken) {
       const next = { ...tokens.value, [id]: editToken };
       tokens.value = next;
@@ -380,6 +549,8 @@ function newLineup() {
   draft.format = "pve";
   draft.slots = defaultSlots("pve");
   draft.notes = "";
+  draft.guildBoss = normalizeGuildBoss(null);
+  showGuildBossDescriptions.value = true;
   shareUrl.value = null;
   editUrl.value = null;
   activeSlotPopoverId.value = null;
@@ -395,6 +566,8 @@ function selectSaved(id: string) {
   draft.format = normalized.format;
   draft.slots = normalized.slots;
   draft.notes = normalized.notes || "";
+  draft.guildBoss = normalized.guildBoss;
+  showGuildBossDescriptions.value = normalized.guildBoss.showDescriptions ?? true;
   activeSlotPopoverId.value = null;
   shareUrl.value = buildShareUrl(saved.id);
   const token = tokens.value[saved.id];
@@ -408,33 +581,51 @@ function clearSlot(index: number) {
 const filledHeroCount = computed(
   () => draft.slots.filter((slot) => Boolean(slot.heroId)).length
 );
-const totalHeroLimit = computed(() =>
-  draft.format === "gvg" ? HERO_LIMIT_PER_TEAM * GVG_TEAM_COUNT : HERO_LIMIT_PER_TEAM
-);
+const totalHeroLimit = computed(() => {
+  if (draft.format === "gvg") return HERO_LIMIT_PER_TEAM * GVG_TEAM_COUNT;
+  if (draft.format === "nightmare") return HERO_LIMIT_PER_TEAM * NIGHTMARE_TEAM_COUNT;
+  return HERO_LIMIT_PER_TEAM;
+});
 const isLineupFull = computed(() => filledHeroCount.value >= totalHeroLimit.value);
 const teamHeroCounts = computed(() => {
-  if (draft.format !== "gvg") return [filledHeroCount.value];
-  const counts = Array.from({ length: GVG_TEAM_COUNT }, () => 0);
+  if (draft.format !== "gvg" && draft.format !== "nightmare") return [filledHeroCount.value];
+  const teamCount = draft.format === "gvg" ? GVG_TEAM_COUNT : NIGHTMARE_TEAM_COUNT;
+  const teamSlotCount = draft.format === "gvg" ? GVG_TEAM_SLOT_COUNT : NIGHTMARE_TEAM_SLOT_COUNT;
+  const counts = Array.from({ length: teamCount }, () => 0);
   draft.slots.forEach((slot, index) => {
     if (slot.heroId) {
-      counts[Math.floor(index / GVG_TEAM_SLOT_COUNT)] += 1;
+      counts[Math.floor(index / teamSlotCount)] += 1;
     }
   });
   return counts;
 });
 const groupedSlots = computed(() => {
-  if (draft.format !== "gvg") return [draft.slots];
-  return Array.from({ length: GVG_TEAM_COUNT }, (_, teamIndex) =>
-    draft.slots.slice(teamIndex * GVG_TEAM_SLOT_COUNT, (teamIndex + 1) * GVG_TEAM_SLOT_COUNT)
+  if (draft.format !== "gvg" && draft.format !== "nightmare") return [draft.slots];
+  const teamCount = draft.format === "gvg" ? GVG_TEAM_COUNT : NIGHTMARE_TEAM_COUNT;
+  const teamSlotCount = draft.format === "gvg" ? GVG_TEAM_SLOT_COUNT : NIGHTMARE_TEAM_SLOT_COUNT;
+  return Array.from({ length: teamCount }, (_, teamIndex) =>
+    draft.slots.slice(teamIndex * teamSlotCount, (teamIndex + 1) * teamSlotCount)
   );
 });
-const lineupLimitText = computed(() =>
-  draft.format === "gvg"
-    ? `Up to ${HERO_LIMIT_PER_TEAM} heroes per team (${totalHeroLimit.value} total) can be placed per lineup.`
-    : `Up to ${HERO_LIMIT_PER_TEAM} heroes can be placed per lineup.`
-);
+const lineupLimitText = computed(() => {
+  if (draft.format === "gvg") {
+    return `Up to ${HERO_LIMIT_PER_TEAM} heroes per team (${totalHeroLimit.value} total) can be placed per lineup.`;
+  }
+  if (draft.format === "nightmare") {
+    return `Up to ${HERO_LIMIT_PER_TEAM} heroes per lineup (${totalHeroLimit.value} total) can be placed.`;
+  }
+  return `Up to ${HERO_LIMIT_PER_TEAM} heroes can be placed per lineup.`;
+});
 const assignedHeroIds = computed(
   () => new Set(draft.slots.map((slot) => slot.heroId).filter(Boolean) as string[])
+);
+const guildBossHeroIds = computed(() =>
+  draft.format === "guildboss"
+    ? (draft.slots.map((slot) => slot.heroId).filter(Boolean) as string[])
+    : []
+);
+const guildBossSkillCount = computed(() =>
+  Object.values(draft.guildBoss.skills).reduce((total, list) => total + list.length, 0)
 );
 
 const availableHeroes = computed(() =>
@@ -448,6 +639,28 @@ const showPreviewLevelsEffective = computed(
   () => showPreviewLevels.value && (!isMobile.value || exporting.value)
 );
 
+function getGuildBossSkillGroups(heroId: string) {
+  const skills = guildBossSkillsForHero(heroId);
+  return [
+    { id: "chain", title: "Chain", items: skills.filter((skill) => skill.type === "chain") },
+    {
+      id: "awakening",
+      title: "Awakening",
+      items: skills.filter(
+        (skill) => skill.type === "awakening" || skill.type === "awakening-core"
+      )
+    },
+    { id: "atk60", title: "60%", items: skills.filter((skill) => skill.type === "atk60") },
+    { id: "utility", title: "Utility", items: skills.filter((skill) => skill.type === "white") },
+    { id: "blue", title: "Blue", items: skills.filter((skill) => skill.type === "blue") }
+  ].filter((group) => group.items.length > 0);
+}
+
+function teamHeaderLabel(index: number) {
+  if (draft.format === "nightmare") return `Lineup ${index + 1}`;
+  return `Team ${index + 1}`;
+}
+
 function setSlotHero(slot: LineupSlot, heroId: string | null) {
   if (!heroId) {
     slot.heroId = null;
@@ -458,9 +671,10 @@ function setSlotHero(slot: LineupSlot, heroId: string | null) {
     existingSlot.heroId = null;
   }
   if (!existingSlot && !slot.heroId) {
-    if (draft.format === "gvg") {
+    if (draft.format === "gvg" || draft.format === "nightmare") {
       const slotIndex = draft.slots.findIndex((entry) => entry.id === slot.id);
-      const teamIndex = slotIndex >= 0 ? Math.floor(slotIndex / GVG_TEAM_SLOT_COUNT) : 0;
+      const teamSlotCount = draft.format === "gvg" ? GVG_TEAM_SLOT_COUNT : NIGHTMARE_TEAM_SLOT_COUNT;
+      const teamIndex = slotIndex >= 0 ? Math.floor(slotIndex / teamSlotCount) : 0;
       if (teamHeroCounts.value[teamIndex] >= HERO_LIMIT_PER_TEAM) return;
     } else if (isLineupFull.value) {
       return;
@@ -472,6 +686,225 @@ function setSlotHero(slot: LineupSlot, heroId: string | null) {
 function getHero(heroId: string | null) {
   if (!heroId) return null;
   return heroMap.value.get(heroId) ?? null;
+}
+
+function isGuildBossAwakenedHero(heroId: string) {
+  return draft.guildBoss.awakenedHeroId === heroId;
+}
+
+function getHeroSelectedSkills(heroId: string): GuildBossSkillId[] {
+  return (draft.guildBoss.skills[heroId] ?? []) as GuildBossSkillId[];
+}
+
+function setHeroSelectedSkills(heroId: string, skills: GuildBossSkillId[]) {
+  const next = { ...draft.guildBoss.skills };
+  if (skills.length) {
+    next[heroId] = skills;
+  } else {
+    delete next[heroId];
+  }
+  draft.guildBoss.skills = next;
+}
+
+function clearHeroSkills(heroId: string) {
+  setHeroSelectedSkills(heroId, []);
+}
+
+function setHeroArgentSkin(heroId: string, enabled: boolean) {
+  const hero = getHero(heroId);
+  if (!hero || hero.hasArgentSkin === false) return;
+  const next = { ...draft.guildBoss.argentSkins };
+  if (enabled) {
+    next[heroId] = true;
+  } else {
+    delete next[heroId];
+  }
+  draft.guildBoss.argentSkins = next;
+}
+
+function heroHasArgentSkin(heroId: string) {
+  return Boolean(draft.guildBoss.argentSkins[heroId]);
+}
+
+function heroHasAllAwakeningSkills(heroId: string) {
+  return GUILD_BOSS_AWAKENING_SKILLS.every((skillId) =>
+    getHeroSelectedSkills(heroId).includes(skillId)
+  );
+}
+
+function awakeningSkillCount(heroId: string) {
+  return GUILD_BOSS_AWAKENING_SKILLS.filter((skillId) =>
+    getHeroSelectedSkills(heroId).includes(skillId)
+  ).length;
+}
+
+function isHeroAwakened(heroId: string) {
+  return isGuildBossAwakenedHero(heroId) || heroHasAllAwakeningSkills(heroId);
+}
+
+function canUseChainSkill(heroId: string) {
+  const hero = getHero(heroId);
+  if (!hero?.chainPartnerId) return false;
+  if (heroHasArgentSkin(heroId)) return true;
+  return assignedHeroIds.value.has(hero.chainPartnerId);
+}
+
+function normalizeGuildBossSkillsForHero(heroId: string, skillIds: GuildBossSkillId[]) {
+  const unique = Array.from(new Set(skillIds));
+  const filtered = unique.filter((id) => Boolean(GUILD_BOSS_SKILL_MAP.get(id)));
+  const cleaned = filtered.filter((skillId) => {
+    const skill = GUILD_BOSS_SKILL_MAP.get(skillId);
+    if (!skill) return false;
+    if (skill.type === "chain" && !canUseChainSkill(heroId)) return false;
+    if (skill.type === "blue" && !isHeroAwakened(heroId)) return false;
+    if (skill.type === "awakening" && isGuildBossAwakenedHero(heroId)) return false;
+    if (skill.type === "awakening-core" && !isHeroAwakened(heroId)) return false;
+    if (skill.id === "atk60-2" && !filtered.includes("atk60-1")) return false;
+    if (skill.id === "white-2" && !filtered.includes("white-1")) return false;
+    return true;
+  });
+  return cleaned;
+}
+
+function refreshGuildBossSkills(heroId: string) {
+  const selected = getHeroSelectedSkills(heroId);
+  const cleaned = normalizeGuildBossSkillsForHero(heroId, selected);
+  const autoRemoved = cleaned.filter((skillId) => {
+    const skill = GUILD_BOSS_SKILL_MAP.get(skillId as GuildBossSkillId);
+    return !(skill && isAutoSkill(heroId, skill));
+  });
+  if (autoRemoved.join("|") !== selected.join("|")) {
+    setHeroSelectedSkills(heroId, autoRemoved);
+  }
+}
+
+function canSelectGuildBossSkill(heroId: string, skillId: GuildBossSkillId) {
+  const skill = GUILD_BOSS_SKILL_MAP.get(skillId);
+  if (!skill) return false;
+  if (skill.type === "awakening-core" && !isHeroAwakened(heroId)) return false;
+  if (skill.type === "awakening" && isGuildBossAwakenedHero(heroId)) return false;
+  if (skill.type === "chain" && !canUseChainSkill(heroId)) return false;
+  if (skill.type === "blue" && !isHeroAwakened(heroId)) return false;
+  if (isAutoSkill(heroId, skill)) return false;
+  if (skill.id === "atk60-2" && !getHeroSelectedSkills(heroId).includes("atk60-1")) return false;
+  if (skill.id === "white-2" && !getHeroSelectedSkills(heroId).includes("white-1")) return false;
+  if (!getHeroSelectedSkills(heroId).includes(skillId) && guildBossSkillCount.value >= MAX_GUILD_BOSS_SKILLS) {
+    return false;
+  }
+  return true;
+}
+
+function guildBossSkillsForHero(heroId: string) {
+  return GUILD_BOSS_SKILLS.filter((skill) => {
+    if (skill.type === "chain") return canUseChainSkill(heroId);
+    return true;
+  });
+}
+
+function getHeroSkillMeta(heroId: string, skill: GuildBossSkill) {
+  const hero = getHero(heroId);
+  const meta = hero?.skillMeta?.[skill.id];
+  return {
+    name: meta?.name ?? skill.name,
+    effect: meta?.effect ?? skill.effect,
+    imageKey: meta?.imageKey
+  };
+}
+
+function getSkillImageKey(skill: GuildBossSkill, metaImageKey?: string) {
+  if (metaImageKey) return metaImageKey;
+  if (skill.type === "chain") return "chain";
+  if (skill.type === "awakening-core") return "awaken";
+  return "skill";
+}
+
+function isAutoSkill(heroId: string, skill: GuildBossSkill) {
+  if (heroHasArgentSkin(heroId) && skill.type === "chain") return true;
+  return (
+    isGuildBossAwakenedHero(heroId) &&
+    (skill.type === "awakening" || skill.type === "awakening-core")
+  );
+}
+
+function getSkillImageSrc(heroId: string, skill: GuildBossSkill) {
+  const meta = getHeroSkillMeta(heroId, skill);
+  return `/skills/${heroId}_${getSkillImageKey(skill, meta.imageKey)}.png`;
+}
+
+function hasAutoSkills(heroId: string) {
+  return guildBossSkillsForHero(heroId).some((skill) => isAutoSkill(heroId, skill));
+}
+
+function isHeroSkillsCollapsed(heroId: string) {
+  const stored = collapsedGuildBossSkills.value[heroId];
+  if (typeof stored === "boolean") return stored;
+  return getHeroSelectedSkills(heroId).length === 0 && !hasAutoSkills(heroId);
+}
+
+function toggleHeroSkills(heroId: string) {
+  const next = { ...collapsedGuildBossSkills.value };
+  next[heroId] = !isHeroSkillsCollapsed(heroId);
+  collapsedGuildBossSkills.value = next;
+}
+
+function toggleGuildBossSkill(heroId: string, skillId: GuildBossSkillId) {
+  const current = new Set(getHeroSelectedSkills(heroId));
+  const isSelected = current.has(skillId);
+  if (!isSelected && !canSelectGuildBossSkill(heroId, skillId)) return;
+  if (isSelected) {
+    current.delete(skillId);
+    if (skillId === "atk60-1") current.delete("atk60-2");
+    if (skillId === "white-1") current.delete("white-2");
+  } else {
+    current.add(skillId);
+  }
+  const cleaned = normalizeGuildBossSkillsForHero(heroId, Array.from(current));
+  setHeroSelectedSkills(heroId, cleaned);
+}
+
+function setAwakenedHero(heroId: string | null) {
+  draft.guildBoss.awakenedHeroId = heroId;
+  if (heroId) {
+    refreshGuildBossSkills(heroId);
+  }
+}
+
+function getGuildBossPreviewSkills(heroId: string) {
+  const selectedSet = new Set(getHeroSelectedSkills(heroId));
+  return GUILD_BOSS_SKILLS.filter((skill) => {
+    if (skill.type === "chain" && !canUseChainSkill(heroId)) return false;
+    if (skill.type === "blue" && !isHeroAwakened(heroId)) return false;
+    if (skill.type === "awakening-core") return false;
+    return selectedSet.has(skill.id);
+  });
+}
+
+function getGuildBossPreviewSkillsOrdered(heroId: string) {
+  const selectedSet = new Set(getHeroSelectedSkills(heroId));
+  const ordered: GuildBossSkill[] = [];
+  getGuildBossSkillGroups(heroId).forEach((group) => {
+    group.items.forEach((skill) => {
+      if (selectedSet.has(skill.id)) ordered.push(skill);
+    });
+  });
+  return ordered;
+}
+
+function getSkillCategoryTitle(skill: GuildBossSkill) {
+  if (skill.type === "chain") return "Chain";
+  if (skill.type === "awakening" || skill.type === "awakening-core") return "Awakening";
+  if (skill.type === "atk60") return "60%";
+  if (skill.type === "white") return "Utility";
+  if (skill.type === "blue") return "Blue";
+  return "Skill";
+}
+
+function shouldShowGuildBossPreviewHero(heroId: string) {
+  return (
+    isHeroAwakened(heroId) ||
+    heroHasArgentSkin(heroId) ||
+    getHeroSelectedSkills(heroId).length > 0
+  );
 }
 
 function rarityBorder(hero?: HeroDef | null) {
@@ -618,9 +1051,21 @@ watch(
       title: draft.title,
       format: draft.format,
       slots: draft.slots,
-      notes: draft.notes
+      notes: draft.notes,
+      guildBoss: {
+        ...draft.guildBoss,
+        showDescriptions: showGuildBossDescriptions.value
+      }
     });
     updateShareLinks();
+  },
+  { deep: true }
+);
+
+watch(
+  () => ({ ...collapsedGuildBossSkills.value }),
+  (next) => {
+    persistGuildBossCollapse(next);
   },
   { deep: true }
 );
@@ -629,6 +1074,68 @@ watch(
   () => draft.format,
   (next) => {
     draft.slots = normalizeSlots(draft.slots, next);
+  }
+);
+
+watch(
+  () => guildBossHeroIds.value,
+  (heroIds) => {
+    if (draft.format !== "guildboss") return;
+    const heroSet = new Set(heroIds);
+    if (draft.guildBoss.awakenedHeroId && !heroSet.has(draft.guildBoss.awakenedHeroId)) {
+      draft.guildBoss.awakenedHeroId = null;
+    }
+    const nextSkills = { ...draft.guildBoss.skills };
+    let skillsChanged = false;
+    Object.keys(nextSkills).forEach((heroId) => {
+      if (!heroSet.has(heroId)) {
+        delete nextSkills[heroId];
+        skillsChanged = true;
+      }
+    });
+    if (skillsChanged) {
+      draft.guildBoss.skills = nextSkills;
+    }
+    const nextArgents = { ...draft.guildBoss.argentSkins };
+    let argentsChanged = false;
+    Object.keys(nextArgents).forEach((heroId) => {
+      if (!heroSet.has(heroId)) {
+        delete nextArgents[heroId];
+        argentsChanged = true;
+      }
+    });
+    if (argentsChanged) {
+      draft.guildBoss.argentSkins = nextArgents;
+    }
+    const nextCollapsed = { ...collapsedGuildBossSkills.value };
+    let collapsedChanged = false;
+    Object.keys(nextCollapsed).forEach((heroId) => {
+      if (!heroSet.has(heroId)) {
+        delete nextCollapsed[heroId];
+        collapsedChanged = true;
+      }
+    });
+    if (collapsedChanged) {
+      collapsedGuildBossSkills.value = nextCollapsed;
+    }
+    heroIds.forEach((heroId) => refreshGuildBossSkills(heroId));
+  },
+  { deep: true }
+);
+
+watch(
+  () => draft.guildBoss.awakenedHeroId,
+  () => {
+    if (draft.format !== "guildboss") return;
+    guildBossHeroIds.value.forEach((heroId) => refreshGuildBossSkills(heroId));
+  }
+);
+
+watch(
+  () => ({ ...draft.guildBoss.argentSkins }),
+  () => {
+    if (draft.format !== "guildboss") return;
+    guildBossHeroIds.value.forEach((heroId) => refreshGuildBossSkills(heroId));
   }
 );
 
@@ -709,9 +1216,11 @@ onBeforeUnmount(() => {
         <div class="field">
           <label>Format</label>
             <select v-model="draft.format" :disabled="isLocked">
-              <option value="pve">PvE (5 slots, 1 row)</option>
-              <option value="pvp">PvP (10 slots, 2 rows)</option>
-              <option value="gvg">GvG (3 teams, 5x2 each)</option>
+              <option value="pve">PvE - 1x5 (1 row, 1 team)</option>
+              <option value="pvp">PvP - 2x5 (2 rows, 1 team)</option>
+              <option value="gvg">GvG - 2x5 (2 rows, 3 teams)</option>
+              <option value="guildboss">Guild Boss - 1x5 (1 row, 6 skills)</option>
+              <option value="nightmare">Nightmare - 1x5 (1 row, 2 teams)</option>
             </select>
         </div>
         <div class="field dual">
@@ -762,13 +1271,13 @@ onBeforeUnmount(() => {
         <strong>Lineup slots</strong>
         <span v-if="isLineupFull" class="pill success">Lineup full</span>
       </div>
-      <div v-if="draft.format === 'gvg'" class="lineup-team-groups">
+      <div v-if="draft.format === 'gvg' || draft.format === 'nightmare'" class="lineup-team-groups">
         <div
           v-for="(teamSlots, teamIndex) in groupedSlots"
           :key="`team-${teamIndex}`"
           class="lineup-team-group"
         >
-          <div class="lineup-team-header">Team {{ teamIndex + 1 }}</div>
+          <div class="lineup-team-header">{{ teamHeaderLabel(teamIndex) }}</div>
           <div class="lineup-grid">
             <div
               v-for="(slot, index) in teamSlots"
@@ -794,7 +1303,9 @@ onBeforeUnmount(() => {
                     />
                   </button>
                   <div v-if="!isMobile" class="lineup-slot-info">
-                    <div class="lineup-slot-name">{{ getHero(slot.heroId)?.name || slot.heroId }}</div>
+                    <div class="lineup-slot-name">
+                      {{ getHero(slot.heroId)?.name || slot.heroId }}
+                    </div>
                     <div class="lineup-slot-level">
                       <template v-for="token in getLevelTokens(slot.heroId)" :key="`lvl-${slot.id}-${token.type}`">
                         <i
@@ -852,7 +1363,13 @@ onBeforeUnmount(() => {
               </div>
               <button
                 class="ghost tiny slot-clear"
-                @click="clearSlot(teamIndex * GVG_TEAM_SLOT_COUNT + index)"
+                @click="
+                  clearSlot(
+                    teamIndex *
+                      (draft.format === 'gvg' ? GVG_TEAM_SLOT_COUNT : NIGHTMARE_TEAM_SLOT_COUNT) +
+                      index
+                  )
+                "
                 :disabled="isLocked"
               >
                 Clear
@@ -882,7 +1399,9 @@ onBeforeUnmount(() => {
                 />
               </button>
               <div v-if="!isMobile" class="lineup-slot-info">
-                <div class="lineup-slot-name">{{ getHero(slot.heroId)?.name || slot.heroId }}</div>
+                <div class="lineup-slot-name">
+                  {{ getHero(slot.heroId)?.name || slot.heroId }}
+                </div>
                 <div class="lineup-slot-level">
                   <template v-for="token in getLevelTokens(slot.heroId)" :key="`lvl-${slot.id}-${token.type}`">
                     <i
@@ -954,6 +1473,180 @@ onBeforeUnmount(() => {
       <p class="muted lineup-limit">{{ lineupLimitText }}</p>
     </div>
 
+    <div v-if="draft.format === 'guildboss'" class="panel guildboss-panel">
+      <div class="guildboss-header">
+        <div>
+          <strong>Guild Boss - 6 skills</strong>
+          <p class="muted">
+            Choose 1 awakened hero and up to {{ MAX_GUILD_BOSS_SKILLS }} skills across the lineup.
+          </p>
+        </div>
+        <div class="guildboss-header-actions">
+          <div class="guildboss-skill-count">
+            <span v-if="guildBossSkillCount === MAX_GUILD_BOSS_SKILLS" class="pill success">
+              All Skills Slotted
+            </span>
+            <span v-else>Skills: {{ guildBossSkillCount }} / {{ MAX_GUILD_BOSS_SKILLS }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="guildboss-heroes">
+        <div v-for="heroId in guildBossHeroIds" :key="`guildboss-${heroId}`" class="guildboss-hero-card">
+          <div class="guildboss-hero-header">
+            <div class="guildboss-hero-info">
+              <img
+                class="guildboss-hero-avatar"
+                :src="avatarUrl(heroId, getHero(heroId)?.name)"
+                :alt="getHero(heroId)?.name || heroId"
+              />
+              <div>
+                <div class="guildboss-hero-name-row">
+                  <div class="guildboss-hero-name">{{ getHero(heroId)?.name || heroId }}</div>
+                  <button class="guildboss-toggle" type="button" @click="toggleHeroSkills(heroId)">
+                    <i
+                      class="fa-solid fa-chevron-right"
+                      :class="{ open: !isHeroSkillsCollapsed(heroId) }"
+                      aria-hidden="true"
+                    ></i>
+                    <span>{{ isHeroSkillsCollapsed(heroId) ? "Show skills" : "Hide skills" }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="guildboss-hero-controls">
+              <span class="guildboss-hero-count">
+                Hero Skills {{ getHeroSelectedSkills(heroId).length }} / {{ MAX_GUILD_BOSS_SKILLS }}
+              </span>
+              <span class="guildboss-hero-total">
+                Total {{ guildBossSkillCount }} / {{ MAX_GUILD_BOSS_SKILLS }}
+              </span>
+              <button
+                class="ghost tiny"
+                type="button"
+                :disabled="isLocked || getHeroSelectedSkills(heroId).length === 0"
+                @click="clearHeroSkills(heroId)"
+                :class="{ 'has-selection': getHeroSelectedSkills(heroId).length > 0 }"
+              >
+                Clear ({{ getHeroSelectedSkills(heroId).length }})
+              </button>
+              <label class="guildboss-awakened-toggle">
+                <input
+                  type="checkbox"
+                  :disabled="
+                  isLocked ||
+                  (draft.guildBoss.awakenedHeroId !== null &&
+                    !isGuildBossAwakenedHero(heroId))
+                "
+                :checked="isGuildBossAwakenedHero(heroId)"
+                :name="'guildboss-awakened'"
+                @change="
+                  setAwakenedHero(
+                    ($event.target as HTMLInputElement).checked ? heroId : null
+                  );
+                  refreshGuildBossSkills(heroId)
+                "
+              />
+              Awakened
+            </label>
+            <label v-if="getHero(heroId)?.hasArgentSkin !== false" class="guildboss-argent-toggle">
+              <input
+                type="checkbox"
+                :disabled="isLocked"
+                :checked="heroHasArgentSkin(heroId)"
+                @change="
+                  setHeroArgentSkin(heroId, ($event.target as HTMLInputElement).checked);
+                  refreshGuildBossSkills(heroId)
+                "
+              />
+              Argent
+            </label>
+            </div>
+          </div>
+          <div class="guildboss-skill-groups" v-show="!isHeroSkillsCollapsed(heroId)">
+            <div
+              v-for="group in getGuildBossSkillGroups(heroId)"
+              :key="`${heroId}-${group.id}`"
+              class="guildboss-skill-group"
+            >
+              <div class="guildboss-skill-group-title">{{ group.title }}</div>
+              <div class="guildboss-skill-grid">
+                <button
+                  v-for="skill in group.items"
+                  :key="`${heroId}-${skill.id}`"
+                  class="guildboss-skill"
+                  type="button"
+                  :disabled="
+                    isLocked ||
+                    (isGuildBossAwakenedHero(heroId) && skill.type === 'awakening') ||
+                    (!getHeroSelectedSkills(heroId).includes(skill.id) &&
+                      !canSelectGuildBossSkill(heroId, skill.id))
+                  "
+                  :class="{
+                    [`skill-${skill.type}`]: true,
+                    selected:
+                      getHeroSelectedSkills(heroId).includes(skill.id) ||
+                      (isGuildBossAwakenedHero(heroId) && skill.type === 'awakening'),
+                    auto: isAutoSkill(heroId, skill),
+                    disabled:
+                      isLocked ||
+                      (isGuildBossAwakenedHero(heroId) && skill.type === 'awakening') ||
+                      isAutoSkill(heroId, skill) ||
+                      (!getHeroSelectedSkills(heroId).includes(skill.id) &&
+                        !canSelectGuildBossSkill(heroId, skill.id))
+                  }"
+                  @click="toggleGuildBossSkill(heroId, skill.id)"
+                  :data-skill-type="skill.type"
+                >
+                  <div class="guildboss-skill-card">
+                    <div
+                      v-if="
+                        getHeroSelectedSkills(heroId).includes(skill.id) || isAutoSkill(heroId, skill)
+                      "
+                      class="skill-pill-stack"
+                    >
+                      <span
+                        v-if="getHeroSelectedSkills(heroId).includes(skill.id)"
+                        class="skill-pill"
+                      >
+                        ✓ Selected
+                      </span>
+                      <span v-if="isAutoSkill(heroId, skill)" class="skill-pill auto">
+                        ✓ Auto
+                      </span>
+                    </div>
+                    <div class="guildboss-skill-image">
+                      <img
+                        :src="getSkillImageSrc(heroId, skill)"
+                        :alt="getHeroSkillMeta(heroId, skill).name"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div v-if="skill.type === 'awakening'" class="guildboss-skill-dots">
+                      <span
+                        v-for="index in GUILD_BOSS_AWAKENING_SKILLS.length"
+                        :key="`${heroId}-${skill.id}-dot-${index}`"
+                        :class="{ filled: index <= awakeningSkillCount(heroId) }"
+                      ></span>
+                    </div>
+                    <div class="guildboss-skill-title">
+                      {{ getHeroSkillMeta(heroId, skill).name }}
+                    </div>
+                    <div
+                      class="guildboss-skill-effect"
+                      :class="{ placeholder: !getHeroSkillMeta(heroId, skill).effect }"
+                    >
+                      {{ getHeroSkillMeta(heroId, skill).effect || "Add effect text" }}
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="panel notes-panel">
       <strong>Lineup notes</strong>
       <textarea
@@ -977,6 +1670,10 @@ onBeforeUnmount(() => {
           <input type="checkbox" v-model="showPreviewLevels" />
           Show star levels
         </label>
+        <label v-if="draft.format === 'guildboss'" class="preview-toggle">
+          <input type="checkbox" v-model="showGuildBossDescriptions" />
+          Show skill descriptions
+        </label>
         <button
           v-if="showPreviewLevels"
           class="ghost preview-link"
@@ -991,9 +1688,11 @@ onBeforeUnmount(() => {
       </div>
       <div ref="exportRef" class="lineup-export" :class="{ exporting }">
         <div class="lineup-export-title">{{ draft.title }}</div>
-        <div v-if="draft.format === 'gvg'" class="lineup-export-teams">
+        <div v-if="draft.format === 'gvg' || draft.format === 'nightmare'" class="lineup-export-teams">
           <div v-for="(teamSlots, teamIndex) in groupedSlots" :key="`export-team-${teamIndex}`">
-            <div class="lineup-team-header lineup-export-team-header">Team {{ teamIndex + 1 }}</div>
+            <div class="lineup-team-header lineup-export-team-header">
+              {{ teamHeaderLabel(teamIndex) }}
+            </div>
             <div class="lineup-export-grid">
               <div
                 v-for="(slot, index) in teamSlots"
@@ -1054,6 +1753,74 @@ onBeforeUnmount(() => {
               </template>
             </div>
             <div v-else-if="!slot.heroId" class="lineup-export-empty" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div v-if="draft.format === 'guildboss'" class="guildboss-export-skills">
+          <div class="lineup-export-notes-title">Skills</div>
+          <div
+            v-for="heroId in guildBossHeroIds.filter(shouldShowGuildBossPreviewHero)"
+            :key="`guildboss-export-${heroId}`"
+            class="guildboss-export-hero"
+          >
+            <div class="guildboss-export-hero-header">
+              <img
+                class="guildboss-export-avatar"
+                :src="avatarUrl(heroId, getHero(heroId)?.name)"
+                :alt="getHero(heroId)?.name || heroId"
+              />
+              <div class="guildboss-export-name">
+                {{ getHero(heroId)?.name || heroId }}
+                <span
+                  v-if="draft.format === 'guildboss' && isGuildBossAwakenedHero(heroId)"
+                  class="awakened-badge"
+                >
+                  ★ Awakened
+                </span>
+                <span
+                  v-if="draft.format === 'guildboss' && heroHasArgentSkin(heroId)"
+                  class="argent-badge"
+                >
+                  <i class="fa-solid fa-link" aria-hidden="true"></i>
+                  Argent
+                </span>
+              </div>
+            </div>
+            <div class="guildboss-export-skill-tags">
+              <div
+                v-for="skill in getGuildBossPreviewSkillsOrdered(heroId)"
+                :key="`guildboss-export-${heroId}-${skill.id}`"
+                class="guildboss-export-skill"
+                :class="`skill-${skill.type}`"
+              >
+                <div class="guildboss-skill-card">
+                  <div class="guildboss-skill-category">{{ getSkillCategoryTitle(skill) }}</div>
+                  <div class="guildboss-skill-image">
+                    <img
+                      :src="getSkillImageSrc(heroId, skill)"
+                      :alt="getHeroSkillMeta(heroId, skill).name"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div v-if="skill.type === 'awakening'" class="guildboss-skill-dots">
+                    <span
+                      v-for="index in GUILD_BOSS_AWAKENING_SKILLS.length"
+                      :key="`preview-${heroId}-${skill.id}-dot-${index}`"
+                      :class="{ filled: index <= awakeningSkillCount(heroId) }"
+                    ></span>
+                  </div>
+                  <div class="guildboss-skill-title">
+                    {{ getHeroSkillMeta(heroId, skill).name }}
+                  </div>
+                  <div
+                    v-if="showGuildBossDescriptions"
+                    class="guildboss-skill-effect"
+                    :class="{ placeholder: !getHeroSkillMeta(heroId, skill).effect }"
+                  >
+                    {{ getHeroSkillMeta(heroId, skill).effect || " " }}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div v-if="draft.notes" class="lineup-export-notes">
