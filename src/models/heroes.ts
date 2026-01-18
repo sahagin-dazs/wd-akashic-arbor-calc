@@ -238,7 +238,7 @@ const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
     "awakening-1": { name: "Valour's Resurgence", effect: "When the skill ends, recover 30% of lost HP." },
     "awakening-2": { name: "Rapid Strike", effect: "Tempest Onslaught ATK Count +1" },
     "awakening-3": { name: "Rapid Strike", effect: "Tempest Onslaught ATK Count +1" },
-    "awakening-core": { name: "Thunderborne Ascension", effect: "Evolves into Thunderborne Ascension: Tempest Onslaught's DMG and range greatly increase, attack count _2, attack interval shortened. Enveloped in electric currents that paralyze enemies." },
+    "awakening-core": { name: "Thunderborne Ascension", effect: "Evolves into Thunderborne Ascension: Tempest Onslaught's DMG and range greatly increase, attack count +2, attack interval shortened. Enveloped in electric currents that paralyze enemies." },
     "white-1": { name: "Gloryfeast", effect: "Heal upon killing enemies." },
     "white-2": { name: "Undying Bloodwar", effect: "Healing upon killing enemies increases." },
     "atk60-1": { name: "Enhanced Tempest Onslaught", effect: "Tempest Onslaught DMG +60%" },
