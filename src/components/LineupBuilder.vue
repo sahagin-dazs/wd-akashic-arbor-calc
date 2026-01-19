@@ -833,7 +833,10 @@ function normalizeGuildBossSkillsForHero(heroId: string, skillIds: GuildBossSkil
     if (skill.id === "white-2" && !filtered.includes("white-1")) return false;
     return true;
   });
-  return cleaned;
+  return cleaned.filter((skillId) => {
+    const dependency = getSkillDependency(heroId, skillId);
+    return !dependency || cleaned.includes(dependency as GuildBossSkillId);
+  });
 }
 
 function refreshGuildBossSkills(heroId: string) {
@@ -858,6 +861,8 @@ function canSelectGuildBossSkill(heroId: string, skillId: GuildBossSkillId) {
   if (isAutoSkill(heroId, skill)) return false;
   if (skill.id === "atk60-2" && !getHeroSelectedSkills(heroId).includes("atk60-1")) return false;
   if (skill.id === "white-2" && !getHeroSelectedSkills(heroId).includes("white-1")) return false;
+  const dependency = getSkillDependency(heroId, skillId);
+  if (dependency && !getHeroSelectedSkills(heroId).includes(dependency)) return false;
   if (!getHeroSelectedSkills(heroId).includes(skillId) && guildBossSkillCount.value >= MAX_GUILD_BOSS_SKILLS) {
     return false;
   }
@@ -877,8 +882,27 @@ function getHeroSkillMeta(heroId: string, skill: GuildBossSkill) {
   return {
     name: meta?.name ?? skill.name,
     effect: meta?.effect ?? skill.effect,
-    imageKey: meta?.imageKey
+    imageKey: meta?.imageKey,
+    dependency: meta?.dependency
   };
+}
+
+function getSkillDependency(heroId: string, skillId: GuildBossSkillId) {
+  return getHero(heroId)?.skillMeta?.[skillId]?.dependency ?? null;
+}
+
+function getDependentSkillIds(heroId: string, dependencyId: GuildBossSkillId) {
+  return getHeroSelectedSkills(heroId).filter(
+    (skillId) => getSkillDependency(heroId, skillId) === dependencyId
+  );
+}
+
+function getSkillDependencyLabel(heroId: string, skillId: GuildBossSkillId) {
+  const dependencyId = getSkillDependency(heroId, skillId);
+  if (!dependencyId) return null;
+  const dependency = GUILD_BOSS_SKILL_MAP.get(dependencyId);
+  if (!dependency) return null;
+  return getHeroSkillMeta(heroId, dependency).name;
 }
 
 function getSkillImageKey(skill: GuildBossSkill, metaImageKey?: string) {
@@ -925,6 +949,7 @@ function toggleGuildBossSkill(heroId: string, skillId: GuildBossSkillId) {
     current.delete(skillId);
     if (skillId === "atk60-1") current.delete("atk60-2");
     if (skillId === "white-1") current.delete("white-2");
+    getDependentSkillIds(heroId, skillId).forEach((dependentId) => current.delete(dependentId));
   } else {
     current.add(skillId);
   }
@@ -1039,6 +1064,11 @@ function isIOS() {
   );
 }
 
+function isAndroid() {
+  if (typeof navigator === "undefined") return false;
+  return /Android/i.test(navigator.userAgent);
+}
+
 function openImageInNewTab(blob: Blob) {
   const url = URL.createObjectURL(blob);
   const opened = window.open(url, "_blank");
@@ -1091,7 +1121,7 @@ async function copyLineupImage() {
       /* fall through */
     }
   }
-  if (isIOS()) {
+  if (isIOS() || isAndroid()) {
     openImageInNewTab(blob);
     success.value = "Image opened in a new tab.";
     return;
@@ -1699,10 +1729,21 @@ onBeforeUnmount(() => {
                   <div class="guildboss-skill-card">
                     <div
                       v-if="
-                        getHeroSelectedSkills(heroId).includes(skill.id) || isAutoSkill(heroId, skill)
+                        getHeroSelectedSkills(heroId).includes(skill.id) ||
+                        isAutoSkill(heroId, skill) ||
+                        getSkillDependency(heroId, skill.id)
                       "
                       class="skill-pill-stack"
                     >
+                      <span
+                        v-if="
+                          getSkillDependency(heroId, skill.id) &&
+                          !getHeroSelectedSkills(heroId).includes(getSkillDependency(heroId, skill.id)!)
+                        "
+                        class="skill-pill requires"
+                      >
+                        Requires {{ getSkillDependencyLabel(heroId, skill.id) }}
+                      </span>
                       <span
                         v-if="getHeroSelectedSkills(heroId).includes(skill.id)"
                         class="skill-pill"

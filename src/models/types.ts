@@ -43,6 +43,7 @@ export interface HeroDef {
       name: string;
       effect: string;
       imageKey?: string;
+      dependency?: string;
     }
   >;
 }

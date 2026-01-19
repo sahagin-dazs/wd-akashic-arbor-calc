@@ -4418,6 +4418,12 @@ body {
   border-color: rgba(107, 33, 168, 0.55);
 }
 
+.lineup-card .skill-pill.requires {
+  background: rgba(15, 23, 42, 0.8);
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.6);
+}
+
 .lineup-card .guildboss-skill.disabled .guildboss-skill-image img {
   filter: grayscale(1) brightness(0.75);
 }

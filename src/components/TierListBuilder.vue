@@ -849,6 +849,11 @@ function isIOS() {
   );
 }
 
+function isAndroid() {
+  if (typeof navigator === "undefined") return false;
+  return /Android/i.test(navigator.userAgent);
+}
+
 function openImageInNewTab(blob: Blob) {
   const url = URL.createObjectURL(blob);
   const opened = window.open(url, "_blank");
@@ -895,7 +900,7 @@ async function copyTierImage() {
       /* fall through */
     }
   }
-  if (isIOS()) {
+  if (isIOS() || isAndroid()) {
     openImageInNewTab(blob);
     success.value = "Image opened in a new tab.";
     return;
