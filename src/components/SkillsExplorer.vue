@@ -270,7 +270,8 @@ function getHeroSkillMeta(heroId: string, skill: SkillDef) {
   return {
     name: meta?.name ?? skill.name,
     effect: meta?.effect ?? skill.effect,
-    imageKey: meta?.imageKey
+    imageKey: meta?.imageKey,
+    dependency: meta?.dependency
   };
 }
 
@@ -289,6 +290,18 @@ function getSkillImageSrc(heroId: string, skill: SkillDef) {
 
 function getSkillDef(skillId: string) {
   return SKILL_DEF_MAP.get(skillId)!;
+}
+
+function getSkillDependency(heroId: string, skillId: string) {
+  return props.heroes.find((entry) => entry.id === heroId)?.skillMeta?.[skillId]?.dependency ?? null;
+}
+
+function getSkillDependencyLabel(heroId: string, skillId: string) {
+  const dependencyId = getSkillDependency(heroId, skillId);
+  if (!dependencyId) return null;
+  const dependencySkill = getSkillDef(dependencyId);
+  if (!dependencySkill) return null;
+  return getHeroSkillMeta(heroId, dependencySkill).name;
 }
 
 function heroHasChainSkill(hero: HeroDef) {
@@ -659,6 +672,9 @@ async function copyHeroSkills() {
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef('base')).effect }}
                     </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, 'base')" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, 'base') }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -680,6 +696,9 @@ async function copyHeroSkills() {
                     </div>
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef('chain')).effect }}
+                    </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, 'chain')" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, 'chain') }}
                     </div>
                   </div>
                 </div>
@@ -711,6 +730,9 @@ async function copyHeroSkills() {
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef(skillId)).effect }}
                     </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, skillId)" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, skillId) }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -733,6 +755,9 @@ async function copyHeroSkills() {
                     </div>
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef('awakening-core')).effect }}
+                    </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, 'awakening-core')" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, 'awakening-core') }}
                     </div>
                   </div>
                 </div>
@@ -757,6 +782,9 @@ async function copyHeroSkills() {
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef('white-1')).effect }}
                     </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, 'white-1')" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, 'white-1') }}
+                    </div>
                   </div>
                 </div>
                 <div class="skills-prereq-arrow">
@@ -776,6 +804,9 @@ async function copyHeroSkills() {
                     </div>
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef('white-2')).effect }}
+                    </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, 'white-2')" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, 'white-2') }}
                     </div>
                   </div>
                 </div>
@@ -800,6 +831,9 @@ async function copyHeroSkills() {
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef('atk60-1')).effect }}
                     </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, 'atk60-1')" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, 'atk60-1') }}
+                    </div>
                   </div>
                 </div>
                 <div class="skills-prereq-arrow">
@@ -819,6 +853,9 @@ async function copyHeroSkills() {
                     </div>
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef('atk60-2')).effect }}
+                    </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, 'atk60-2')" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, 'atk60-2') }}
                     </div>
                   </div>
                 </div>
@@ -842,6 +879,9 @@ async function copyHeroSkills() {
                     </div>
                     <div class="skills-skill-effect">
                       {{ getHeroSkillMeta(selectedHero.id, getSkillDef(skillId)).effect }}
+                    </div>
+                    <div v-if="getSkillDependencyLabel(selectedHero.id, skillId)" class="skills-skill-dependency">
+                      Requires {{ getSkillDependencyLabel(selectedHero.id, skillId) }}
                     </div>
                   </div>
                 </div>
@@ -925,6 +965,12 @@ async function copyHeroSkills() {
                   </div>
                   <div class="skills-skill-title">{{ entry.meta.name }}</div>
                   <div class="skills-skill-effect">{{ entry.meta.effect }}</div>
+                  <div
+                    v-if="getSkillDependencyLabel(entry.hero.id, entry.skill.id)"
+                    class="skills-skill-dependency"
+                  >
+                    Requires {{ getSkillDependencyLabel(entry.hero.id, entry.skill.id) }}
+                  </div>
                 </div>
               </div>
               <div

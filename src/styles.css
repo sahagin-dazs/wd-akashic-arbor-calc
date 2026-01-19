@@ -6501,6 +6501,20 @@ body {
   overflow-wrap: anywhere;
 }
 
+.skills-skill-dependency {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  letter-spacing: 0.01em;
+}
+
 .skills-skill-dots {
   display: flex;
   gap: 4px;
