@@ -93,6 +93,10 @@ const RATE_UP_DEFAULT_FALLBACK = [
 ] as const;
 const RATE_UP_PITY_DEFAULT = 50;
 const RATE_UP_PITY_STIER = 80;
+const RATE_UP_MYTHIC_CHANCE_DEFAULT = 3.11;
+const RATE_UP_MYTHIC_RATEUP_STIER = 2.05;
+const RATE_UP_MYTHIC_OTHER_STIER = 1.08;
+const RATE_UP_SPLIT = 0.5;
 const RATE_UP_QUEST_TARGET = 200;
 const RATE_UP_QUEST_MAX_REWARDS = 5;
 const RATE_UP_STAR_TIERS = [
@@ -362,6 +366,8 @@ const warriorOptionsByElement = computed<
 const rateUpHeroes = computed(() =>
   props.heroes.filter((hero) => hero.isRateUpHero)
 );
+const rateUpPoolIds = computed(() => new Set(rateUpHeroes.value.map((hero) => hero.id)));
+const nonRateUpPoolIds = new Set(RATE_UP_DEFAULT_FALLBACK);
 
 const isWarriorReady = computed(() =>
   Object.values(state.value.warrior.wishlist).every((value) => Boolean(value))
@@ -409,6 +415,36 @@ function countHeroPulls(heroId?: string | null, category?: SummonCategory) {
   );
 }
 
+function countRateUpPoolMythics() {
+  if (activeTab.value !== "rate") return 0;
+  const featuredId = state.value.rateUp.featuredHeroId;
+  return pullsForTab.value.reduce(
+    (sum, pull) =>
+      sum +
+      (pull.category === "otherMythic" &&
+      pull.heroId &&
+      pull.heroId !== featuredId &&
+      rateUpPoolIds.value.has(pull.heroId)
+        ? 1
+        : 0),
+    0
+  );
+}
+
+function countNonRateUpPoolMythics() {
+  if (activeTab.value !== "rate") return 0;
+  return pullsForTab.value.reduce(
+    (sum, pull) =>
+      sum +
+      (pull.category === "otherMythic" &&
+      pull.heroId &&
+      nonRateUpPoolIds.has(pull.heroId)
+        ? 1
+        : 0),
+    0
+  );
+}
+
 function heroActualRate(heroId?: string | null, category?: SummonCategory) {
   if (!heroId || !totalPulls.value) return null;
   const hits = countHeroPulls(heroId, category);
@@ -440,6 +476,28 @@ const rateUpFeatured = computed(() => {
       }
     : null;
 });
+const rateUpFeaturedIsSTier = computed(
+  () => rateUpFeatured.value?.hero?.isSTier === true
+);
+const rateUpRateupPoolChance = computed(() =>
+  rateUpFeaturedIsSTier.value
+    ? RATE_UP_MYTHIC_RATEUP_STIER
+    : RATE_UP_MYTHIC_CHANCE_DEFAULT
+);
+const rateUpOtherPoolChance = computed(() =>
+  rateUpFeaturedIsSTier.value ? RATE_UP_MYTHIC_OTHER_STIER : 0
+);
+const rateUpMythicChance = computed(
+  () => rateUpRateupPoolChance.value + rateUpOtherPoolChance.value
+);
+const rateUpFeaturedChance = computed(
+  () => rateUpRateupPoolChance.value * RATE_UP_SPLIT
+);
+const rateUpOtherMythicChance = computed(
+  () =>
+    rateUpRateupPoolChance.value * (1 - RATE_UP_SPLIT) +
+    rateUpOtherPoolChance.value
+);
 const rateUpHasQuest = computed(() => rateUpFeatured.value?.hero?.isQuest === true);
 
 const rateUpQuestRewards = computed(() =>
@@ -630,7 +688,53 @@ const summaryCards = computed<{ main: SummaryCard[]; bonus: SummaryCard[] }>(() 
     return { main, bonus };
   }
   if (activeTab.value === "rate") {
-    const rates = RATE_MAP.rate;
+    const rates = rateUpRates.value;
+    if (rateUpFeaturedIsSTier.value) {
+      const rateUpPoolValue = countRateUpPoolMythics();
+      const nonRateUpValue = countNonRateUpPoolMythics();
+      return {
+        main: [
+          {
+            key: "rateup-pool",
+            label: "Rate-Up Mythic",
+            value: rateUpPoolValue,
+            rarity: "mythic",
+            rate: rates?.rateupPool,
+            actualRate: rates?.rateupPool ? actualRateFor(rateUpPoolValue) : null
+          },
+          {
+            key: "non-rateup",
+            label: "Non-Rate-Up Mythic",
+            value: nonRateUpValue,
+            rarity: "mythic",
+            rate: rates?.nonRateUp,
+            actualRate: rates?.nonRateUp ? actualRateFor(nonRateUpValue) : null
+          },
+          buildCard({
+            key: "legendary",
+            label: "Legendary Heroes",
+            category: "legendary",
+            rarity: "legendary",
+            rate: rates?.legendary
+          }),
+          buildCard({
+            key: "epic",
+            label: "Epic Heroes",
+            category: "epic",
+            rarity: "epic",
+            rate: rates?.epic
+          }),
+          buildCard({
+            key: "common",
+            label: "Common Heroes",
+            category: "common",
+            rarity: "common",
+            rate: rates?.common
+          })
+        ],
+        bonus: []
+      };
+    }
     return {
       main: [
         buildCard({
@@ -638,29 +742,29 @@ const summaryCards = computed<{ main: SummaryCard[]; bonus: SummaryCard[] }>(() 
           label: "Featured Mythic",
           category: "rateup",
           rarity: "mythic",
-        rate: rates?.rateup
-      }),
-      buildCard({
-        key: "other-mythic",
-        label: "Other Mythic",
-        category: "otherMythic",
-        rarity: "mythic",
-        rate: rates?.otherMythic
-      }),
-      buildCard({
-        key: "legendary",
-        label: "Legendary Heroes",
-        category: "legendary",
-        rarity: "legendary",
-        rate: rates?.legendary
-      }),
-      buildCard({
-        key: "epic",
-        label: "Epic Heroes",
-        category: "epic",
-        rarity: "epic",
-        rate: rates?.epic
-      }),
+          rate: rates?.rateup
+        }),
+        buildCard({
+          key: "other-mythic",
+          label: "Other Mythic",
+          category: "otherMythic",
+          rarity: "mythic",
+          rate: rates?.otherMythic
+        }),
+        buildCard({
+          key: "legendary",
+          label: "Legendary Heroes",
+          category: "legendary",
+          rarity: "legendary",
+          rate: rates?.legendary
+        }),
+        buildCard({
+          key: "epic",
+          label: "Epic Heroes",
+          category: "epic",
+          rarity: "epic",
+          rate: rates?.epic
+        }),
         buildCard({
           key: "common",
           label: "Common Heroes",
@@ -1005,17 +1109,35 @@ function rollRateUpOnce(): SummonResult {
   const pityRemaining = state.value.rateUp.pity;
   const forceMythic = pityRemaining <= 1;
   const roll = Math.random() * 100;
-  if (forceMythic || roll < 3.11) {
+  const mythicChance = rateUpMythicChance.value;
+  if (forceMythic || roll < mythicChance) {
     const featured = targetHero();
-    const pool = RATE_UP_DEFAULT_FALLBACK.map((id) => heroMap.value.get(id)).filter(
-      (hero): hero is HeroDef => Boolean(hero && hero.id !== featured.id)
-    );
     let mythicHero: HeroDef;
     if (state.value.rateUp.featuredGuarantee) {
       mythicHero = featured;
+    } else if (rateUpFeaturedIsSTier.value) {
+      const rateUpPool = rateUpHeroes.value.filter(
+        (hero) => hero.id !== featured.id
+      );
+      const nonRateUpPool = RATE_UP_DEFAULT_FALLBACK.map((id) => heroMap.value.get(id)).filter(
+        (hero): hero is HeroDef => Boolean(hero && hero.id !== featured.id)
+      );
+      const poolRoll = forceMythic ? Math.random() * mythicChance : roll;
+      const inRateUpPool = poolRoll < rateUpRateupPoolChance.value;
+      if (inRateUpPool) {
+        mythicHero =
+          Math.random() < RATE_UP_SPLIT || !rateUpPool.length
+            ? featured
+            : pickRandom(rateUpPool);
+      } else {
+        mythicHero = nonRateUpPool.length ? pickRandom(nonRateUpPool) : featured;
+      }
     } else {
+      const pool = RATE_UP_DEFAULT_FALLBACK.map((id) => heroMap.value.get(id)).filter(
+        (hero): hero is HeroDef => Boolean(hero && hero.id !== featured.id)
+      );
       mythicHero =
-        Math.random() < 0.5 || !pool.length ? featured : pickRandom(pool);
+        Math.random() < RATE_UP_SPLIT || !pool.length ? featured : pickRandom(pool);
     }
     updateRatePity(true);
     state.value.rateUp.featuredGuarantee = mythicHero.id !== featured.id;
@@ -1026,13 +1148,13 @@ function rollRateUpOnce(): SummonResult {
     });
   }
   updateRatePity(false);
-  if (roll < 3.11 + 3.4) {
+  if (roll < mythicChance + 3.4) {
     return buildHeroResult(heroFromRarity("Legendary"), {
       rarityLabel: "Legendary",
       category: "legendary"
     });
   }
-  if (roll < 3.11 + 3.4 + 25.5) {
+  if (roll < mythicChance + 3.4 + 25.5) {
     return buildHeroResult(heroFromRarity("Epic"), {
       rarityLabel: "Epic",
       category: "epic"
@@ -1444,14 +1566,32 @@ function featuredHighlightClass(heroId?: string | null) {
   return `highlight-${rarity.toLowerCase()}`;
 }
 
-const RATE_UP_MYTHIC_CHANCE = 3.11;
-const RATE_UP_SPLIT = 0.5;
-const FEATURED_POSTED = `${(RATE_UP_MYTHIC_CHANCE * RATE_UP_SPLIT).toFixed(
-  2
-)}% (3.11% × 50% featured)`;
-const OTHER_MYTHIC_POSTED = `${(RATE_UP_MYTHIC_CHANCE * RATE_UP_SPLIT).toFixed(
-  2
-)}% (other mythic pool)`;
+const rateUpRates = computed(() => {
+  const featuredRate = rateUpFeaturedChance.value;
+  const rateUpPool = rateUpRateupPoolChance.value;
+  const otherRateUpPoolRate = rateUpPool * (1 - RATE_UP_SPLIT);
+  const nonRateUpRate = rateUpOtherPoolChance.value;
+  const otherMythicRate = otherRateUpPoolRate + nonRateUpRate;
+  const mythicChance = rateUpMythicChance.value;
+  const legendaryRate = 3.4;
+  const epicRate = 25.5;
+  const commonRate = Math.max(
+    0,
+    100 - mythicChance - legendaryRate - epicRate
+  );
+  const rateupLabel = `${featuredRate.toFixed(2)}% (${rateUpPool.toFixed(
+    2
+  )}% × 50% featured)`;
+  return {
+    rateup: rateupLabel,
+    rateupPool: `${otherRateUpPoolRate.toFixed(2)}%`,
+    nonRateUp: `${nonRateUpRate.toFixed(2)}%`,
+    otherMythic: `${otherMythicRate.toFixed(2)}%`,
+    legendary: `${legendaryRate.toFixed(1)}%`,
+    epic: `${epicRate.toFixed(1)}%`,
+    common: `${commonRate.toFixed(2)}%`
+  };
+});
 
 const RATE_MAP: Record<
   SummonTab,
@@ -1463,13 +1603,7 @@ const RATE_MAP: Record<
     epic: "27%",
     common: "65%"
   },
-  rate: {
-    rateup: FEATURED_POSTED,
-    otherMythic: OTHER_MYTHIC_POSTED,
-    legendary: "3.4%",
-    epic: "25.5%",
-    common: "67.99%"
-  },
+  rate: {},
   xeno: {
     xenoHero: "3.87%",
     gem30k: "0.10%",
@@ -1483,11 +1617,11 @@ const RATE_MAP: Record<
     promoStone: "19.49%"
   }
 };
-const FEATURED_RATE_TEXT: Record<SummonTab, string> = {
+const FEATURED_RATE_TEXT = computed<Record<SummonTab, string>>(() => ({
   warrior: RATE_MAP.warrior?.wishlist ?? "2.5%",
-  rate: FEATURED_POSTED,
+  rate: rateUpRates.value.rateup ?? "",
   xeno: RATE_MAP.xeno?.xenoHero ?? "3.87%"
-};
+}));
 
 const inlineScrolls = computed(() => {
   if (activeTab.value === "warrior") return state.value.warrior.scrolls;
