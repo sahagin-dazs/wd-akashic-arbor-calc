@@ -1,6 +1,56 @@
 import { HeroDef } from "./types";
 
 export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
+   NT: {
+    base: {
+      name: "Summon: Northern Tyrant",
+      effect: "Blizzard Cleaver: Throw the spinning Blizzard Cleaver, dealing double damage to enemies in its path; Upon entering battle, summon 2 Frostwolves, which are permanent summoned units that remain on the field as long as the Northern Tyrant is alive, attacking enemies with Frost Claws."
+    },
+    "awakening-1": {
+      name: "Fateful Wolf",
+      effect: "Frostwolves and Frostwolf King attacks restore Northern Tyrant's HP"
+    },
+    "awakening-2": {
+      name: "Axe Barrage",
+      effect: "Blizzard Cleaver ATK Count +1"
+    },
+    "awakening-3": {
+      name: "Axe Barrage",
+      effect: "Blizzard Cleaver ATK Count +1"
+    },
+    "awakening-core": {
+      name: "Glacier Alpha",
+      effect: "Evolves into Glacier Alpha: Blizzard Cleaver DMG and range increase. Additionally summons Frostwolf King who casts Frost Shred to attack a large area."
+    },
+    "white-1": {
+      name: "Chilled Fang",
+      effect: "Frostwolves and Frostwolf King attacks inflict (Frosty Fang), reducing 10% Ice Element Resistance and causing Slow and DoT"
+    },
+    "white-2": {
+      name: "Chilled Fang+",
+      effect: "[Frosty Fang] freezes target for 3s after dealing 15 damage instances, ignoring Control Resistance"
+    },
+    "atk60-1": {
+      name: "Winter's Edge",
+      effect: "Blizzard Cleaver and own summond unit DMG +60%"
+    },
+    "atk60-2": {
+      name: "Winter's Edge",
+      effect: "Blizzard Cleaver and own summond unit DMG +60%"
+    },
+    "blue-1": {
+      name: "Lupine Spirit",
+      effect: "Blizzard Cleaver and own summoned unit DMG +100%"
+    },
+    "blue-2": {
+      name: "Frost Claw",
+      effect: "Frostwolf King's Frost Shred creates +4 claw marks."
+    },
+    "blue-3": {
+      name: "Frenzied Pack",
+      effect: "Frostwolf's Ice Claw ATK Count +2. Attack interval reduces."
+    }
+  },
   PD: {
     base: {
       name: "Summon: Phoenix Dancer",

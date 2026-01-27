@@ -91,6 +91,8 @@ const RATE_UP_DEFAULT_FALLBACK = [
   "Robot",
   "IQ"
 ] as const;
+const RATE_UP_PITY_DEFAULT = 50;
+const RATE_UP_PITY_STIER = 80;
 const RATE_UP_QUEST_TARGET = 200;
 const RATE_UP_QUEST_MAX_REWARDS = 5;
 const RATE_UP_STAR_TIERS = [
@@ -147,7 +149,7 @@ const DEFAULT_STATE: SummonState = {
   rateUp: {
     scrolls: 0,
     featuredHeroId: "Valk",
-    pity: 50,
+    pity: RATE_UP_PITY_DEFAULT,
     featuredGuarantee: false,
     questProgress: 0,
     questRewards: 0,
@@ -206,7 +208,7 @@ function loadState(): SummonState {
       rateUp: {
         scrolls: Math.max(0, Number(parsed?.rateUp?.scrolls) || 0),
         featuredHeroId: parsed?.rateUp?.featuredHeroId ?? "FP",
-        pity: parsed?.rateUp?.pity ?? 50,
+        pity: parsed?.rateUp?.pity ?? RATE_UP_PITY_DEFAULT,
         featuredGuarantee: Boolean(parsed?.rateUp?.featuredGuarantee),
         questProgress: Math.max(0, Number(parsed?.rateUp?.questProgress) || 0),
         questRewards: Math.max(0, Number(parsed?.rateUp?.questRewards) || 0),
@@ -308,6 +310,15 @@ const heroMap = computed<Map<string, HeroDef>>(() => {
   props.heroes.forEach((hero) => map.set(hero.id, hero));
   return map;
 });
+
+function rateUpPityMaxForHeroId(heroId: string | null) {
+  const hero = heroId ? heroMap.value.get(heroId) : null;
+  return hero?.isSTier ? RATE_UP_PITY_STIER : RATE_UP_PITY_DEFAULT;
+}
+
+const rateUpPityMax = computed(() =>
+  rateUpPityMaxForHeroId(state.value.rateUp.featuredHeroId)
+);
 
 const heroesByRarity = computed<Record<Rarity, HeroDef[]>>(() => {
   const groups: Record<Rarity, HeroDef[]> = {
@@ -948,7 +959,9 @@ function rollWarriorOnce(): SummonResult {
 }
 
 function updateRatePity(hitMythic: boolean) {
-  state.value.rateUp.pity = hitMythic ? 50 : Math.max(1, state.value.rateUp.pity - 1);
+  state.value.rateUp.pity = hitMythic
+    ? rateUpPityMax.value
+    : Math.max(1, state.value.rateUp.pity - 1);
 }
 
 function targetHero() {
@@ -1162,7 +1175,7 @@ function clearHistoryForActiveTab() {
     return;
   }
   if (activeTab.value === "rate") {
-    state.value.rateUp.pity = 50;
+    state.value.rateUp.pity = rateUpPityMax.value;
     state.value.rateUp.questProgress = state.value.rateUp.questBaselineProgress;
     state.value.rateUp.questRewards = state.value.rateUp.questBaselineRewards;
     state.value.rateUp.bannerHeroPulls = 0;
@@ -1297,6 +1310,7 @@ function handleRateUpHeroChange(event: Event) {
   }
   state.value.rateUp.featuredHeroId = nextId;
   lastRateUpHeroId.value = nextId;
+  state.value.rateUp.pity = rateUpPityMaxForHeroId(nextId);
 }
 
 watch(activeTab, (value) => {
@@ -1579,6 +1593,7 @@ watch(
     if (!list.some((hero) => hero.id === state.value.rateUp.featuredHeroId)) {
       state.value.rateUp.featuredHeroId = list[0]?.id ?? null;
       lastRateUpHeroId.value = state.value.rateUp.featuredHeroId;
+      state.value.rateUp.pity = rateUpPityMaxForHeroId(state.value.rateUp.featuredHeroId);
     }
   },
   { immediate: true }

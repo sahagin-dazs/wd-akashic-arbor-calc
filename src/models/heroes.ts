@@ -92,6 +92,18 @@ const SUBLIME_HEROES: HeroDef[] = [
 ];
 
 const MYTHIC_HEROES: HeroDef[] = [
+    {
+    id: "NT",
+    name: "Northern Tyrant",
+    rarity: "Mythic",
+    role: "Fighter",
+    element: "Ice",
+    percents: MYTHIC_PERCENTS,
+    isRateUpHero: true,
+    isWishlistHero: false,
+    isSTier: true,
+    isQuest: true
+  },
   {
     id: "PD",
     name: "Phoenix Dancer",
@@ -100,8 +112,8 @@ const MYTHIC_HEROES: HeroDef[] = [
     element: "Fire",
     percents: MYTHIC_PERCENTS,
     isRateUpHero: true,
-    isWishlistHero: false,
-    isQuest: true
+    isWishlistHero: true,
+    isQuest: false
   },
   {
     id: "Valk",
@@ -111,7 +123,7 @@ const MYTHIC_HEROES: HeroDef[] = [
     element: "Electro",
     percents: MYTHIC_PERCENTS,
     isRateUpHero: true,
-    isWishlistHero: false
+    isWishlistHero: true
   },
   {
     id: "WR",

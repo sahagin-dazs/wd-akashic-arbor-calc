@@ -35,6 +35,7 @@ export interface HeroDef {
   isRateUpHero?: boolean;
   isWishlistHero?: boolean;
   isQuest?: boolean;
+  isSTier?: boolean;
   chainPartnerId?: string;
   hasArgentSkin?: boolean;
   skillMeta?: Record<
