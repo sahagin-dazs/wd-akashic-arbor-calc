@@ -64,14 +64,17 @@ const RANK_OPTIONS = [1, 2, 3, 4, 5];
 const activeSlotPopover = ref<number | null>(null);
 const rootRef = ref<HTMLElement | null>(null);
 const ALLOWED_HERO_RARITIES = new Set(["Sublime", "Mythic", "Legendary"]);
+const BASE_URL =
+  typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
+const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
 
-type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
+type LevelIconType = "star" | "moon" | "diamond" | "sublime";
 
-const ICON_CLASS_MAP: Record<LevelIconType, string> = {
-  star: "fa-solid fa-star level-icon-star",
-  moon: "fa-solid fa-moon level-icon-moon",
-  diamond: "fa-solid fa-gem level-icon-diamond",
-  rainbow: "fa-solid fa-gem level-icon-rainbow"
+const LEVEL_ICON_SRC_MAP: Record<LevelIconType, string> = {
+  star: `${NORMALIZED_BASE}images/star.png`,
+  moon: `${NORMALIZED_BASE}images/moon.png`,
+  diamond: `${NORMALIZED_BASE}images/diamond.png`,
+  sublime: `${NORMALIZED_BASE}images/sublime.png`
 };
 
 function getHero(heroId: string | null) {
@@ -102,7 +105,7 @@ function getLevelIndex(heroId: string | null) {
 }
 
 function tokenizeLevel(level: Level): { type: LevelIconType; count: number }[] {
-  if (level === "RD") return [{ type: "rainbow", count: 1 }];
+  if (level === "RD") return [{ type: "sublime", count: 1 }];
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (count <= 0) return [];
@@ -125,7 +128,7 @@ function getLevelLabel(heroId: string | null) {
   if (index === null) return "Select star level";
   if (index < 0) return "Not Owned";
   const level = LEVELS[index];
-  if (level === "RD") return "Rainbow Diamond";
+  if (level === "RD") return "Sublime";
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (suffix === "S") return `${count} ${count === 1 ? "Star" : "Stars"}`;
@@ -134,8 +137,12 @@ function getLevelLabel(heroId: string | null) {
   return level;
 }
 
-function iconClass(type: LevelIconType) {
-  return ICON_CLASS_MAP[type];
+function levelIconClass(type: LevelIconType) {
+  return `level-icon-${type}`;
+}
+
+function levelIconSrc(type: LevelIconType) {
+  return LEVEL_ICON_SRC_MAP[type];
 }
 
 function getAvatarLetters(heroId: string | null) {
@@ -194,6 +201,11 @@ function slotStyle(heroId: string | null) {
 function isSublime(heroId: string | null) {
   const hero = getHero(heroId);
   return hero?.rarity === "Sublime";
+}
+
+function isSTier(heroId: string | null) {
+  const hero = getHero(heroId);
+  return hero?.isSTier === true;
 }
 
 function clearSlot(idx: number) {
@@ -301,7 +313,7 @@ function elementMeta(heroId: string | null) {
           >
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
-          <div class="lineup-avatar">
+          <div class="lineup-avatar" :class="{ 'stier-badge': isSTier(slot.heroId) }">
             <img
               v-if="showAvatarImage(slot.heroId)"
               class="lineup-avatar-img"
@@ -340,13 +352,15 @@ function elementMeta(heroId: string | null) {
                   v-for="token in getLevelTokens(slot.heroId)"
                   :key="`${slot.heroId}-${token.type}`"
                 >
-                  <i
+                  <img
                     v-for="countIndex in token.count"
                     :key="`${slot.heroId}-${token.type}-${countIndex}`"
                     class="level-icon"
-                    :class="iconClass(token.type)"
+                    :class="levelIconClass(token.type)"
+                    :src="levelIconSrc(token.type)"
+                    alt=""
                     aria-hidden="true"
-                  ></i>
+                  />
                 </template>
               </template>
             </div>
@@ -400,6 +414,7 @@ function elementMeta(heroId: string | null) {
                 v-for="hero in availableHeroes"
                 :key="hero.id"
                 class="hero-add-card"
+                :class="{ 'stier-badge': hero.isSTier }"
                 type="button"
                 @click="setSlotHero(idx, hero.id)"
               >

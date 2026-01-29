@@ -35,6 +35,7 @@ const LEGACY_KEYS = ["wd-tools-tier-draft", "wdtools-tier-draft"];
 const TOKEN_STORAGE_KEY = "wdtools-tier-tokens";
 const LOCAL_SAVED_KEY = "wdtools-tier-saved";
 const OWNED_LISTS_KEY = "wdtools-tier-owned";
+const SHOW_HERO_IDS_KEY = "wdtools-tier-show-ids";
 
 type DraftState = {
   id: string | null;
@@ -78,6 +79,7 @@ const exportRef = ref<HTMLElement | null>(null);
 const lastSavedSnapshot = ref("");
 const linkedBuilderOpen = ref(false);
 const linkSelection = ref<string[]>([]);
+const showHeroIds = ref(false);
 
 const copyToClipboard = async (text: string | null | undefined) => {
   if (!text) return;
@@ -106,6 +108,21 @@ const selectedForMove = reactive<Record<string, string>>({});
 const rowConfigOpen = reactive<Record<string, boolean>>({});
 const rowAddOpen = reactive<Record<string, boolean>>({});
 const moveTarget = reactive<Record<string, string>>({});
+const loadShowHeroIds = () => {
+  if (typeof window === "undefined") return false;
+  const stored = localStorage.getItem(SHOW_HERO_IDS_KEY);
+  return stored === "true";
+};
+showHeroIds.value = loadShowHeroIds();
+
+watch(
+  showHeroIds,
+  (value) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(SHOW_HERO_IDS_KEY, String(value));
+  },
+  { immediate: true }
+);
 
 const tokens = ref(loadTokens());
 const localSavedLists = ref(loadLocalSaved());
@@ -255,6 +272,15 @@ function heroDisplayName(hero?: HeroEntry | null) {
   return hero.name || hero.id;
 }
 
+function heroIdLabel(hero?: HeroEntry | null) {
+  if (!hero) return "";
+  if (isLinkedHero(hero)) {
+    const ids = heroStack(hero).map((entry) => entry.id);
+    return ids.length ? ids.join(" + ") : hero.id;
+  }
+  return hero.id;
+}
+
 function heroImg(hero?: (typeof HEROES)[number]) {
   if (!hero) return "";
   return avatarUrl(hero.id, hero.name);
@@ -319,6 +345,10 @@ function highestRarity(hero: HeroEntry): string {
   return heroes
     .map((h) => h.rarity)
     .reduce((best, current) => (rank.indexOf(current) > rank.indexOf(best) ? current : best));
+}
+
+function isSTierHero(hero: HeroEntry) {
+  return heroStack(hero).some((entry) => entry.isSTier);
 }
 
 function previewHeroBackground(hero: HeroEntry) {
@@ -1326,7 +1356,11 @@ onErrorCaptured((err, instance, info) => {
                 }"
                 @click="entry?.rowId && (selectedForMove[entry.rowId] = selectedForMove[entry.rowId] === hero.id ? '' : hero.id)"
               >
-                <div class="hero-stack" :class="{ linked: isLinkedHero(hero) }" :style="{ '--stack-count': heroStack(hero).length }">
+                <div
+                  class="hero-stack"
+                  :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
+                  :style="{ '--stack-count': heroStack(hero).length }"
+                >
                   <img
                     v-for="(stackHero, stackIdx) in heroStack(hero)"
                     :key="stackHero.id"
@@ -1362,7 +1396,11 @@ onErrorCaptured((err, instance, info) => {
                     :style="{ '--stack-count': heroStack(hero).length }"
                     @click="() => { if (!isLocked && entry?.rowId && hero?.id) { assignHero(hero.id, entry.rowId); rowAddOpen[entry.rowId] = false; } }"
                   >
-                    <div class="hero-stack" :class="{ linked: isLinkedHero(hero) }" :style="{ '--stack-count': heroStack(hero).length }">
+                    <div
+                      class="hero-stack"
+                      :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
+                      :style="{ '--stack-count': heroStack(hero).length }"
+                    >
                       <img
                         v-for="(stackHero, stackIdx) in heroStack(hero)"
                         :key="stackHero.id"
@@ -1464,9 +1502,15 @@ onErrorCaptured((err, instance, info) => {
           <p class="muted notes-hint">Notes are saved as plain text. Links or scripts won’t run.</p>
         </div>
         <div class="preview-actions">
-          <button class="ghost" @click="copyTierImage">Copy Image</button>
+          <div class="preview-actions-right">
+            <label class="preview-toggle">
+              <input type="checkbox" v-model="showHeroIds" />
+              <span>Show hero IDs</span>
+            </label>
+            <button class="ghost" @click="copyTierImage">Copy Image</button>
+          </div>
         </div>
-        <div ref="exportRef" class="tier-export" :class="{ exporting }">
+        <div ref="exportRef" class="tier-export" :class="{ exporting, 'show-ids': showHeroIds }">
           <div class="tier-export-title">{{ draft.title }}</div>
           <div class="tier-export-rows">
             <div
@@ -1486,13 +1530,17 @@ onErrorCaptured((err, instance, info) => {
                   v-for="(hero, idx) in entry.heroes.filter(Boolean)"
                   :key="hero?.id || `export-${idx}`"
                   class="tier-export-hero"
-                  :class="{ linked: isLinkedHero(hero) }"
+                  :class="[heroRarityClass(hero), { linked: isLinkedHero(hero) }]"
                   :style="{
                     '--stack-count': heroStack(hero).length,
                     background: previewHeroBackground(hero)
                   }"
                 >
-                  <div class="hero-stack" :class="{ linked: isLinkedHero(hero) }" :style="{ '--stack-count': heroStack(hero).length }">
+                  <div
+                    class="hero-stack"
+                    :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
+                    :style="{ '--stack-count': heroStack(hero).length }"
+                  >
                     <img
                       v-for="(stackHero, stackIdx) in heroStack(hero)"
                       :key="stackHero.id"
@@ -1501,6 +1549,13 @@ onErrorCaptured((err, instance, info) => {
                       :style="{ '--stack-index': stackIdx }"
                     />
                   </div>
+                  <span
+                    v-if="showHeroIds"
+                    class="tier-export-hero-id"
+                    :class="{ linked: isLinkedHero(hero) }"
+                  >
+                    {{ heroIdLabel(hero) }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1537,7 +1592,7 @@ onErrorCaptured((err, instance, info) => {
               :class="[heroRarityClass(hero), { active: hero?.id ? linkSelection.includes(hero.id) : false }]"
               @click="() => hero?.id && toggleLinkSelection(hero.id)"
             >
-              <div class="hero-stack" :class="{ linked: false }">
+              <div class="hero-stack" :class="{ 'stier-badge': isSTierHero(hero) }">
                 <img :src="heroImg(hero)" :alt="hero?.name || hero?.id || 'Hero'" />
               </div>
               <span>{{ hero?.name || hero?.id }}</span>
@@ -1553,7 +1608,11 @@ onErrorCaptured((err, instance, info) => {
             <p class="muted">Linked heroes in this list:</p>
             <div class="linked-list">
               <div v-for="link in linkedHeroViews" :key="link.id" class="linked-pill" :class="heroRarityClass(link)">
-                <div class="hero-stack linked" :style="{ '--stack-count': link.heroIds.length }">
+                <div
+                  class="hero-stack linked"
+                  :class="{ 'stier-badge': isSTierHero(link) }"
+                  :style="{ '--stack-count': link.heroIds.length }"
+                >
                   <img
                     v-for="(stackHero, stackIdx) in heroStack(link)"
                     :key="stackHero.id"
@@ -1576,7 +1635,11 @@ onErrorCaptured((err, instance, info) => {
             :class="[heroRarityClass(hero), { assigned: hero?.id ? assignedSet.has(hero.id) : false }]"
             :title="heroDisplayName(hero)"
           >
-            <div class="hero-stack" :class="{ linked: isLinkedHero(hero) }" :style="{ '--stack-count': heroStack(hero).length }">
+            <div
+              class="hero-stack"
+              :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
+              :style="{ '--stack-count': heroStack(hero).length }"
+            >
               <img
                 v-for="(stackHero, stackIdx) in heroStack(hero)"
                 :key="stackHero.id"

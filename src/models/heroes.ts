@@ -101,8 +101,7 @@ const MYTHIC_HEROES: HeroDef[] = [
     percents: MYTHIC_PERCENTS,
     isRateUpHero: true,
     isWishlistHero: false,
-    isSTier: true,
-    isQuest: true
+    isSTier: true
   },
   {
     id: "PD",
@@ -113,7 +112,6 @@ const MYTHIC_HEROES: HeroDef[] = [
     percents: MYTHIC_PERCENTS,
     isRateUpHero: true,
     isWishlistHero: true,
-    isQuest: false
   },
   {
     id: "Valk",

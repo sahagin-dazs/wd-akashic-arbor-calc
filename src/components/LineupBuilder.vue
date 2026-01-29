@@ -758,6 +758,10 @@ function getHero(heroId: string | null) {
   return heroMap.value.get(heroId) ?? null;
 }
 
+function isSTierHeroId(heroId: string | null) {
+  return getHero(heroId)?.isSTier === true;
+}
+
 function isGuildBossAwakenedHero(heroId: string) {
   return draft.guildBoss.awakenedHeroId === heroId;
 }
@@ -1010,16 +1014,20 @@ function rarityBorder(hero?: HeroDef | null) {
   return "rgba(148, 163, 184, 0.45)";
 }
 
-type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
-const LEVEL_ICON_CLASS_MAP: Record<LevelIconType, string> = {
-  star: "fa-solid fa-star level-icon-star",
-  moon: "fa-solid fa-moon level-icon-moon",
-  diamond: "fa-solid fa-gem level-icon-diamond",
-  rainbow: "fa-solid fa-gem level-icon-rainbow"
+const BASE_URL =
+  typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
+const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
+
+type LevelIconType = "star" | "moon" | "diamond" | "sublime";
+const LEVEL_ICON_SRC_MAP: Record<LevelIconType, string> = {
+  star: `${NORMALIZED_BASE}images/star.png`,
+  moon: `${NORMALIZED_BASE}images/moon.png`,
+  diamond: `${NORMALIZED_BASE}images/diamond.png`,
+  sublime: `${NORMALIZED_BASE}images/sublime.png`
 };
 
 function tokenizeLevel(level: Level): { type: LevelIconType; count: number }[] {
-  if (level === "RD") return [{ type: "rainbow", count: 1 }];
+  if (level === "RD") return [{ type: "sublime", count: 1 }];
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (count <= 0) return [];
@@ -1039,7 +1047,11 @@ function getLevelTokens(heroId: string | null) {
 }
 
 function levelIconClass(type: LevelIconType) {
-  return LEVEL_ICON_CLASS_MAP[type];
+  return `level-icon-${type}`;
+}
+
+function levelIconSrc(type: LevelIconType) {
+  return LEVEL_ICON_SRC_MAP[type];
 }
 
 async function waitForImages(root: HTMLElement) {
@@ -1419,6 +1431,7 @@ onBeforeUnmount(() => {
                 <div v-if="slot.heroId" class="lineup-slot-hero">
                   <button
                     class="lineup-slot-avatar"
+                    :class="{ 'stier-badge': isSTierHeroId(slot.heroId) }"
                     type="button"
                     :disabled="isLocked"
                     :data-slot-id="slot.id"
@@ -1436,13 +1449,15 @@ onBeforeUnmount(() => {
                     </div>
                     <div class="lineup-slot-level">
                       <template v-for="token in getLevelTokens(slot.heroId)" :key="`lvl-${slot.id}-${token.type}`">
-                        <i
+                        <img
                           v-for="countIndex in token.count"
                           :key="`lvl-${slot.id}-${token.type}-${countIndex}`"
                           class="level-icon"
                           :class="levelIconClass(token.type)"
+                          :src="levelIconSrc(token.type)"
+                          alt=""
                           aria-hidden="true"
-                        ></i>
+                        />
                       </template>
                     </div>
                   </div>
@@ -1480,7 +1495,7 @@ onBeforeUnmount(() => {
                   :disabled="isLocked"
                   @click="() => { if (!isLocked) { setSlotHero(slot, hero.id); activeSlotPopoverId = null; } }"
                 >
-                      <div class="hero-stack">
+                      <div class="hero-stack" :class="{ 'stier-badge': hero.isSTier }">
                         <img :src="avatarUrl(hero.id, hero.name)" :alt="hero.name" />
                       </div>
                       <span>{{ hero.name }}</span>
@@ -1515,6 +1530,7 @@ onBeforeUnmount(() => {
             <div v-if="slot.heroId" class="lineup-slot-hero">
               <button
                 class="lineup-slot-avatar"
+                :class="{ 'stier-badge': isSTierHeroId(slot.heroId) }"
                 type="button"
                 :disabled="isLocked"
                 :data-slot-id="slot.id"
@@ -1532,13 +1548,15 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="lineup-slot-level">
                   <template v-for="token in getLevelTokens(slot.heroId)" :key="`lvl-${slot.id}-${token.type}`">
-                    <i
+                    <img
                       v-for="countIndex in token.count"
                       :key="`lvl-${slot.id}-${token.type}-${countIndex}`"
                       class="level-icon"
                       :class="levelIconClass(token.type)"
+                      :src="levelIconSrc(token.type)"
+                      alt=""
                       aria-hidden="true"
-                    ></i>
+                    />
                   </template>
                 </div>
               </div>
@@ -1585,7 +1603,7 @@ onBeforeUnmount(() => {
                     }"
                     @click="() => { if (!isLocked) { setSlotHero(slot, hero.id); activeSlotPopoverId = null; } }"
                   >
-                    <div class="hero-stack">
+                    <div class="hero-stack" :class="{ 'stier-badge': hero.isSTier }">
                       <img :src="avatarUrl(hero.id, hero.name)" :alt="hero.name" />
                     </div>
                   </button>
@@ -1623,11 +1641,12 @@ onBeforeUnmount(() => {
         <div v-for="heroId in guildBossHeroIds" :key="`guildboss-${heroId}`" class="guildboss-hero-card">
           <div class="guildboss-hero-header">
             <div class="guildboss-hero-info">
-              <img
-                class="guildboss-hero-avatar"
-                :src="avatarUrl(heroId, getHero(heroId)?.name)"
-                :alt="getHero(heroId)?.name || heroId"
-              />
+              <div class="guildboss-hero-avatar" :class="{ 'stier-badge': isSTierHeroId(heroId) }">
+                <img
+                  :src="avatarUrl(heroId, getHero(heroId)?.name)"
+                  :alt="getHero(heroId)?.name || heroId"
+                />
+              </div>
               <div>
                 <div class="guildboss-hero-name-row">
                   <div class="guildboss-hero-name">{{ getHero(heroId)?.name || heroId }}</div>
@@ -1849,15 +1868,17 @@ onBeforeUnmount(() => {
                   {{ getHero(slot.heroId)?.name || slot.heroId }}
                 </div>
                 <div v-if="slot.heroId && showPreviewLevelsEffective" class="lineup-export-levels">
-                  <template v-for="token in getLevelTokens(slot.heroId)" :key="`export-lvl-${slot.id}-${token.type}`">
-                    <i
-                      v-for="countIndex in token.count"
-                      :key="`export-lvl-${slot.id}-${token.type}-${countIndex}`"
-                      class="level-icon"
-                      :class="levelIconClass(token.type)"
-                      aria-hidden="true"
-                    ></i>
-                  </template>
+                <template v-for="token in getLevelTokens(slot.heroId)" :key="`export-lvl-${slot.id}-${token.type}`">
+                  <img
+                    v-for="countIndex in token.count"
+                    :key="`export-lvl-${slot.id}-${token.type}-${countIndex}`"
+                    class="level-icon"
+                    :class="levelIconClass(token.type)"
+                    :src="levelIconSrc(token.type)"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                </template>
                 </div>
                 <div v-else-if="!slot.heroId" class="lineup-export-empty" aria-hidden="true"></div>
               </div>
@@ -1882,13 +1903,15 @@ onBeforeUnmount(() => {
             </div>
             <div v-if="slot.heroId && showPreviewLevelsEffective" class="lineup-export-levels">
               <template v-for="token in getLevelTokens(slot.heroId)" :key="`export-lvl-${slot.id}-${token.type}`">
-                <i
+                <img
                   v-for="countIndex in token.count"
                   :key="`export-lvl-${slot.id}-${token.type}-${countIndex}`"
                   class="level-icon"
                   :class="levelIconClass(token.type)"
+                  :src="levelIconSrc(token.type)"
+                  alt=""
                   aria-hidden="true"
-                ></i>
+                />
               </template>
             </div>
             <div v-else-if="!slot.heroId" class="lineup-export-empty" aria-hidden="true"></div>

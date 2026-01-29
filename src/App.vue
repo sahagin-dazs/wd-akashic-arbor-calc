@@ -213,12 +213,12 @@ const screenName = ref(loadScreenName());
 const ownedExportDate = ref("");
 const isResetCollectionOpen = ref(false);
 
-type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
-const LEVEL_ICON_CLASS_MAP: Record<LevelIconType, string> = {
-  star: "fa-solid fa-star level-icon-star",
-  moon: "fa-solid fa-moon level-icon-moon",
-  diamond: "fa-solid fa-gem level-icon-diamond",
-  rainbow: "fa-solid fa-gem level-icon-rainbow"
+type LevelIconType = "star" | "moon" | "diamond" | "sublime";
+const LEVEL_ICON_SRC_MAP: Record<LevelIconType, string> = {
+  star: `${NORMALIZED_BASE}images/star.png`,
+  moon: `${NORMALIZED_BASE}images/moon.png`,
+  diamond: `${NORMALIZED_BASE}images/diamond.png`,
+  sublime: `${NORMALIZED_BASE}images/sublime.png`
 };
 const EXPORT_RARITIES: Rarity[] = ["Sublime", "Mythic", "Legendary"];
 
@@ -595,7 +595,7 @@ watch(untrackedHeroesCount, (count) => {
 
 function describeLevel(level: Level | "NONE") {
   if (level === "NONE") return "No Stars";
-  if (level === "RD") return "Rainbow Diamond";
+  if (level === "RD") return "Sublime";
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (suffix === "S") return `${count} ${count === 1 ? "Star" : "Stars"}`;
@@ -705,7 +705,7 @@ function updateOwned(heroId: string, levelIndex: number | null) {
 }
 
 function tokenizeLevel(level: Level): { type: LevelIconType; count: number }[] {
-  if (level === "RD") return [{ type: "rainbow", count: 1 }];
+  if (level === "RD") return [{ type: "sublime", count: 1 }];
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (count <= 0) return [];
@@ -716,7 +716,11 @@ function tokenizeLevel(level: Level): { type: LevelIconType; count: number }[] {
 }
 
 function levelIconClass(type: LevelIconType) {
-  return LEVEL_ICON_CLASS_MAP[type];
+  return `level-icon-${type}`;
+}
+
+function levelIconSrc(type: LevelIconType) {
+  return LEVEL_ICON_SRC_MAP[type];
 }
 
 function rarityBorder(rarity: Rarity) {
@@ -1517,19 +1521,21 @@ function toggleTheme() {
                     :style="ownedExportCardStyle(hero)"
                     :class="[`rarity-${hero.rarity.toLowerCase()}`, { 'is-not-owned': !hero.owned }]"
                   >
-                    <div class="owned-export-avatar">
+                    <div class="owned-export-avatar" :class="{ 'stier-badge': hero.isSTier }">
                       <img :src="avatarUrl(hero.id, hero.name)" :alt="hero.name" />
                     </div>
                     <div class="owned-export-name">{{ hero.name }}</div>
                     <div v-if="hero.owned && hero.level" class="owned-export-levels">
                       <template v-for="token in tokenizeLevel(hero.level)" :key="`${hero.id}-${token.type}`">
-                        <i
+                        <img
                           v-for="countIndex in token.count"
                           :key="`${hero.id}-${token.type}-${countIndex}`"
                           class="level-icon"
                           :class="levelIconClass(token.type)"
+                          :src="levelIconSrc(token.type)"
+                          alt=""
                           aria-hidden="true"
-                        ></i>
+                        />
                       </template>
                     </div>
                     <div v-else class="owned-export-not-owned">Not owned</div>

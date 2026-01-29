@@ -542,7 +542,10 @@ async function copyHeroSkills() {
                   :key="hero.id"
                   type="button"
                   class="skills-hero-card"
-                  :class="[{ active: hero.id === selectedHeroId }, `rarity-${hero.rarity.toLowerCase()}`]"
+                  :class="[
+                    { active: hero.id === selectedHeroId, 'stier-badge': hero.isSTier },
+                    `rarity-${hero.rarity.toLowerCase()}`
+                  ]"
                   @click="selectHero(hero.id)"
                 >
                   <img :src="avatarUrl(hero.id, hero.name)" :alt="hero.name" loading="lazy" />
@@ -558,6 +561,7 @@ async function copyHeroSkills() {
               <button
                 type="button"
                 class="skills-hero-picker"
+                :class="{ 'stier-badge': selectedHero.isSTier }"
                 @click="heroPickerOpen = true"
               >
                 <img
@@ -623,7 +627,7 @@ async function copyHeroSkills() {
           <div v-if="selectedHero" class="skills-hero-tree" ref="exportRef" :class="{ exporting }">
             <div class="skills-export-header" v-show="exporting">
               <div class="skills-export-title">{{ selectedHero.name }}'s Skills</div>
-              <div class="skills-export-hero">
+              <div class="skills-export-hero" :class="{ 'stier-badge': selectedHero.isSTier }">
                 <img
                   :src="avatarUrl(selectedHero.id, selectedHero.name)"
                   :alt="selectedHero.name"
@@ -1014,7 +1018,10 @@ async function copyHeroSkills() {
                   :key="`modal-${hero.id}`"
                   type="button"
                   class="skills-hero-card"
-                  :class="[{ active: hero.id === selectedHeroId }, `rarity-${hero.rarity.toLowerCase()}`]"
+                  :class="[
+                    { active: hero.id === selectedHeroId, 'stier-badge': hero.isSTier },
+                    `rarity-${hero.rarity.toLowerCase()}`
+                  ]"
                   @click="selectHero(hero.id)"
                 >
                   <img :src="avatarUrl(hero.id, hero.name)" :alt="hero.name" loading="lazy" />

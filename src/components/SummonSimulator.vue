@@ -23,6 +23,7 @@ type SummonCategory =
   | "legendaryShard"
   | "promoStone"
   | "hammer"
+  | "soulstone"
   | "gem30k"
   | "gem2888";
 
@@ -62,6 +63,7 @@ interface SummonState {
     featuredHeroId: string | null;
     pity: number;
     featuredGuarantee: boolean;
+    lastMythicRateUp: boolean;
     questProgress: number;
     questRewards: number;
     questBaselineProgress: number;
@@ -99,6 +101,7 @@ const RATE_UP_MYTHIC_OTHER_STIER = 1.08;
 const RATE_UP_SPLIT = 0.5;
 const RATE_UP_QUEST_TARGET = 200;
 const RATE_UP_QUEST_MAX_REWARDS = 5;
+const RATE_UP_QUEST_SOULSTONES = 2;
 const RATE_UP_STAR_TIERS = [
   { min: 1, label: "0 Stars" },
   { min: 2, label: "1 Star" },
@@ -111,7 +114,7 @@ const RATE_UP_STAR_TIERS = [
   { min: 29, label: "3 Diamonds" },
   { min: 36, label: "4 Diamonds" },
   { min: 44, label: "5 Diamonds" },
-  { min: 53, label: "Rainbow Diamond" }
+  { min: 53, label: "Sublime" }
 ] as const;
 const RATE_UP_LEVEL_OPTIONS: { level: Level; label: string; minCopies: number }[] = [
   { level: "0S", label: "0 Stars", minCopies: 1 },
@@ -125,7 +128,7 @@ const RATE_UP_LEVEL_OPTIONS: { level: Level; label: string; minCopies: number }[
   { level: "3D", label: "3 Diamonds", minCopies: 29 },
   { level: "4D", label: "4 Diamonds", minCopies: 36 },
   { level: "5D", label: "5 Diamonds", minCopies: 44 },
-  { level: "RD", label: "Rainbow Diamond", minCopies: 53 }
+  { level: "RD", label: "Sublime", minCopies: 53 }
 ];
 
 const TOOLTIP_META = {
@@ -155,6 +158,7 @@ const DEFAULT_STATE: SummonState = {
     featuredHeroId: "Valk",
     pity: RATE_UP_PITY_DEFAULT,
     featuredGuarantee: false,
+    lastMythicRateUp: false,
     questProgress: 0,
     questRewards: 0,
     questBaselineProgress: 0,
@@ -214,6 +218,7 @@ function loadState(): SummonState {
         featuredHeroId: parsed?.rateUp?.featuredHeroId ?? "FP",
         pity: parsed?.rateUp?.pity ?? RATE_UP_PITY_DEFAULT,
         featuredGuarantee: Boolean(parsed?.rateUp?.featuredGuarantee),
+        lastMythicRateUp: Boolean(parsed?.rateUp?.lastMythicRateUp),
         questProgress: Math.max(0, Number(parsed?.rateUp?.questProgress) || 0),
         questRewards: Math.max(0, Number(parsed?.rateUp?.questRewards) || 0),
         questBaselineProgress: Math.max(0, Number(parsed?.rateUp?.questBaselineProgress) || 0),
@@ -287,7 +292,8 @@ const REWARD_ICONS: Partial<Record<SummonCategory, string>> = {
   hammer: summonAsset("XenoHammer.png"),
   mythicShard: summonAsset("RandomMythicHeroShard.png"),
   legendaryShard: summonAsset("RandomLegendaryHeroShard.png"),
-  promoStone: summonAsset("PromotionStone.png")
+  promoStone: summonAsset("PromotionStone.png"),
+  soulstone: summonAsset("soulstone.png")
 };
 const GEM_ICON = summonAsset("Gem.png");
 const ELEMENT_META: Record<
@@ -498,10 +504,13 @@ const rateUpOtherMythicChance = computed(
     rateUpRateupPoolChance.value * (1 - RATE_UP_SPLIT) +
     rateUpOtherPoolChance.value
 );
-const rateUpHasQuest = computed(() => rateUpFeatured.value?.hero?.isQuest === true);
+const rateUpHasQuest = computed(() => true);
 
 const rateUpQuestRewards = computed(() =>
   Math.min(RATE_UP_QUEST_MAX_REWARDS, state.value.rateUp.questRewards)
+);
+const rateUpQuestSoulstones = computed(
+  () => rateUpQuestRewards.value * RATE_UP_QUEST_SOULSTONES
 );
 const rateUpQuestProgress = computed(() => {
   if (rateUpQuestRewards.value >= RATE_UP_QUEST_MAX_REWARDS) {
@@ -554,16 +563,16 @@ const rateUpConfigLevelLabel = computed(() => {
 const rateUpConfigDisabled = computed(() => rateUpConfigLevel.value === "none");
 const lastRateUpHeroId = ref<string | null>(state.value.rateUp.featuredHeroId ?? null);
 
-type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
-const LEVEL_ICON_CLASS_MAP: Record<LevelIconType, string> = {
-  star: "fa-solid fa-star level-icon-star",
-  moon: "fa-solid fa-moon level-icon-moon",
-  diamond: "fa-solid fa-gem level-icon-diamond",
-  rainbow: "fa-solid fa-gem level-icon-rainbow"
+type LevelIconType = "star" | "moon" | "diamond" | "sublime";
+const LEVEL_ICON_SRC_MAP: Record<LevelIconType, string> = {
+  star: `${SUMMON_BASE_NORMALIZED}images/star.png`,
+  moon: `${SUMMON_BASE_NORMALIZED}images/moon.png`,
+  diamond: `${SUMMON_BASE_NORMALIZED}images/diamond.png`,
+  sublime: `${SUMMON_BASE_NORMALIZED}images/sublime.png`
 };
 
 function tokenizeLevel(level: Level): { type: LevelIconType; count: number }[] {
-  if (level === "RD") return [{ type: "rainbow", count: 1 }];
+  if (level === "RD") return [{ type: "sublime", count: 1 }];
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (count <= 0) return [];
@@ -574,7 +583,11 @@ function tokenizeLevel(level: Level): { type: LevelIconType; count: number }[] {
 }
 
 function levelIconClass(type: LevelIconType) {
-  return LEVEL_ICON_CLASS_MAP[type];
+  return `level-icon-${type}`;
+}
+
+function levelIconSrc(type: LevelIconType) {
+  return LEVEL_ICON_SRC_MAP[type];
 }
 const rateUpConfigOpen = ref(false);
 const rateUpConfigLevel = ref<Level | "none">("none");
@@ -1062,8 +1075,8 @@ function rollWarriorOnce(): SummonResult {
   });
 }
 
-function updateRatePity(hitMythic: boolean) {
-  state.value.rateUp.pity = hitMythic
+function updateRatePity(reset: boolean) {
+  state.value.rateUp.pity = reset
     ? rateUpPityMax.value
     : Math.max(1, state.value.rateUp.pity - 1);
 }
@@ -1095,13 +1108,8 @@ function applyRateUpQuestProgress(pulls: number): SummonResult[] {
   rateUp.questProgress =
     rateUp.questRewards >= RATE_UP_QUEST_MAX_REWARDS ? RATE_UP_QUEST_TARGET : progress;
   if (!rewardsEarned) return [];
-  const featured = targetHero();
   return Array.from({ length: rewardsEarned }, () =>
-    buildHeroResult(featured, {
-      rarityLabel: "Mythic",
-      note: "Rate-Up Quest",
-      category: "rateup"
-    })
+    buildItemResult("Soulstone", "Mythic", "soulstone", 2)
   );
 }
 
@@ -1113,9 +1121,7 @@ function rollRateUpOnce(): SummonResult {
   if (forceMythic || roll < mythicChance) {
     const featured = targetHero();
     let mythicHero: HeroDef;
-    if (state.value.rateUp.featuredGuarantee) {
-      mythicHero = featured;
-    } else if (rateUpFeaturedIsSTier.value) {
+    if (rateUpFeaturedIsSTier.value) {
       const rateUpPool = rateUpHeroes.value.filter(
         (hero) => hero.id !== featured.id
       );
@@ -1123,24 +1129,39 @@ function rollRateUpOnce(): SummonResult {
         (hero): hero is HeroDef => Boolean(hero && hero.id !== featured.id)
       );
       const poolRoll = forceMythic ? Math.random() * mythicChance : roll;
-      const inRateUpPool = poolRoll < rateUpRateupPoolChance.value;
+      const canHitRateUp = !state.value.rateUp.lastMythicRateUp;
+      const inRateUpPool = canHitRateUp && poolRoll < rateUpRateupPoolChance.value;
       if (inRateUpPool) {
-        mythicHero =
-          Math.random() < RATE_UP_SPLIT || !rateUpPool.length
-            ? featured
-            : pickRandom(rateUpPool);
+        if (state.value.rateUp.featuredGuarantee) {
+          mythicHero = featured;
+        } else {
+          mythicHero =
+            Math.random() < RATE_UP_SPLIT || !rateUpPool.length
+              ? featured
+              : pickRandom(rateUpPool);
+        }
       } else {
         mythicHero = nonRateUpPool.length ? pickRandom(nonRateUpPool) : featured;
       }
+      state.value.rateUp.lastMythicRateUp = inRateUpPool;
+      if (inRateUpPool) {
+        state.value.rateUp.featuredGuarantee = mythicHero.id !== featured.id;
+      }
+      updateRatePity(mythicHero.isSTier || mythicHero.isRateUpHero === true);
     } else {
       const pool = RATE_UP_DEFAULT_FALLBACK.map((id) => heroMap.value.get(id)).filter(
         (hero): hero is HeroDef => Boolean(hero && hero.id !== featured.id)
       );
-      mythicHero =
-        Math.random() < RATE_UP_SPLIT || !pool.length ? featured : pickRandom(pool);
+      if (state.value.rateUp.featuredGuarantee) {
+        mythicHero = featured;
+      } else {
+        mythicHero =
+          Math.random() < RATE_UP_SPLIT || !pool.length ? featured : pickRandom(pool);
+      }
+      updateRatePity(true);
+      state.value.rateUp.featuredGuarantee = mythicHero.id !== featured.id;
+      state.value.rateUp.lastMythicRateUp = mythicHero.isRateUpHero === true;
     }
-    updateRatePity(true);
-    state.value.rateUp.featuredGuarantee = mythicHero.id !== featured.id;
     return buildHeroResult(mythicHero, {
       rarityLabel: "Mythic",
       note: mythicHero.id === featured.id ? "Featured" : undefined,
@@ -1298,6 +1319,7 @@ function clearHistoryForActiveTab() {
   }
   if (activeTab.value === "rate") {
     state.value.rateUp.pity = rateUpPityMax.value;
+    state.value.rateUp.lastMythicRateUp = false;
     state.value.rateUp.questProgress = state.value.rateUp.questBaselineProgress;
     state.value.rateUp.questRewards = state.value.rateUp.questBaselineRewards;
     state.value.rateUp.bannerHeroPulls = 0;
@@ -1433,6 +1455,7 @@ function handleRateUpHeroChange(event: Event) {
   state.value.rateUp.featuredHeroId = nextId;
   lastRateUpHeroId.value = nextId;
   state.value.rateUp.pity = rateUpPityMaxForHeroId(nextId);
+  state.value.rateUp.lastMythicRateUp = false;
 }
 
 watch(activeTab, (value) => {
@@ -1453,13 +1476,18 @@ function heroOptionLabel(hero?: HeroDef | null) {
 
 function rateUpHeroLabel(hero?: HeroDef | null) {
   if (!hero) return "Unknown hero";
-  return hero.isQuest ? `${hero.name} (Quest)` : hero.name;
+  return hero.isSTier ? `${hero.name} (S-Tier)` : hero.name;
 }
 
 function heroAvatar(id?: string) {
   if (!id) return "";
   const hero = heroMap.value.get(id);
   return avatarUrl(hero?.id ?? id, hero?.name);
+}
+
+function isSTierHeroId(id?: string | null) {
+  if (!id) return false;
+  return heroMap.value.get(id)?.isSTier === true;
 }
 
 function avatarBroken(id?: string) {
@@ -1532,6 +1560,9 @@ function resultRarityClass(result: SummonResult) {
   const normalized = result.rarity?.toLowerCase?.() ?? "";
   if (result.category === "xenoHero") {
     return "rarity-sublime";
+  }
+  if (result.category === "soulstone") {
+    return "rarity-mythic";
   }
   if (result.category === "rateup") {
     return "rarity-mythic";
@@ -1728,6 +1759,7 @@ watch(
       state.value.rateUp.featuredHeroId = list[0]?.id ?? null;
       lastRateUpHeroId.value = state.value.rateUp.featuredHeroId;
       state.value.rateUp.pity = rateUpPityMaxForHeroId(state.value.rateUp.featuredHeroId);
+      state.value.rateUp.lastMythicRateUp = false;
     }
   },
   { immediate: true }
@@ -1924,7 +1956,8 @@ watch(
                 class="rateup-quest-rewards"
                 :class="{ complete: rateUpQuestComplete }"
               >
-                {{ rateUpQuestRewards }}/{{ RATE_UP_QUEST_MAX_REWARDS }} rewards
+                {{ rateUpQuestSoulstones }}/{{ RATE_UP_QUEST_MAX_REWARDS * RATE_UP_QUEST_SOULSTONES }}
+                soulstones
               </span>
             </div>
           </div>
@@ -1936,7 +1969,7 @@ watch(
             ></div>
           </div>
           <div class="rateup-quest-note">
-            Every 200 summons grants a free rate-up hero (max 5).
+            Every 200 summons grants 2 soulstones (max 10).
           </div>
           <button type="button" class="rateup-config-link" @click="openRateUpQuestConfig">
             Configure existing
@@ -1951,12 +1984,15 @@ watch(
                   v-for="token in rateUpStarTokens"
                   :key="`rateup-tier-${token.type}`"
                 >
-                  <i
+                  <img
                     v-for="countIndex in token.count"
                     :key="`rateup-tier-${token.type}-${countIndex}`"
-                    :class="['level-icon', levelIconClass(token.type)]"
+                    class="level-icon"
+                    :class="levelIconClass(token.type)"
+                    :src="levelIconSrc(token.type)"
+                    alt=""
                     aria-hidden="true"
-                  ></i>
+                  />
                 </template>
               </template>
               {{ rateUpStarTier.current.label }}
@@ -1986,7 +2022,7 @@ watch(
           :key="entry.key"
           :class="['featured-count-card', featuredHighlightClass(entry.hero?.id)]"
         >
-          <div class="featured-avatar">
+          <div class="featured-avatar" :class="{ 'stier-badge': entry.hero?.isSTier }">
             <img
               v-if="entry.hero"
               :src="heroAvatar(entry.hero.id)"
@@ -2012,7 +2048,7 @@ watch(
         <div
           :class="['featured-count-card', featuredHighlightClass(rateUpFeatured.heroId)]"
         >
-          <div class="featured-avatar">
+          <div class="featured-avatar" :class="{ 'stier-badge': rateUpFeatured.hero?.isSTier }">
             <img
               :src="heroAvatar(rateUpFeatured.heroId)"
               :alt="rateUpFeatured.hero?.name"
@@ -2037,7 +2073,7 @@ watch(
         <div
           :class="['featured-count-card', featuredHighlightClass(xenoFeatured.heroId)]"
         >
-          <div class="featured-avatar">
+          <div class="featured-avatar" :class="{ 'stier-badge': xenoFeatured.hero?.isSTier }">
             <img
               :src="heroAvatar(xenoFeatured.heroId)"
               :alt="xenoFeatured.hero?.name"
@@ -2193,7 +2229,7 @@ watch(
             :style="{ animationDelay: `${(rowIdx * row.length + idx) * 0.02}s` }"
           >
             <template v-if="result">
-              <div class="pull-visual">
+              <div class="pull-visual" :class="{ 'stier-badge': result.heroId && isSTierHeroId(result.heroId) }">
                 <img
                   v-if="result.heroId && !avatarBroken(result.heroId)"
                   :src="heroAvatar(result.heroId)"
@@ -2235,7 +2271,7 @@ watch(
           </button>
         </div>
         <div class="rateup-config-hero">
-          <div class="rateup-config-avatar">
+          <div class="rateup-config-avatar" :class="{ 'stier-badge': rateUpConfigHero?.isSTier }">
             <img
               v-if="rateUpConfigHero"
               :src="heroAvatar(rateUpConfigHero.id)"
@@ -2269,13 +2305,15 @@ watch(
                   v-for="token in rateUpConfigTokens"
                   :key="`rateup-token-${token.type}`"
                 >
-                  <i
+                  <img
                     v-for="countIndex in token.count"
                     :key="`rateup-token-${token.type}-${countIndex}`"
                     class="level-icon"
                     :class="levelIconClass(token.type)"
+                    :src="levelIconSrc(token.type)"
+                    alt=""
                     aria-hidden="true"
-                  ></i>
+                  />
                 </template>
               </template>
               <span v-else class="rateup-config-placeholder">Not yet obtained</span>
@@ -2339,7 +2377,7 @@ watch(
           </button>
         </div>
         <div class="rateup-config-extras">
-          <span>Rewards earned (0-5)</span>
+          <span>Rewards earned (0-5, 2 soulstones each)</span>
           <input
             type="number"
             min="0"
@@ -2358,7 +2396,8 @@ watch(
         </div>
         <div class="rateup-config-total">
           Baseline set to {{ rateUpQuestRewardsValue }}/{{ RATE_UP_QUEST_MAX_REWARDS }}
-          rewards and {{ rateUpQuestProgressValue }}/{{ RATE_UP_QUEST_TARGET }} summons.
+          rewards ({{ rateUpQuestRewardsValue * RATE_UP_QUEST_SOULSTONES }}
+          soulstones) and {{ rateUpQuestProgressValue }}/{{ RATE_UP_QUEST_TARGET }} summons.
         </div>
         <div class="rateup-config-actions">
           <button type="button" class="btn btn-outline" @click="clearRateUpQuestExisting">

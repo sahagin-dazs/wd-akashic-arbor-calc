@@ -61,6 +61,10 @@ function heroAvatar(heroId: string) {
   return avatarUrl(heroId, hero?.name ?? heroId);
 }
 
+function isSTierHeroId(heroId: string) {
+  return HERO_MAP.get(heroId)?.isSTier === true;
+}
+
 function canShowAvatar(heroId: string) {
   return !avatarLoadFailures.value[heroId];
 }
@@ -88,7 +92,7 @@ function otherBonus(base: number) {
 function levelLabel(heroId: string) {
   const level = getLevel(heroId);
   if (!level) return "Not Owned";
-  if (level === "RD") return "Rainbow Diamond";
+  if (level === "RD") return "Sublime";
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (suffix === "S") return `${count} ${count === 1 ? "Star" : "Stars"}`;
@@ -357,7 +361,7 @@ function nextUnlockDelta(node: NodeKey) {
                     :key="hero.heroId"
                     :class="['node-hero-row', heroRarityClass(hero.heroId)]"
                   >
-                    <div class="node-hero-avatar">
+                    <div class="node-hero-avatar" :class="{ 'stier-badge': isSTierHeroId(hero.heroId) }">
                       <img
                         v-if="canShowAvatar(hero.heroId)"
                         :src="heroAvatar(hero.heroId)"

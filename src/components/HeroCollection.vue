@@ -29,7 +29,11 @@ const emit = defineEmits<{
   "update:ownershipFilter": [OwnershipFilter];
 }>();
 
-type LevelIconType = "star" | "moon" | "diamond" | "rainbow";
+const BASE_URL =
+  typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
+const NORMALIZED_BASE = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`;
+
+type LevelIconType = "star" | "moon" | "diamond" | "sublime";
 
 interface LevelToken {
   type: LevelIconType;
@@ -43,11 +47,11 @@ interface LevelOption {
   tokens: LevelToken[];
 }
 
-const ICON_CLASS_MAP: Record<LevelIconType, string> = {
-  star: "fa-solid fa-star level-icon-star",
-  moon: "fa-solid fa-moon level-icon-moon",
-  diamond: "fa-solid fa-gem level-icon-diamond",
-  rainbow: "fa-solid fa-gem level-icon-rainbow"
+const LEVEL_ICON_SRC_MAP: Record<LevelIconType, string> = {
+  star: `${NORMALIZED_BASE}images/star.png`,
+  moon: `${NORMALIZED_BASE}images/moon.png`,
+  diamond: `${NORMALIZED_BASE}images/diamond.png`,
+  sublime: `${NORMALIZED_BASE}images/sublime.png`
 };
 
 const ROLE_META = {
@@ -103,7 +107,7 @@ function buildLevelOption(level: Level, index: number): LevelOption {
 }
 
 function describeLevel(level: Level) {
-  if (level === "RD") return "Rainbow Diamond";
+  if (level === "RD") return "Sublime";
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (suffix === "S") {
@@ -120,7 +124,7 @@ function describeLevel(level: Level) {
 }
 
 function buildShorthand(level: Level) {
-  if (level === "RD") return "Rainbow Diamond";
+  if (level === "RD") return "Sublime";
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
   if (suffix === "S") {
@@ -137,7 +141,7 @@ function buildShorthand(level: Level) {
 
 function tokenizeLevel(level: Level): LevelToken[] {
   if (level === "RD") {
-    return [{ type: "rainbow", count: 1 }];
+    return [{ type: "sublime", count: 1 }];
   }
   const suffix = level.slice(-1);
   const count = Number(level.slice(0, -1));
@@ -183,6 +187,14 @@ function getSelectValue(heroId: string) {
   const levelIndex = getLevelIndex(heroId);
   if (levelIndex == null) return "";
   return String(levelIndex);
+}
+
+function levelIconClass(type: LevelIconType) {
+  return `level-icon-${type}`;
+}
+
+function levelIconSrc(type: LevelIconType) {
+  return LEVEL_ICON_SRC_MAP[type];
 }
 
 function isBaseHero(hero: HeroDef) {
@@ -254,10 +266,6 @@ function rarityClass(rarity: Rarity) {
   if (rarity === "Legendary") return "badge badge-legendary";
   if (rarity === "Epic") return "badge badge-rare";
   return "badge";
-}
-
-function iconClass(type: LevelIconType) {
-  return ICON_CLASS_MAP[type];
 }
 
 function isHeroInLineup(heroId: string) {
@@ -454,7 +462,7 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
         Level not tracked
       </div>
       <div class="hero-header">
-        <div class="hero-avatar-sm">
+        <div class="hero-avatar-sm" :class="{ 'stier-badge': hero.isSTier }">
           <img
             v-if="showAvatarImage(hero)"
             :src="heroAvatarUrl(hero)"
@@ -532,13 +540,15 @@ function onOwnershipFilterChange(filter: OwnershipFilter) {
                 v-for="token in getLevelVisual(hero.id).tokens"
                 :key="`${hero.id}-${token.type}`"
               >
-                <i
+                <img
                   v-for="countIndex in token.count"
                   :key="`${hero.id}-${token.type}-${countIndex}`"
                   class="level-icon"
-                  :class="iconClass(token.type)"
+                  :class="levelIconClass(token.type)"
+                  :src="levelIconSrc(token.type)"
+                  alt=""
                   aria-hidden="true"
-                ></i>
+                />
               </template>
             </template>
               <span v-else class="level-placeholder">

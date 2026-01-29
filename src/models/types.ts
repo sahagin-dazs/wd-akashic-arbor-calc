@@ -34,7 +34,6 @@ export interface HeroDef {
   percents: Partial<Record<Level, number>>; // store as percent, e.g. 0.9 means 0.9%
   isRateUpHero?: boolean;
   isWishlistHero?: boolean;
-  isQuest?: boolean;
   isSTier?: boolean;
   chainPartnerId?: string;
   hasArgentSkin?: boolean;
