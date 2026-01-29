@@ -450,7 +450,7 @@ body {
   height: 16px;
   display: inline-block;
   background: url("/avatars/S.png") center / contain no-repeat;
-  z-index: 2;
+  z-index: 20;
   pointer-events: none;
 }
 
@@ -5772,6 +5772,7 @@ body {
 }
 .tier-card .hero-stack {
   --stack-count: 1;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5782,6 +5783,8 @@ body {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+  position: relative;
+  z-index: 1;
 }
 .tier-card .hero-stack.linked img {
   position: absolute;
