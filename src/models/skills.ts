@@ -257,44 +257,44 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
   },
   MK: {
     base: {
-      name: "Summon: Void Witch",
-      effect: "Celestial Crush: Wield the Golden Staff to attack 4 times in a row. Each stack of [Cosmic Energy] increases DMG by 75%. Sun Wukong gains 1 stack of [Cosmic Energy] when any ally upgrades 3 times, up to 4 stacks. When any ally ascends, Sun Wukon gains [Resonance Ascension] to emplower the staff, greatly increasing the DMG and range of [Celestial Crush]."
+      name: "Summon: Sun Wukong",
+      effect: "Celestial Crush: Wield the Golden Staff to attack 4 times in a row. Each stack of [Cosmic Energy] increases DMG by 75%. Sun Wukong gains 1 stack of [Cosmic Energy] when any ally upgrades 3 times, up to 4 stacks. When any ally ascends, Sun Wukong gains [Resonance Ascension] to emplower the staff, greatly increasing the DMG and range of [Celestial Crush]."
     },
     "awakening-1": {
-      name: "",
-      effect: ""
+      name: "Surpise Blow",
+      effect: "[Celestial Crush] first strike will always CRIT."
     },
     "awakening-2": {
-      name: "",
-      effect: ""
+      name: "Indestructible",
+      effect: "DMG REDUC increases by 20%"
     },
     "awakening-3": {
-      name: "",
-      effect: ""
+      name: "Battlelust",
+      effect: "[Celestial Crush] reduces the target's CRIT DMG by 30% for 3s and increases own CRIT DMG by 30%."
     },
     "awakening-core": {
-      name: "",
-      effect: ""
+      name: "Sage Blueprint",
+      effect: "Evolves into Sage Blueprint: Learn [Binding Spell] to unleash it every 30s, immobilizing enemies and dealing continuous damage in the target area for 5s."
     },
     "white-1": {
-      name: "",
-      effect: ""
+      name: "Miracle Strand",
+      effect: "On each Dodge, restore 20% of own Max HP. Can trigger 1 time every 10s."
     },
     "white-2": {
-      name: "",
-      effect: ""
+      name: "Evasive Step",
+      effect: "Dodge increases by 12%"
     },
     "atk60-1": {
-      name: "",
-      effect: ""
+      name: "Mighty Force",
+      effect: "[Celestial Crush] DMG +60%"
     },
     "atk60-2": {
-      name: "",
-      effect: ""
+      name: "Mighty Force",
+      effect: "[Celestial Crush] DMG +60%"
     },
     "blue-1": {
-      name: "",
-      effect: ""
+      name: "Vitality Drain",
+      effect: "[Binding Spell] DMG +100%. Continuously drain enemy EX-Weapon Energy (max 30 points)."
     },
     "blue-2": {
       name: "",
