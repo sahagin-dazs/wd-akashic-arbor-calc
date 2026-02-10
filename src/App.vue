@@ -29,6 +29,7 @@ const NIGHTMARE_STORAGE_KEY = "wd-akashic-nightmare-level";
 const LINEUP_STORAGE_KEY = "wd-akashic-lineup";
 const OWNERSHIP_FILTER_STORAGE_KEY = "wd-akashic-ownership-filter";
 const INTRO_STORAGE_KEY = "wd-akashic-intro-hidden";
+const WELCOME_POPUP_DISMISSED_KEY = "wd-tools-welcome-popup-dismissed";
 const THEME_STORAGE_KEY = "wd-akashic-theme";
 const ACTIVE_TOOL_STORAGE_KEY = "wd-tools-active-view";
 const SCREEN_NAME_STORAGE_KEY = "wd-tools-screen-name";
@@ -60,6 +61,12 @@ const HASH_TOOL_MAP: Record<string, ToolTab> = {
 };
 const LEGACY_HOST = "sahagin-dazs.github.io";
 const LEGACY_PATH = "/wd-akashic-arbor-calc";
+const SUPPORTER_ROYALTY = [
+  "Harkshaw",
+  "Joseph",
+  "Honey Bradger",
+  "Fray"
+] as const;
 
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 type ThemeMode = "dark" | "light";
@@ -205,6 +212,11 @@ function loadTheme(): ThemeMode {
   return "dark";
 }
 
+function loadWelcomePopupDismissed(): boolean {
+  if (typeof window === "undefined") return true;
+  return localStorage.getItem(WELCOME_POPUP_DISMISSED_KEY) === "true";
+}
+
 const ownedHeroes = ref<OwnedHero[]>(loadOwnedHeroes());
 const ownedExportRef = ref<HTMLElement | null>(null);
 const ownedExporting = ref(false);
@@ -212,6 +224,7 @@ const ownedExportStatus = ref<string | null>(null);
 const screenName = ref(loadScreenName());
 const ownedExportDate = ref("");
 const isResetCollectionOpen = ref(false);
+const showWelcomePopup = ref(!loadWelcomePopupDismissed());
 
 type LevelIconType = "star" | "moon" | "diamond" | "sublime";
 const LEVEL_ICON_SRC_MAP: Record<LevelIconType, string> = {
@@ -1138,6 +1151,17 @@ function closeIntroImage() {
 function toggleTheme() {
   theme.value = theme.value === "dark" ? "light" : "dark";
 }
+
+function dismissWelcomePopup() {
+  showWelcomePopup.value = false;
+  if (typeof window !== "undefined") {
+    localStorage.setItem(WELCOME_POPUP_DISMISSED_KEY, "true");
+  }
+}
+
+function openSupportFromWelcome() {
+  dismissWelcomePopup();
+}
 </script>
 
 <template>
@@ -1568,6 +1592,25 @@ function toggleTheme() {
       </div>
     </div>
     <footer class="app-footer">
+      <div class="footer-royal-callout">
+        <span class="footer-supporters-title">Royal Court of Supporters</span>
+        <div class="footer-supporters-list">
+          <span
+            v-for="supporter in SUPPORTER_ROYALTY"
+            :key="supporter"
+            class="footer-supporter-pill"
+          >
+            {{ supporter }}
+          </span>
+        </div>
+        <hr class="footer-royal-divider" />
+        <p class="footer-royal-cta">
+          Want to join this SUBLIME group of supporters?
+        </p>
+        <a class="btn btn-sm btn-support" href="https://www.buymeacoffee.com/sahagin" target="_blank" rel="noreferrer">
+          Support this Project
+        </a>
+      </div>
       <div class="footer-meta">
         <span>
           Wittle Defenders is ©
@@ -1584,11 +1627,61 @@ function toggleTheme() {
         <a class="btn btn-sm btn-secondary" href="https://github.com/sahagin-dazs/wd-akashic-arbor-calc" target="_blank" rel="noreferrer">
           View Source on GitHub
         </a>
-        <a class="btn btn-sm btn-support" href="https://www.buymeacoffee.com/sahagin" target="_blank" rel="noreferrer">
-          Support This Tool
-        </a>
       </div>
     </footer>
+    <div
+      v-if="showWelcomePopup"
+      class="welcome-modal-backdrop"
+      role="presentation"
+      @click="dismissWelcomePopup"
+    >
+      <div
+        class="welcome-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="welcome-modal-title"
+        @click.stop
+      >
+        <p class="welcome-kicker">Welcome to WD Toolbox</p>
+        <h2 id="welcome-modal-title">Community-powered and proudly player-funded</h2>
+        <p>
+          Thanks for stopping by and using WD Toolbox!
+        </p>
+        <p>This project is 100% community built and funded. We rely on players just like you keep everything running.</p>
+        <p>
+          If you find this site helpful, please consider donating to keep it alive. Every bit of support helps.
+          <br/><br/>
+          <span class="welcome-signoff">Much <i class="fa-solid fa-heart welcome-heart" aria-hidden="true"></i>, <br/>Sahagin Dazs
+          </span>
+        </p>
+        <div class="welcome-royalty">
+          <div class="welcome-royalty-title">Royal Court of Supporters</div>
+          <div class="welcome-royalty-list">
+            <span
+              v-for="supporter in SUPPORTER_ROYALTY"
+              :key="`welcome-${supporter}`"
+              class="welcome-royalty-pill"
+            >
+              {{ supporter }}
+            </span>
+          </div>
+        </div>
+        <div class="welcome-actions">
+          <button class="btn btn-sm btn-secondary" type="button" @click="dismissWelcomePopup">
+            Maybe later
+          </button>
+          <a
+            class="btn btn-sm btn-support"
+            href="https://www.buymeacoffee.com/sahagin"
+            target="_blank"
+            rel="noreferrer"
+            @click="openSupportFromWelcome"
+          >
+            Support this Project
+          </a>
+        </div>
+      </div>
+    </div>
     <div
       v-if="isIntroImageOpen"
       class="intro-modal-backdrop"
