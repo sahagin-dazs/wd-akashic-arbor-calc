@@ -3414,6 +3414,12 @@ body {
   font-weight: 600;
 }
 
+.calc-patience {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 .phrase-fade-enter-active,
 .phrase-fade-leave-active {
   transition: opacity 0.3s ease;

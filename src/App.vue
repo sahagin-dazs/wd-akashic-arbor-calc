@@ -279,6 +279,7 @@ const calcProgress = ref(0);
 const calcProgressTarget = ref(0);
 const calcPhrase = ref("Consulting the Arbor spirits...");
 const calcPhraseKey = ref(0);
+const calcElapsedSeconds = ref(0);
 const FUN_PHRASES = [
   "Polishing Cheffy's ladle of destiny...",
   "Convincing Scarlet Reaper to let her hair down...",
@@ -326,10 +327,61 @@ const FUN_PHRASES = [
   "Repainting the Arbor nodes for extra sparkle...",
   "Sharpening Sword Saint's blades for dramatic effect...",
   "Clearing Quick Patrol rewards...",
-  "Complaining about Rate-up drop rates..."
+  "Complaining about Rate-up drop rates...",
+  "Helping Monkey King find the perfect cloud parking spot...",
+  "Trying to keep Peace Keeper from punching the UI...",
+  "Teaching Starlight Weaver to stop naming every comet...",
+  "Asking Void Witch to stop opening portals during maintenance...",
+  "Counting Polar Captain ricochets and losing count at 3...",
+  "Convincing Valkyrie that every target is already judged...",
+  "Dodging Windborne Ranger arrows in the backline...",
+  "Politely declining Cheffy's mystery stew buff...",
+  "Calibrating Archon Armor's afterimage warranty...",
+  "Untangling Ice Queen's freeze paperwork...",
+  "Reminding Fiery Vanguard that the tree is not fireproof...",
+  "Sweeping Demon Spawn embers out of the optimizer cache...",
+  "Asking Robot to restart without exploding...",
+  "Letting Scarlet Reaper pose before every simulation...",
+  "Checking if Odin's lightning qualifies as a feature...",
+  "Trying to bench Night Baron, failing dramatically...",
+  "Measuring Swordmaster spin speed in RPM...",
+  "Sharpening Blazing Archer arrows for mathematically optimal drama...",
+  "Negotiating with Thunder Pharaoh over pyramid zoning rights...",
+  "Feeding Ice Demon exactly one (1) tiny chaos snack...",
+  "Rewriting Monkey King's staff permissions for Arbor access...",
+  "Asking Starlight Weaver to stop summoning comets indoors...",
+  "Checking Peace Keeper's safety manual (page missing)...",
+  "Convincing Void Witch to close at least one portal...",
+  "Untangling Demon Spawn from a very fiery cable mess...",
+  "Helping Windborne Ranger aim somewhere less judgmental...",
+  "Timing Polar Captain bounces with a kitchen stopwatch...",
+  "Buffing Archon Armor with premium elbow grease...",
+  "Trying to invoice Odin for lightning damage to the nodes...",
+  "Teaching Sword Saint that subtlety is also DPS...",
+  "Cooling down Fiery Vanguard with one tiny ice cube...",
+  "Asking Scarlet Reaper for one non-dramatic entrance...",
+  "Auditing Cheffy's crit-rate soup ingredients...",
+  "Polishing Robot's core until it passes inspection...",
+  "Explaining to Ice Queen why frostbite isn't a tax deduction...",
+  "Helping Thunder Pharaoh file a storm permit...",
+  "Telling Valkyrie that every fight is not the final boss...",
+  "Separating Night Baron from the optimizer's shadow settings...",
+  "Charging Peace Keeper's battery with pure optimism...",
+  "Giving Monkey King a cloud lane assignment for faster clears...",
+  "Checking if Void Witch can portal around cooldowns legally...",
+  "Negotiating with Blazing Archer over arrow budget cuts...",
+  "Reminding Demon Hunter that this is math, not vengeance...",
+  "Recounting Swordmaster spins after another dizzying test...",
+  "Bribing Ice Wolf Pup with treats for cleaner pathing...",
+  "Turning Odin's thunder volume from MAX to merely LOUD...",
+  "Rehearsing Starlight Weaver's comet timing with a metronome...",
+  "Making sure Polar Captain's ricochet doesn't hit the UI again...",
+  "Double-checking Fiery Vanguard's torch distance from dry leaves...",
+  "Convincing Monkey King that clone tax is not a real thing..."
 ];
 let phraseTimer: number | null = null;
 let progressInterval: number | null = null;
+let calcElapsedTimer: number | null = null;
 
 function toolFromHash(hash: string): ToolTab | null {
   const normalized = hash.toLowerCase();
@@ -512,6 +564,36 @@ function stopPhraseLoop() {
   }
 }
 
+function formatElapsedDuration(totalSeconds: number) {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(safe / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (safe % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+const showLongCalcNotice = computed(() => calcElapsedSeconds.value >= 60);
+const calcElapsedLabel = computed(() =>
+  formatElapsedDuration(calcElapsedSeconds.value)
+);
+
+function startCalcElapsedTimer() {
+  stopCalcElapsedTimer();
+  calcElapsedSeconds.value = 0;
+  if (typeof window === "undefined") return;
+  calcElapsedTimer = window.setInterval(() => {
+    calcElapsedSeconds.value += 1;
+  }, 1000);
+}
+
+function stopCalcElapsedTimer() {
+  if (calcElapsedTimer) {
+    clearInterval(calcElapsedTimer);
+    calcElapsedTimer = null;
+  }
+}
+
 function startProgressInterval() {
   if (typeof window === "undefined") return;
   if (progressInterval) {
@@ -520,7 +602,7 @@ function startProgressInterval() {
   progressInterval = window.setInterval(() => {
     if (calcProgress.value < calcProgressTarget.value) {
       calcProgress.value = Math.min(
-        calcProgress.value + 0.015,
+        calcProgress.value + 0.01,
         calcProgressTarget.value
       );
     } else if (
@@ -528,7 +610,7 @@ function startProgressInterval() {
       calcProgressTarget.value < 1
     ) {
       calcProgressTarget.value = Math.min(
-        calcProgressTarget.value + 0.005,
+        calcProgressTarget.value + 0.003,
         0.96
       );
     }
@@ -536,7 +618,7 @@ function startProgressInterval() {
       clearInterval(progressInterval);
       progressInterval = null;
     }
-  }, 900);
+  }, 1000);
 }
 
 function stopProgressInterval() {
@@ -1026,6 +1108,7 @@ async function optimize() {
   calcProgress.value = 0;
   calcProgressTarget.value = 0.15;
   startProgressInterval();
+  startCalcElapsedTimer();
   lastResult.value = null;
   startPhraseLoop();
   const ownedPayload = ownedHeroes.value.map((hero) => ({
@@ -1061,6 +1144,7 @@ async function optimize() {
     isCalculating.value = false;
     stopPhraseLoop();
     stopProgressInterval();
+    stopCalcElapsedTimer();
     calcProgress.value = 1;
     calcPhrase.value = "Arbor ready to deploy!";
   }
@@ -1132,6 +1216,8 @@ onBeforeUnmount(() => {
     window.removeEventListener("hashchange", handleToolHashChange);
   }
   stopPhraseLoop();
+  stopProgressInterval();
+  stopCalcElapsedTimer();
 });
 
 function toggleFiltersPanel() {
@@ -1589,6 +1675,9 @@ function openSupportFromWelcome() {
           <div class="progress-fill" :style="{ width: `${Math.round(calcProgress * 100)}%` }"></div>
         </div>
         <div class="progress-percent">{{ Math.round(calcProgress * 100) }}%</div>
+        <div v-if="showLongCalcNotice" class="calc-patience">
+          (This can take some time, please be patient! {{ calcElapsedLabel }})
+        </div>
       </div>
     </div>
     <footer class="app-footer">
