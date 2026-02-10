@@ -277,12 +277,13 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
       effect: "Evolves into Sage Blueprint: Learn [Binding Spell] to unleash it every 30s, immobilizing enemies and dealing continuous damage in the target area for 5s."
     },
     "white-1": {
-      name: "Miracle Strand",
-      effect: "On each Dodge, restore 20% of own Max HP. Can trigger 1 time every 10s."
-    },
-    "white-2": {
       name: "Evasive Step",
       effect: "Dodge increases by 12%"
+
+    },
+    "white-2": {
+      name: "Miracle Strand",
+      effect: "On each Dodge, restore 20% of own Max HP. Can trigger 1 time every 10s."
     },
     "atk60-1": {
       name: "Mighty Force",
