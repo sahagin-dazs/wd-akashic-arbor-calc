@@ -113,12 +113,10 @@ resource "azurerm_function_app_flex_consumption" "api" {
 
   app_settings = merge(
     {
-      SCM_DO_BUILD_DURING_DEPLOYMENT = "1"
-      ENABLE_ORYX_BUILD              = "true"
-      COSMOSDB_ENDPOINT              = azurerm_cosmosdb_account.cosmos.endpoint
-      COSMOSDB_KEY                   = sensitive(azurerm_cosmosdb_account.cosmos.primary_key)
-      COSMOSDB_DB                    = azurerm_cosmosdb_sql_database.db.name
-      COSMOSDB_CONTAINER             = azurerm_cosmosdb_sql_container.lists.name
+      COSMOSDB_ENDPOINT  = azurerm_cosmosdb_account.cosmos.endpoint
+      COSMOSDB_KEY       = sensitive(azurerm_cosmosdb_account.cosmos.primary_key)
+      COSMOSDB_DB        = azurerm_cosmosdb_sql_database.db.name
+      COSMOSDB_CONTAINER = azurerm_cosmosdb_sql_container.lists.name
     },
     var.application_insights_connection_string != ""
     ? {
