@@ -88,6 +88,15 @@ const SUBLIME_HEROES: HeroDef[] = [
     element: "Xeno",
     percents: SUBLIME_PERCENTS,
     hasArgentSkin: false
+  },
+  {
+    id: "MK",
+    name: "Monkey King",
+    rarity: "Sublime",
+    role: "Ranger",
+    element: "Xeno",
+    percents: SUBLIME_PERCENTS,
+    hasArgentSkin: false
   }
 ];
 

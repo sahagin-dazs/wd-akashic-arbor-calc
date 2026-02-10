@@ -255,6 +255,56 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
       effect: "Summon CD -1s"
     }
   },
+  MK: {
+    base: {
+      name: "Summon: Void Witch",
+      effect: "Celestial Crush: Wield the Golden Staff to attack 4 times in a row. Each stack of [Cosmic Energy] increases DMG by 75%. Sun Wukong gains 1 stack of [Cosmic Energy] when any ally upgrades 3 times, up to 4 stacks. When any ally ascends, Sun Wukon gains [Resonance Ascension] to emplower the staff, greatly increasing the DMG and range of [Celestial Crush]."
+    },
+    "awakening-1": {
+      name: "",
+      effect: ""
+    },
+    "awakening-2": {
+      name: "",
+      effect: ""
+    },
+    "awakening-3": {
+      name: "",
+      effect: ""
+    },
+    "awakening-core": {
+      name: "",
+      effect: ""
+    },
+    "white-1": {
+      name: "",
+      effect: ""
+    },
+    "white-2": {
+      name: "",
+      effect: ""
+    },
+    "atk60-1": {
+      name: "",
+      effect: ""
+    },
+    "atk60-2": {
+      name: "",
+      effect: ""
+    },
+    "blue-1": {
+      name: "",
+      effect: ""
+    },
+    "blue-2": {
+      name: "",
+      effect: ""
+    },
+    "blue-3": {
+      name: "",
+      effect: ""
+    }
+  },
   Valk: {
     base: {
       name: "Summon: Valkyrie",
