@@ -258,7 +258,7 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
   MK: {
     base: {
       name: "Summon: Sun Wukong",
-      effect: "Celestial Crush: Wield the Golden Staff to attack 4 times in a row. Each stack of [Cosmic Energy] increases DMG by 75%. Sun Wukong gains 1 stack of [Cosmic Energy] when any ally upgrades 3 times, up to 4 stacks. When any ally ascends, Sun Wukong gains [Resonance Ascension] to emplower the staff, greatly increasing the DMG and range of [Celestial Crush]."
+      effect: "Celestial Crush: Wield the Golden Staff to attack 4 times in a row. Each stack of [Cosmic Energy] increases DMG by 75%. Sun Wukong gains 1 stack of [Cosmic Energy] when any ally upgrades 3 times, up to 4 stacks. When any ally ascends, Sun Wukong gains [Resonance Ascension] to empower the staff, greatly increasing the DMG and range of [Celestial Crush]."
     },
     "awakening-1": {
       name: "Surpise Blow",
