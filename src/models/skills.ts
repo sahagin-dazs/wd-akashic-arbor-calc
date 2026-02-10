@@ -297,12 +297,12 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
       effect: "[Binding Spell] DMG +100%. Continuously drain enemy EX-Weapon Energy (max 30 points)."
     },
     "blue-2": {
-      name: "",
-      effect: ""
+      name: "Fragile Bind",
+      effect: "[Binding Spell] DMG +100%. Reduce enemy DMG RES by 30%."
     },
     "blue-3": {
-      name: "",
-      effect: ""
+      name: "Piercing Eyes",
+      effect: "[Binding Spell] DMG +100%. Continuously dispel enemy shields."
     }
   },
   Valk: {
