@@ -678,7 +678,7 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
     },
     "blue-2": {
       name: "Sticky Dough",
-      effect: "Bun-anza reduces target's Moe SPD by 30%"
+      effect: "Bun-anza reduces target's Move SPD by 30%"
     },
     "blue-3": {
       name: "Hearty Serve",
