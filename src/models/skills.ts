@@ -4,7 +4,7 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
   Panda: {
     base: {
       name: "Summon: Panda Brewmaster",
-      effect: "TBD"
+      effect: "Leaps 3 times, dealing AoE DMG and summoning [Verdant Bamboo] that can be targeted by enemies. Each [Verdant Bamboo] permanently increases team Max HP by 0.5% (up to 30 stacks) when it appears, and deals AoE DMG when it disappears."
     },
     "awakening-1": {
       name: "TBD",
