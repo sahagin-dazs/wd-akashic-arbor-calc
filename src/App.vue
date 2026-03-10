@@ -906,6 +906,13 @@ function clearLineupSlot(slotIndex: number) {
   lineup.value.slots[slotIndex].priorityRank = null;
 }
 
+function clearArborLineup() {
+  lineup.value.slots.forEach((slot) => {
+    slot.heroId = null;
+    slot.priorityRank = null;
+  });
+}
+
 function openResetCollection() {
   isResetCollectionOpen.value = true;
 }
@@ -1450,6 +1457,7 @@ function openSupportFromWelcome() {
               :owned="ownedHeroes"
               :untracked-count="untrackedHeroesCount"
               @set-rank="setPriorityRank"
+              @clear-all="clearArborLineup"
               @clear-slot="clearLineupSlot"
               @set-hero="setLineupSlotHero"
             />

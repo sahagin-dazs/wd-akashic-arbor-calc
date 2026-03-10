@@ -15,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   "set-rank": [slotIndex: number, rank: number | null];
   "clear-slot": [slotIndex: number];
+  "clear-all": [];
   "set-hero": [slotIndex: number, heroId: string];
 }>();
 
@@ -212,6 +213,10 @@ function clearSlot(idx: number) {
   emit("clear-slot", idx);
 }
 
+function clearAll() {
+  emit("clear-all");
+}
+
 const lineupHeroIds = computed(
   () => new Set(props.lineup.slots.map((slot) => slot.heroId).filter(Boolean) as string[])
 );
@@ -220,6 +225,10 @@ const availableHeroes = computed(() =>
   props.heroes.filter(
     (hero) => !lineupHeroIds.value.has(hero.id) && ALLOWED_HERO_RARITIES.has(hero.rarity)
   )
+);
+
+const hasAssignedHeroes = computed(() =>
+  props.lineup.slots.some((slot) => Boolean(slot.heroId))
 );
 
 function setSlotHero(slotIndex: number, heroId: string) {
@@ -279,6 +288,16 @@ function elementMeta(heroId: string | null) {
   <div ref="rootRef">
     <div class="panel-header">
       <div class="panel-title">Lineup</div>
+      <div class="panel-actions">
+        <button
+          class="btn btn-sm btn-ghost"
+          type="button"
+          :disabled="!hasAssignedHeroes"
+          @click="clearAll"
+        >
+          Clear all
+        </button>
+      </div>
     </div>
     <div
       v-if="(props.untrackedCount ?? 0) > 0"
