@@ -155,7 +155,7 @@ const DEFAULT_STATE: SummonState = {
   },
   rateUp: {
     scrolls: 0,
-    featuredHeroId: "Valk",
+    featuredHeroId: "Panda",
     pity: RATE_UP_PITY_DEFAULT,
     featuredGuarantee: false,
     lastMythicRateUp: false,
@@ -215,7 +215,7 @@ function loadState(): SummonState {
       },
       rateUp: {
         scrolls: Math.max(0, Number(parsed?.rateUp?.scrolls) || 0),
-        featuredHeroId: parsed?.rateUp?.featuredHeroId ?? "FP",
+        featuredHeroId: parsed?.rateUp?.featuredHeroId ?? "Panda",
         pity: parsed?.rateUp?.pity ?? RATE_UP_PITY_DEFAULT,
         featuredGuarantee: Boolean(parsed?.rateUp?.featuredGuarantee),
         lastMythicRateUp: Boolean(parsed?.rateUp?.lastMythicRateUp),

@@ -1,7 +1,57 @@
 import { HeroDef } from "./types";
 
 export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
-   NT: {
+  Panda: {
+    base: {
+      name: "Summon: Panda Brewmaster",
+      effect: "TBD"
+    },
+    "awakening-1": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "awakening-2": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "awakening-3": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "awakening-core": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "white-1": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "white-2": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "atk60-1": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "atk60-2": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "blue-1": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "blue-2": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "blue-3": {
+      name: "TBD",
+      effect: "TBD"
+    }
+  },
+  NT: {
     base: {
       name: "Summon: Northern Tyrant",
       effect: "Blizzard Cleaver: Throw the spinning Blizzard Cleaver, dealing double damage to enemies in its path; Upon entering battle, summon 2 Frostwolves, which are permanent summoned units that remain on the field as long as the Northern Tyrant is alive, attacking enemies with Frost Claws."
