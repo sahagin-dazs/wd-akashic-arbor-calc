@@ -7,48 +7,48 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
       effect: "Leaps 3 times, dealing AoE DMG and summoning [Verdant Bamboo] that can be targeted by enemies. Each [Verdant Bamboo] permanently increases team Max HP by 0.5% (up to 30 stacks) when it appears, and deals AoE DMG when it disappears."
     },
     "awakening-1": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Feral Bellow",
+      effect: "[Windstrike] taunts enemies hit."
     },
     "awakening-2": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Zen Flow",
+      effect: "[Windstrike] ATK Count +1"
     },
     "awakening-3": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Zen Flow",
+      effect: "[Windstrike] ATK Count +1"
     },
     "awakening-core": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Drunken Boxing",
+      effect: "Evolves into Drunken Boxing: AoE and DMG greatly increase. Chance to briefly launch enemies."
     },
     "white-1": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Dancing Leaves",
+      effect: "[Verdant Bamboo] continuously heals allies."
     },
     "white-2": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Dancing Leaves+",
+      effect: "[Verdant Bamboo] healing increases by 50%"
     },
     "atk60-1": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Mastery Ascension",
+      effect: "[Windstrike] DMG +60%"
     },
     "atk60-2": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Mastery Ascension",
+      effect: "[Windstrike] DMG +60%"
     },
     "blue-1": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Perfect Zenith",
+      effect: "[Windstrike] DMG +100%"
     },
     "blue-2": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Crushing Descent",
+      effect: "[Windstrike] reduces enemy Move SPD and Skill CD SPD, extends launch effect."
     },
     "blue-3": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Ruinous Momentum",
+      effect: "[Windstrike] CD -1s"
     }
   },
   NT: {
