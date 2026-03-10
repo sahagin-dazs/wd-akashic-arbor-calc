@@ -224,6 +224,7 @@ const ownedExportStatus = ref<string | null>(null);
 const screenName = ref(loadScreenName());
 const ownedExportDate = ref("");
 const isResetCollectionOpen = ref(false);
+const isClearArborLineupOpen = ref(false);
 const showWelcomePopup = ref(!loadWelcomePopupDismissed());
 
 type LevelIconType = "star" | "moon" | "diamond" | "sublime";
@@ -906,11 +907,20 @@ function clearLineupSlot(slotIndex: number) {
   lineup.value.slots[slotIndex].priorityRank = null;
 }
 
+function openClearArborLineup() {
+  isClearArborLineupOpen.value = true;
+}
+
+function closeClearArborLineup() {
+  isClearArborLineupOpen.value = false;
+}
+
 function clearArborLineup() {
   lineup.value.slots.forEach((slot) => {
     slot.heroId = null;
     slot.priorityRank = null;
   });
+  closeClearArborLineup();
 }
 
 function openResetCollection() {
@@ -1457,7 +1467,7 @@ function openSupportFromWelcome() {
               :owned="ownedHeroes"
               :untracked-count="untrackedHeroesCount"
               @set-rank="setPriorityRank"
-              @clear-all="clearArborLineup"
+              @clear-all="openClearArborLineup"
               @clear-slot="clearLineupSlot"
               @set-hero="setLineupSlotHero"
             />
@@ -1791,6 +1801,25 @@ function openSupportFromWelcome() {
         <button class="btn btn-sm btn-secondary" type="button" @click="closeIntroImage">
           Close
         </button>
+      </div>
+    </div>
+    <div
+      v-if="isClearArborLineupOpen"
+      class="intro-modal-backdrop"
+      role="presentation"
+      @click="closeClearArborLineup"
+    >
+      <div class="intro-modal" role="dialog" aria-modal="true" aria-label="Clear arbor lineup" @click.stop>
+        <div class="panel-title">Clear Arbor lineup?</div>
+        <p>This will remove all currently assigned lineup heroes and their priority ranks.</p>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-secondary" type="button" @click="closeClearArborLineup">
+            Cancel
+          </button>
+          <button class="btn btn-sm btn-ghost" type="button" @click="clearArborLineup">
+            Clear lineup
+          </button>
+        </div>
       </div>
     </div>
     <div
