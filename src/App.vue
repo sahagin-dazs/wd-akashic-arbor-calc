@@ -65,7 +65,8 @@ const SUPPORTER_ROYALTY = [
   "Harkshaw",
   "Joseph",
   "Honey Bradger",
-  "Fray"
+  "Fray",
+  "Alt+F4"
 ] as const;
 
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
