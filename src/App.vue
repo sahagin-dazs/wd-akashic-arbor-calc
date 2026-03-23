@@ -385,6 +385,7 @@ const FUN_PHRASES = [
 let phraseTimer: number | null = null;
 let progressInterval: number | null = null;
 let calcElapsedTimer: number | null = null;
+let optimizationAbortController: AbortController | null = null;
 
 function toolFromHash(hash: string): ToolTab | null {
   const normalized = hash.toLowerCase();
@@ -1121,8 +1122,14 @@ function scrollResultsIntoView() {
   });
 }
 
+function cancelOptimization() {
+  optimizationAbortController?.abort();
+}
+
 async function optimize() {
   if (!canOptimize.value || isCalculating.value) return;
+  const controller = new AbortController();
+  optimizationAbortController = controller;
   isCalculating.value = true;
   calcProgress.value = 0;
   calcProgressTarget.value = 0.15;
@@ -1140,6 +1147,7 @@ async function optimize() {
       priorityRank: slot.priorityRank
     }))
   };
+  let wasCanceled = false;
   try {
     const result = await runOptimization(
       ownedPayload,
@@ -1151,21 +1159,29 @@ async function optimize() {
             calcProgressTarget.value = clamped;
             startProgressInterval();
           }
-      }
+      },
+      controller.signal
     );
     lastResult.value = result;
     calcProgressTarget.value = 1;
     startProgressInterval();
     scrollResultsIntoView();
   } catch (error) {
-    console.error("Failed to optimize arbor", error);
+    if (error instanceof DOMException && error.name === "AbortError") {
+      wasCanceled = true;
+    } else {
+      console.error("Failed to optimize arbor", error);
+    }
   } finally {
+    optimizationAbortController = null;
     isCalculating.value = false;
     stopPhraseLoop();
     stopProgressInterval();
     stopCalcElapsedTimer();
-    calcProgress.value = 1;
-    calcPhrase.value = "Arbor ready to deploy!";
+    calcProgress.value = wasCanceled ? 0 : 1;
+    calcPhrase.value = wasCanceled
+      ? "Optimization canceled."
+      : "Arbor ready to deploy!";
   }
 }
 
@@ -1485,6 +1501,7 @@ function openSupportFromWelcome() {
             :untracked-count="untrackedHeroesCount"
             :is-calculating="isCalculating"
             @optimize="optimize"
+            @cancel="cancelOptimization"
           />
         </section>
         <section class="panel" v-if="lastResult || isCalculating" ref="resultsRef" id="results">
@@ -1698,6 +1715,9 @@ function openSupportFromWelcome() {
         <div v-if="showLongCalcNotice" class="calc-patience">
           (This can take some time, please be patient! {{ calcElapsedLabel }})
         </div>
+        <button type="button" class="btn btn-secondary calc-overlay-cancel" @click="cancelOptimization">
+          Cancel optimization
+        </button>
       </div>
     </div>
     <footer class="app-footer">

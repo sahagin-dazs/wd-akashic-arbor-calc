@@ -4,15 +4,12 @@ import {
   LEVELS,
   Lineup,
   NodeKey,
-  NodeType,
   OptimizationResult,
-  OwnedHero
+  OwnedHero,
+  SlotAssignment
 } from "../models/types";
 import { HERO_MAP, HEROES } from "../models/heroes";
-import {
-  buildNodeConfigForNightmare,
-  nodeKeyId
-} from "../models/nodeConfig";
+import { buildNodeConfigForNightmare } from "../models/nodeConfig";
 
 export interface OptimizerInput {
   ownedHeroes: OwnedHero[];
@@ -36,24 +33,6 @@ export function percentToDecimal(p: number | undefined): number {
   if (p == null) return 0;
   return p / 100;
 }
-
-const ROLE_THRESHOLDS: Record<
-  "Fighter" | "Mage" | "Ranger" | "Support",
-  [number, number, number]
-> = {
-  Fighter: [17, 41, 65],
-  Mage: [20, 44, 68],
-  Ranger: [23, 47, 71],
-  Support: [26, 50, 74]
-};
-
-const ELEMENT_THRESHOLDS: Record<Element, [number, number, number]> = {
-  Fire: [0, 24, 48],
-  Ice: [8, 32, 56],
-  Electro: [11, 35, 59],
-  Wind: [14, 38, 62],
-  Xeno: [29, 53, 77]
-};
 
 const PRIORITY_WEIGHT_MAP: Record<number, number> = {
   1: 1e12,
@@ -91,38 +70,28 @@ function rankedHeroSet(lineup: Lineup) {
   return set;
 }
 
-function slotsForLevel(level: number, [first, second, third]: [number, number, number]) {
-  if (level >= third) return 3;
-  if (level >= second) return 2;
-  if (level >= first) return 1;
-  return 0;
-}
-
-export function buildNodeConfigForNightmare(
-  nightmareLevel: number
-): NodeConfig[] {
-  const roles: NodeConfig[] = (Object.keys(ROLE_THRESHOLDS) as Array<
-    keyof typeof ROLE_THRESHOLDS
-  >).map((role) => ({
-    key: { type: "Role", value: role },
-    maxSlots: slotsForLevel(nightmareLevel, ROLE_THRESHOLDS[role])
-  }));
-
-  const elements: NodeConfig[] = (Object.keys(ELEMENT_THRESHOLDS) as Element[]).map(
-    (element) => ({
-      key: { type: "Element", value: element },
-      maxSlots: slotsForLevel(nightmareLevel, ELEMENT_THRESHOLDS[element])
-    })
-  );
-
-  return [...roles, ...elements];
-}
-
 interface PreparedHero {
   hero: HeroDef;
   owned: OwnedHero;
   valueByNode: Map<string, number>; // key stringified NodeKey
 }
+
+interface FlowEdge {
+  to: number;
+  rev: number;
+  capacity: number;
+  cost: number;
+}
+
+type Graph = FlowEdge[][];
+
+interface AssignmentCandidate {
+  nodeKey: string;
+  nodeIndex: number;
+  edgeIndex: number;
+}
+
+const FLOW_EPSILON = 1e-9;
 
 function nodeKeyString(n: NodeKey): string {
   return `${n.type}:${n.value}`;
@@ -209,85 +178,121 @@ export function runOptimizationCore(
     prepared.push({ hero: heroDef, owned, valueByNode });
   }
 
-  // Sort heroes by descending max potential value for better pruning
   prepared.sort((a, b) => {
-    const maxA =
-      Math.max(...Array.from(a.valueByNode.values())) || 0;
-    const maxB =
-      Math.max(...Array.from(b.valueByNode.values())) || 0;
+    const maxA = Math.max(...Array.from(a.valueByNode.values()), 0);
+    const maxB = Math.max(...Array.from(b.valueByNode.values()), 0);
     return maxB - maxA;
   });
 
-  const capacityByNode = new Map<string, number>();
-  for (const node of nodes) {
-    capacityByNode.set(nodeKeyString(node.key), node.maxSlots);
+  const nodeIndexByKey = new Map<string, number>();
+  nodes.forEach((node, index) => {
+    nodeIndexByKey.set(nodeKeyString(node.key), index);
+  });
+
+  const source = 0;
+  const heroOffset = 1;
+  const nodeOffset = heroOffset + prepared.length;
+  const sink = nodeOffset + nodes.length;
+  const graph: Graph = Array.from({ length: sink + 1 }, () => []);
+  const heroAssignments: AssignmentCandidate[][] = prepared.map(() => []);
+
+  function addEdge(from: number, to: number, capacity: number, cost: number) {
+    const forward: FlowEdge = {
+      to,
+      rev: graph[to].length,
+      capacity,
+      cost
+    };
+    const backward: FlowEdge = {
+      to: from,
+      rev: graph[from].length,
+      capacity: 0,
+      cost: -cost
+    };
+    graph[from].push(forward);
+    graph[to].push(backward);
+    return graph[from].length - 1;
   }
 
-  let bestScore = 0;
-  let bestAssignments: SlotAssignment[] = [];
+  prepared.forEach((prep, heroIndex) => {
+    const heroVertex = heroOffset + heroIndex;
+    addEdge(source, heroVertex, 1, 0);
 
-  const maxValueSuffix: number[] = [];
-  let running = 0;
-  for (let i = prepared.length - 1; i >= 0; i -= 1) {
-    const hero = prepared[i];
-    const maxHero =
-      Math.max(...Array.from(hero.valueByNode.values())) || 0;
-    running += maxHero;
-    maxValueSuffix[i] = running;
-  }
+    for (const [nodeKey, value] of prep.valueByNode.entries()) {
+      const nodeIndex = nodeIndexByKey.get(nodeKey);
+      if (nodeIndex == null) continue;
+      const nodeVertex = nodeOffset + nodeIndex;
+      const edgeIndex = addEdge(heroVertex, nodeVertex, 1, value);
+      heroAssignments[heroIndex].push({ nodeKey, nodeIndex, edgeIndex });
+    }
+  });
 
-  const currentAssignments: SlotAssignment[] = [];
-  let deepestDepth = 0;
-  function reportProgress(depth: number) {
-    if (!progressCallback || prepared.length === 0) return;
-    if (depth <= deepestDepth) return;
-    deepestDepth = depth;
-    const ratio = depth / Math.max(prepared.length, 1);
-    progressCallback(ratio);
-  }
+  nodes.forEach((node, index) => {
+    addEdge(nodeOffset + index, sink, node.maxSlots, 0);
+  });
 
-  function dfs(idx: number, currentScore: number) {
-    reportProgress(idx);
-    if (idx >= prepared.length) {
-      if (currentScore > bestScore) {
-        bestScore = currentScore;
-        bestAssignments = [...currentAssignments];
+  const maxAssignments = Math.min(
+    prepared.length,
+    nodes.reduce((sum, node) => sum + node.maxSlots, 0)
+  );
+  let completedAssignments = 0;
+
+  while (completedAssignments < maxAssignments) {
+    const dist = new Array<number>(graph.length).fill(Number.NEGATIVE_INFINITY);
+    const prevVertex = new Array<number>(graph.length).fill(-1);
+    const prevEdge = new Array<number>(graph.length).fill(-1);
+    dist[source] = 0;
+
+    for (let pass = 0; pass < graph.length - 1; pass += 1) {
+      let updated = false;
+      for (let from = 0; from < graph.length; from += 1) {
+        if (!Number.isFinite(dist[from])) continue;
+        for (let edgeIndex = 0; edgeIndex < graph[from].length; edgeIndex += 1) {
+          const edge = graph[from][edgeIndex];
+          if (edge.capacity <= 0) continue;
+          const candidate = dist[from] + edge.cost;
+          if (candidate <= dist[edge.to] + FLOW_EPSILON) continue;
+          dist[edge.to] = candidate;
+          prevVertex[edge.to] = from;
+          prevEdge[edge.to] = edgeIndex;
+          updated = true;
+        }
       }
-      return;
+      if (!updated) break;
     }
 
-    const potential =
-      currentScore + (maxValueSuffix[idx] ?? 0);
-    if (potential <= bestScore) {
-      return;
+    if (dist[sink] <= FLOW_EPSILON || prevVertex[sink] === -1) {
+      break;
     }
 
-    const prep = prepared[idx];
+    for (let vertex = sink; vertex !== source; vertex = prevVertex[vertex]) {
+      const from = prevVertex[vertex];
+      const edgeIndex = prevEdge[vertex];
+      const edge = graph[from][edgeIndex];
+      edge.capacity -= 1;
+      graph[vertex][edge.rev].capacity += 1;
+    }
 
-    // Option 1: skip
-    dfs(idx + 1, currentScore);
-
-    // Options 2: place hero in one of its nodes that has capacity
-    for (const [keyStr, val] of prep.valueByNode.entries()) {
-      const cap = capacityByNode.get(keyStr) ?? 0;
-      if (cap <= 0) continue;
-
-      capacityByNode.set(keyStr, cap - 1);
-      const [type, value] = keyStr.split(":");
-      const nodeKey: NodeKey = {
-        type: type as NodeType,
-        value: value as any
-      };
-      currentAssignments.push({ heroId: prep.hero.id, node: nodeKey });
-
-      dfs(idx + 1, currentScore + val);
-
-      currentAssignments.pop();
-      capacityByNode.set(keyStr, cap);
+    completedAssignments += 1;
+    if (progressCallback && maxAssignments > 0) {
+      const ratio = 0.2 + (completedAssignments / maxAssignments) * 0.75;
+      progressCallback(Math.min(ratio, 0.95));
     }
   }
 
-  dfs(0, 0);
+  const bestAssignments: SlotAssignment[] = [];
+  prepared.forEach((prep, heroIndex) => {
+    for (const candidate of heroAssignments[heroIndex]) {
+      const edge = graph[heroOffset + heroIndex][candidate.edgeIndex];
+      if (edge.capacity > 0) continue;
+      bestAssignments.push({
+        heroId: prep.hero.id,
+        node: nodes[candidate.nodeIndex].key
+      });
+      break;
+    }
+  });
+
   if (progressCallback) {
     progressCallback(1);
   }

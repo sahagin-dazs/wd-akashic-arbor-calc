@@ -20,6 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   "update:nightmareLevel": [value: number];
   optimize: [];
+  cancel: [];
 }>();
 
 function onChange(e: Event) {
@@ -181,6 +182,9 @@ function upcomingDelta(node: NodeKey) {
         <div v-if="props.isCalculating" class="calc-indicator">
           <span class="spinner"></span>
           <span>Calculating...</span>
+          <button type="button" class="btn btn-sm btn-secondary calc-cancel-btn" @click="emit('cancel')">
+            Cancel
+          </button>
         </div>
         <div class="settings-hint">
           <p v-if="!props.allClassified" class="settings-hint-line">

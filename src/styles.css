@@ -3382,6 +3382,10 @@ body {
   font-size: 14px;
 }
 
+.calc-cancel-btn {
+  margin-left: 4px;
+}
+
 .calc-progress-text {
   font-size: 14px;
   color: var(--text-main);
@@ -3709,6 +3713,11 @@ body {
   flex-direction: column;
   gap: 10px;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+.calc-overlay-cancel {
+  align-self: center;
+  min-width: 180px;
 }
 
 .summon-results-header {
