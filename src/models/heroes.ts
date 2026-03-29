@@ -119,7 +119,7 @@ const MYTHIC_HEROES: HeroDef[] = [
     role: "Fighter",
     element: "Ice",
     percents: MYTHIC_PERCENTS,
-    isRateUpHero: false,
+    isRateUpHero: true,
     isWishlistHero: false,
     isSTier: true
   },
