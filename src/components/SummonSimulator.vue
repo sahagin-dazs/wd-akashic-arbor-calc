@@ -38,6 +38,13 @@ interface SummonResult {
   category: SummonCategory;
 }
 
+interface SummonPullSummary {
+  totalPulls: number;
+  categoryCounts: Partial<Record<SummonCategory, number>>;
+  heroCounts: Record<string, number>;
+  heroCategoryCounts: Partial<Record<SummonCategory, Record<string, number>>>;
+}
+
 interface SummonHistoryEntry {
   id: string;
   timestamp: number;
@@ -45,6 +52,8 @@ interface SummonHistoryEntry {
   pulls: SummonResult[];
   gemsSpent: number;
   scrollsSpent: number;
+  summary?: SummonPullSummary;
+  compact?: boolean;
 }
 
 interface SummonState {
@@ -79,6 +88,12 @@ interface SummonState {
     summonsUsed: number;
   };
   history: SummonHistoryEntry[];
+}
+
+interface SummonAllRestoreSnapshot {
+  state: SummonState;
+  tab: SummonTab;
+  lastRollId: string | null;
 }
 
 const SUMMON_STORAGE_KEY = "wd-tools-summon-state";
@@ -180,6 +195,10 @@ function cloneDefaultState(): SummonState {
   return JSON.parse(JSON.stringify(DEFAULT_STATE)) as SummonState;
 }
 
+function cloneSummonState(value: SummonState) {
+  return JSON.parse(JSON.stringify(value)) as SummonState;
+}
+
 function loadState(): SummonState {
   if (typeof window === "undefined") return cloneDefaultState();
   try {
@@ -190,7 +209,10 @@ function loadState(): SummonState {
     const historySummonsBy = (banner: SummonTab) =>
       history.reduce(
         (sum, entry) =>
-          sum + (entry?.banner === banner ? entry?.pulls?.length ?? 0 : 0),
+          sum +
+          (entry?.banner === banner
+            ? Number(entry?.summary?.totalPulls) || entry?.pulls?.length || 0
+            : 0),
         0
       );
     return {
@@ -241,7 +263,20 @@ function loadState(): SummonState {
         ? parsed.history.slice(0, 300).map((entry) => ({
             ...entry,
             gemsSpent: entry?.gemsSpent ?? 0,
-            scrollsSpent: entry?.scrollsSpent ?? entry?.pulls?.length ?? 0,
+            scrollsSpent:
+              entry?.scrollsSpent ??
+              Number(entry?.summary?.totalPulls) ??
+              entry?.pulls?.length ??
+              0,
+            compact: Boolean(entry?.compact),
+            summary: entry?.summary
+              ? {
+                  totalPulls: Math.max(0, Number(entry.summary.totalPulls) || 0),
+                  categoryCounts: entry.summary.categoryCounts ?? {},
+                  heroCounts: entry.summary.heroCounts ?? {},
+                  heroCategoryCounts: entry.summary.heroCategoryCounts ?? {}
+                }
+              : undefined,
             pulls: Array.isArray(entry?.pulls)
               ? entry.pulls.map((pull: SummonResult) => ({
                   ...pull,
@@ -270,6 +305,7 @@ const state = ref<SummonState>(loadState());
 const activeTab = ref<SummonTab>(loadSummonTab());
 const statusMessage = ref<string | null>(null);
 const lastRoll = ref<SummonHistoryEntry | null>(null);
+const summonAllRestore = ref<SummonAllRestoreSnapshot | null>(null);
 const brokenAvatars = ref<Record<string, boolean>>({});
 const WARRIOR_ELEMENTS = ["Ice", "Fire", "Electro", "Wind"] as const;
 type WarriorElement = (typeof WARRIOR_ELEMENTS)[number];
@@ -385,9 +421,57 @@ const historyByTab = computed(() =>
   state.value.history.filter((entry) => entry.banner === activeTab.value)
 );
 
-const pullsForTab = computed(() =>
-  historyByTab.value.flatMap((entry) => entry.pulls)
-);
+function entryPullCount(entry: SummonHistoryEntry) {
+  return entry.summary?.totalPulls ?? entry.pulls.length;
+}
+
+function countCategoryInEntry(entry: SummonHistoryEntry, category: SummonCategory) {
+  if (entry.summary) {
+    return entry.summary.categoryCounts[category] ?? 0;
+  }
+  return entry.pulls.reduce(
+    (sum, pull) => sum + (pull.category === category ? 1 : 0),
+    0
+  );
+}
+
+function countHeroInEntry(
+  entry: SummonHistoryEntry,
+  heroId: string,
+  category?: SummonCategory
+) {
+  if (entry.summary) {
+    if (category) {
+      return entry.summary.heroCategoryCounts[category]?.[heroId] ?? 0;
+    }
+    return entry.summary.heroCounts[heroId] ?? 0;
+  }
+  return entry.pulls.reduce(
+    (sum, pull) =>
+      sum +
+      (pull.heroId === heroId && (!category || pull.category === category) ? 1 : 0),
+    0
+  );
+}
+
+function countOtherMythicInEntry(
+  entry: SummonHistoryEntry,
+  predicate: (heroId: string) => boolean
+) {
+  if (entry.summary) {
+    const counts = entry.summary.heroCategoryCounts.otherMythic ?? {};
+    return Object.entries(counts).reduce(
+      (sum, [heroId, count]) => sum + (predicate(heroId) ? count : 0),
+      0
+    );
+  }
+  return entry.pulls.reduce(
+    (sum, pull) =>
+      sum +
+      (pull.category === "otherMythic" && pull.heroId && predicate(pull.heroId) ? 1 : 0),
+    0
+  );
+}
 
 const scrollsUsed = computed(() => {
   if (activeTab.value === "warrior") return state.value.warrior.summonsUsed;
@@ -399,24 +483,21 @@ const gemsUsed = computed(() =>
   historyByTab.value.reduce((sum, entry) => sum + (entry.gemsSpent ?? 0), 0)
 );
 
-const totalPulls = computed(() => pullsForTab.value.length);
+const totalPulls = computed(() =>
+  historyByTab.value.reduce((sum, entry) => sum + entryPullCount(entry), 0)
+);
 
 function countCategory(category: SummonCategory) {
-  return pullsForTab.value.reduce(
-    (sum, pull) => sum + (pull.category === category ? 1 : 0),
+  return historyByTab.value.reduce(
+    (sum, entry) => sum + countCategoryInEntry(entry, category),
     0
   );
 }
 
 function countHeroPulls(heroId?: string | null, category?: SummonCategory) {
   if (!heroId) return 0;
-  return pullsForTab.value.reduce(
-    (sum, pull) =>
-      sum +
-      (pull.heroId === heroId &&
-      (!category || pull.category === category)
-        ? 1
-        : 0),
+  return historyByTab.value.reduce(
+    (sum, entry) => sum + countHeroInEntry(entry, heroId, category),
     0
   );
 }
@@ -424,29 +505,22 @@ function countHeroPulls(heroId?: string | null, category?: SummonCategory) {
 function countRateUpPoolMythics() {
   if (activeTab.value !== "rate") return 0;
   const featuredId = state.value.rateUp.featuredHeroId;
-  return pullsForTab.value.reduce(
-    (sum, pull) =>
+  return historyByTab.value.reduce(
+    (sum, entry) =>
       sum +
-      (pull.category === "otherMythic" &&
-      pull.heroId &&
-      pull.heroId !== featuredId &&
-      rateUpPoolIds.value.has(pull.heroId)
-        ? 1
-        : 0),
+      countOtherMythicInEntry(
+        entry,
+        (heroId) => heroId !== featuredId && rateUpPoolIds.value.has(heroId)
+      ),
     0
   );
 }
 
 function countNonRateUpPoolMythics() {
   if (activeTab.value !== "rate") return 0;
-  return pullsForTab.value.reduce(
-    (sum, pull) =>
-      sum +
-      (pull.category === "otherMythic" &&
-      pull.heroId &&
-      nonRateUpPoolIds.has(pull.heroId)
-        ? 1
-        : 0),
+  return historyByTab.value.reduce(
+    (sum, entry) =>
+      sum + countOtherMythicInEntry(entry, (heroId) => nonRateUpPoolIds.has(heroId)),
     0
   );
 }
@@ -890,7 +964,8 @@ function addHistoryEntry(
   banner: SummonTab,
   pulls: SummonResult[],
   gemsSpent = 0,
-  scrollsSpent = pulls.length
+  scrollsSpent = pulls.length,
+  options?: { summary?: SummonPullSummary; compact?: boolean }
 ) {
   const entry: SummonHistoryEntry = {
     id: `${banner}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -898,10 +973,38 @@ function addHistoryEntry(
     banner,
     pulls,
     gemsSpent,
-    scrollsSpent
+    scrollsSpent,
+    summary: options?.summary,
+    compact: options?.compact ?? false
   };
   state.value.history = [entry, ...state.value.history].slice(0, 200);
   lastRoll.value = entry;
+}
+
+function createEmptySummary(): SummonPullSummary {
+  return {
+    totalPulls: 0,
+    categoryCounts: {},
+    heroCounts: {},
+    heroCategoryCounts: {}
+  };
+}
+
+function recordSummaryResult(summary: SummonPullSummary, result: SummonResult) {
+  summary.totalPulls += 1;
+  summary.categoryCounts[result.category] =
+    (summary.categoryCounts[result.category] ?? 0) + 1;
+  if (!result.heroId) return;
+  summary.heroCounts[result.heroId] = (summary.heroCounts[result.heroId] ?? 0) + 1;
+  const categoryCounts = summary.heroCategoryCounts[result.category] ?? {};
+  categoryCounts[result.heroId] = (categoryCounts[result.heroId] ?? 0) + 1;
+  summary.heroCategoryCounts[result.category] = categoryCounts;
+}
+
+function summarizePulls(pulls: SummonResult[]) {
+  const summary = createEmptySummary();
+  pulls.forEach((pull) => recordSummaryResult(summary, pull));
+  return summary;
 }
 
 function addQuickScrolls(amount = 100) {
@@ -914,6 +1017,10 @@ function addQuickScrolls(amount = 100) {
     return;
   }
   state.value.xeno.scrolls += amount;
+}
+
+function clearSummonAllRestore() {
+  summonAllRestore.value = null;
 }
 
 const resourceSectionRef = ref<HTMLElement | null>(null);
@@ -959,25 +1066,17 @@ interface SpendResult {
 function consumeScrolls(amount: number, banner: "warrior" | "rate" | "xeno"): SpendResult {
   if (banner === "warrior") {
     const available = state.value.warrior.scrolls;
-    let scrollsSpent = 0;
-    let deficit = amount;
-    if (available >= amount) {
-      scrollsSpent = amount;
-      state.value.warrior.scrolls -= amount;
-      deficit = 0;
-    }
+    const scrollsSpent = Math.min(available, amount);
+    const deficit = amount - scrollsSpent;
+    state.value.warrior.scrolls -= scrollsSpent;
     const gemsSpent = coverGemDeficit(deficit, "warrior");
     return { gemsSpent, scrollsSpent };
   }
   if (banner === "rate") {
     const available = state.value.rateUp.scrolls;
-    let scrollsSpent = 0;
-    let deficit = amount;
-    if (available >= amount) {
-      scrollsSpent = amount;
-      state.value.rateUp.scrolls -= amount;
-      deficit = 0;
-    }
+    const scrollsSpent = Math.min(available, amount);
+    const deficit = amount - scrollsSpent;
+    state.value.rateUp.scrolls -= scrollsSpent;
     const gemsSpent = coverGemDeficit(deficit, "rate");
     return { gemsSpent, scrollsSpent };
   }
@@ -1109,7 +1208,7 @@ function applyRateUpQuestProgress(pulls: number): SummonResult[] {
     rateUp.questRewards >= RATE_UP_QUEST_MAX_REWARDS ? RATE_UP_QUEST_TARGET : progress;
   if (!rewardsEarned) return [];
   return Array.from({ length: rewardsEarned }, () =>
-    buildItemResult("Soulstone", "Mythic", "soulstone", 2)
+    buildItemResult("Omni Soulstone", "Mythic", "soulstone", 2)
   );
 }
 
@@ -1252,6 +1351,7 @@ function rollXenoOnce(): SummonResult {
 
 function runSummon(pulls: number) {
   try {
+    clearSummonAllRestore();
     statusMessage.value = null;
     missingResource.value = null;
     if (activeTab.value === "warrior") {
@@ -1302,7 +1402,106 @@ function runSummon(pulls: number) {
   }
 }
 
+function maxAffordablePulls(tab: SummonTab) {
+  if (tab === "warrior") {
+    return state.value.warrior.scrolls + Math.floor(state.value.resources.gems / 290);
+  }
+  if (tab === "rate") {
+    return state.value.rateUp.scrolls + Math.floor(state.value.resources.gems / 300);
+  }
+  return state.value.xeno.scrolls;
+}
+
+function runSummonAll() {
+  try {
+    statusMessage.value = null;
+    missingResource.value = null;
+    const pulls = maxAffordablePulls(activeTab.value);
+    if (activeTab.value === "warrior" && !isWarriorReady.value) {
+      throw new Error("Set your wishlist first.");
+    }
+    if (activeTab.value === "rate" && !isRateReady.value) {
+      throw new Error("Pick a rate-up hero first.");
+    }
+    if (activeTab.value === "xeno" && !isXenoReady.value) {
+      throw new Error("Select a Xenoscape hero first.");
+    }
+    if (pulls <= 0) {
+      missingResource.value =
+        activeTab.value === "xeno"
+          ? { type: "scrolls", banner: "xeno" }
+          : { type: "both", banner: activeTab.value };
+      throw new Error("Add more resources to use Summon All.");
+    }
+
+    summonAllRestore.value = {
+      state: cloneSummonState(state.value),
+      tab: activeTab.value,
+      lastRollId: lastRoll.value?.id ?? null
+    };
+
+    if (activeTab.value === "warrior") {
+      const spend = consumeScrolls(pulls, "warrior");
+      updateWarriorProgress(pulls);
+      state.value.warrior.summonsUsed += pulls;
+      const summary = createEmptySummary();
+      for (let i = 0; i < pulls; i += 1) {
+        recordSummaryResult(summary, rollWarriorOnce());
+      }
+      addHistoryEntry("warrior", [], spend.gemsSpent, spend.scrollsSpent, {
+        summary,
+        compact: true
+      });
+    } else if (activeTab.value === "rate") {
+      const spend = consumeScrolls(pulls, "rate");
+      const summary = createEmptySummary();
+      for (let i = 0; i < pulls; i += 1) {
+        recordSummaryResult(summary, rollRateUpOnce());
+      }
+      const questRewards = applyRateUpQuestProgress(pulls);
+      questRewards.forEach((reward) => recordSummaryResult(summary, reward));
+      state.value.rateUp.bannerHeroPulls += summary.categoryCounts.rateup ?? 0;
+      state.value.rateUp.summonsUsed += pulls;
+      addHistoryEntry("rate", [], spend.gemsSpent, spend.scrollsSpent, {
+        summary,
+        compact: true
+      });
+    } else {
+      const spend = consumeScrolls(pulls, "xeno");
+      const summary = createEmptySummary();
+      for (let i = 0; i < pulls; i += 1) {
+        recordSummaryResult(summary, rollXenoOnce());
+      }
+      state.value.xeno.summonsUsed += pulls;
+      addHistoryEntry("xeno", [], spend.gemsSpent, spend.scrollsSpent, {
+        summary,
+        compact: true
+      });
+    }
+
+    statusMessage.value = `Summon All processed ${pulls.toLocaleString()} ${TOOLTIP_META[activeTab.value].toLowerCase()} pull(s).`;
+  } catch (error) {
+    statusMessage.value =
+      error instanceof Error ? error.message : "Unable to run summon all.";
+    scrollToResources();
+  }
+}
+
+function resetSummonAll() {
+  const snapshot = summonAllRestore.value;
+  if (!snapshot) return;
+  state.value = cloneSummonState(snapshot.state);
+  activeTab.value = snapshot.tab;
+  lastRoll.value = snapshot.lastRollId
+    ? state.value.history.find((entry) => entry.id === snapshot.lastRollId) ?? null
+    : null;
+  missingResource.value = null;
+  statusMessage.value = null;
+  clearSummonAllRestore();
+}
+
 function clearHistoryForActiveTab() {
+  clearSummonAllRestore();
   state.value.history = state.value.history.filter(
     (entry) => entry.banner !== activeTab.value
   );
@@ -1429,6 +1628,9 @@ function clearRateUpQuestExisting() {
 
 function changeTab(tab: SummonTab) {
   activeTab.value = tab;
+  statusMessage.value = null;
+  missingResource.value = null;
+  clearSummonAllRestore();
 }
 
 function hasRateUpStats() {
@@ -1504,7 +1706,19 @@ function onAvatarError(id?: string) {
 
 const lastResultsForTab = computed(() => {
   if (!lastRoll.value || lastRoll.value.banner !== activeTab.value) return [];
+  if (lastRoll.value.compact) return [];
   return lastRoll.value.pulls;
+});
+
+const latestResultsHint = computed(() => {
+  if (!lastRoll.value || lastRoll.value.banner !== activeTab.value) {
+    return "Run a summon to display the pull breakdown for this banner.";
+  }
+  if (lastRoll.value.compact) {
+    const total = lastRoll.value.summary?.totalPulls ?? lastRoll.value.scrollsSpent;
+    return `Summon All completed ${total.toLocaleString()} pulls. Totals above include the full run; image cards are skipped for bulk results.`;
+  }
+  return null;
 });
 
 const highlightedHeroIds = computed(() => {
@@ -1692,12 +1906,16 @@ const SUMMON_GEM_COST: Record<SummonTab, number | null> = {
 };
 
 interface SummonButtonState {
+  key: string;
   pulls: number;
   scrollRequirement: number;
   scrollsEnough: boolean;
   gemCost: number | null;
   hasGemSupport: boolean;
   disabled: boolean;
+  label: string;
+  subtext?: string;
+  compact?: boolean;
 }
 
 interface SummaryCard {
@@ -1709,6 +1927,15 @@ interface SummaryCard {
   actualRate?: string | null;
   subtext?: string;
   alert?: boolean;
+}
+
+interface CompactHitTile {
+  key: string;
+  type: "hero" | "item";
+  heroId?: string;
+  icon?: string | null;
+  label: string;
+  count: number;
 }
 
 const summonButtons = computed<SummonButtonState[]>(() => {
@@ -1727,8 +1954,9 @@ const summonButtons = computed<SummonButtonState[]>(() => {
       : state.value.xeno.scrolls;
   const gemCostPer = SUMMON_GEM_COST[tab];
   const gems = state.value.resources.gems;
+  const maxPulls = maxAffordablePulls(tab);
 
-  return [1, 10].map((pulls) => {
+  const standardButtons = [1, 10].map((pulls) => {
     const hasScrolls = scrolls >= pulls;
     const requiresGems = !hasScrolls && Boolean(gemCostPer);
     const gemCost =
@@ -1737,14 +1965,102 @@ const summonButtons = computed<SummonButtonState[]>(() => {
     const disabled =
       !ready || (!hasScrolls && (gemCost == null || !hasGemSupport));
     return {
+      key: `pull-${pulls}`,
       pulls,
       scrollRequirement: pulls,
       scrollsEnough: hasScrolls,
       gemCost,
       hasGemSupport,
-      disabled
+      disabled,
+      label: `${pulls}x Summon`
     };
   });
+  const bulkHasScrolls = scrolls >= maxPulls;
+  const bulkGemCost =
+    maxPulls > scrolls && gemCostPer ? (maxPulls - scrolls) * gemCostPer : null;
+  const bulkHasGemSupport = bulkGemCost == null ? true : gems >= bulkGemCost;
+  standardButtons.push({
+    key: "pull-all",
+    pulls: maxPulls,
+    scrollRequirement: maxPulls,
+    scrollsEnough: bulkHasScrolls,
+    gemCost: bulkGemCost,
+    hasGemSupport: bulkHasGemSupport,
+    disabled: !ready || maxPulls <= 0 || (!bulkHasScrolls && !bulkHasGemSupport),
+    label: "Summon All",
+    subtext: `${maxPulls.toLocaleString()} pulls`,
+    compact: true
+  });
+  return standardButtons;
+});
+
+const canResetSummonAll = computed(
+  () => Boolean(summonAllRestore.value && summonAllRestore.value.tab === activeTab.value)
+);
+
+function compactSummaryHeroCounts(
+  summary: SummonPullSummary,
+  category: SummonCategory
+) {
+  return summary.heroCategoryCounts[category] ?? {};
+}
+
+const latestCompactHitTiles = computed<CompactHitTile[]>(() => {
+  if (!lastRoll.value || lastRoll.value.banner !== activeTab.value || !lastRoll.value.compact) {
+    return [];
+  }
+  const summary = lastRoll.value.summary;
+  if (!summary) return [];
+
+  const heroCounts = new Map<string, number>();
+  const addHeroCount = (heroId: string, count: number) => {
+    if (!count) return;
+    heroCounts.set(heroId, (heroCounts.get(heroId) ?? 0) + count);
+  };
+
+  if (activeTab.value === "warrior") {
+    Object.entries(compactSummaryHeroCounts(summary, "wishlist")).forEach(([heroId, count]) =>
+      addHeroCount(heroId, count)
+    );
+  } else if (activeTab.value === "xeno") {
+    Object.entries(compactSummaryHeroCounts(summary, "xenoHero")).forEach(([heroId, count]) =>
+      addHeroCount(heroId, count)
+    );
+  } else if (rateUpFeaturedIsSTier.value) {
+    Object.entries(compactSummaryHeroCounts(summary, "rateup")).forEach(([heroId, count]) =>
+      addHeroCount(heroId, count)
+    );
+    Object.entries(compactSummaryHeroCounts(summary, "otherMythic")).forEach(([heroId, count]) => {
+      if (rateUpPoolIds.value.has(heroId)) addHeroCount(heroId, count);
+    });
+  } else {
+    Object.entries(compactSummaryHeroCounts(summary, "rateup")).forEach(([heroId, count]) =>
+      addHeroCount(heroId, count)
+    );
+  }
+
+  const heroTiles = [...heroCounts.entries()]
+    .map(([heroId, count]) => ({
+      key: `hero-${heroId}`,
+      type: "hero" as const,
+      heroId,
+      label: heroMap.value.get(heroId)?.name ?? heroId,
+      count
+    }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+
+  const tiles: CompactHitTile[] = [...heroTiles];
+  const soulstoneHits = (summary.categoryCounts.soulstone ?? 0) * 2;
+  if (activeTab.value === "rate" && soulstoneHits > 0) {
+    tiles.push({
+      key: "item-omnistone",
+      type: "item",
+      icon: REWARD_ICONS.soulstone ?? null,
+      label: "Omni Soulstones",
+      count: soulstoneHits
+    });
+  }
+  return tiles;
 });
 
 watch(
@@ -1816,8 +2132,10 @@ watch(
     </div>
 
     <div v-if="statusMessage" class="summon-status">
-      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-      <span>{{ statusMessage }}</span>
+      <div class="summon-status-copy">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <span>{{ statusMessage }}</span>
+      </div>
     </div>
 
     <div v-if="activeTab === 'warrior'" class="summon-panel">
@@ -1957,7 +2275,7 @@ watch(
                 :class="{ complete: rateUpQuestComplete }"
               >
                 {{ rateUpQuestSoulstones }}/{{ RATE_UP_QUEST_MAX_REWARDS * RATE_UP_QUEST_SOULSTONES }}
-                soulstones
+                Omni Soulstones
               </span>
             </div>
           </div>
@@ -1969,7 +2287,7 @@ watch(
             ></div>
           </div>
           <div class="rateup-quest-note">
-            Every 200 summons grants 2 soulstones (max 10).
+            Every 200 summons grants 2 Omni Soulstones (max 10).
           </div>
           <button type="button" class="rateup-config-link" @click="openRateUpQuestConfig">
             Configure existing
@@ -2187,15 +2505,20 @@ watch(
       <div class="summon-button-row">
         <button
           v-for="btn in summonButtons"
-          :key="`summon-${btn.pulls}`"
+          :key="`summon-${btn.key}`"
           class="summon-control-btn"
-          :disabled="btn.disabled"
-          @click="runSummon(btn.pulls)"
+          :class="{ compact: btn.compact, resetting: btn.compact && canResetSummonAll }"
+          :disabled="btn.compact && canResetSummonAll ? false : btn.disabled"
+          @click="btn.compact ? (canResetSummonAll ? resetSummonAll() : runSummonAll()) : runSummon(btn.pulls)"
         >
-          <div class="summon-button-top">
+          <div
+            v-if="!btn.compact || !canResetSummonAll"
+            class="summon-button-top"
+            :class="{ compact: btn.compact }"
+          >
             <div class="summon-chip" :class="{ insufficient: !btn.scrollsEnough }">
               <img :src="activeScrollIcon" :alt="`${activeSummonLabel} cost`" />
-              <span>{{ btn.scrollRequirement }}</span>
+              <span>{{ btn.compact ? inlineScrolls : btn.scrollRequirement }}</span>
             </div>
             <div
               v-if="btn.gemCost !== null"
@@ -2207,13 +2530,47 @@ watch(
             </div>
           </div>
           <div class="summon-button-label">
-            {{ btn.pulls }}x Summon
+            <i
+              v-if="btn.compact && canResetSummonAll"
+              class="fa-solid fa-rotate-left summon-reset-icon"
+              aria-hidden="true"
+            ></i>
+            {{ btn.compact && canResetSummonAll ? "Reset Summon All" : btn.label }}
+          </div>
+          <div v-if="btn.compact && btn.subtext" class="summon-button-subtext">
+            {{ canResetSummonAll ? "Restore previous state" : btn.subtext }}
           </div>
         </button>
       </div>
 
-      <p class="summon-results-hint" v-if="!lastResultsForTab.length">
-        Run a summon to display the pull breakdown for this banner.
+      <div v-if="latestCompactHitTiles.length" class="summon-hit-list">
+        <div
+          v-for="tile in latestCompactHitTiles"
+          :key="tile.key"
+          class="summon-hit-tile"
+        >
+          <div class="summon-hit-visual" :class="{ 'stier-badge': tile.heroId && isSTierHeroId(tile.heroId) }">
+            <img
+              v-if="tile.heroId && !avatarBroken(tile.heroId)"
+              :src="heroAvatar(tile.heroId)"
+              :alt="tile.label"
+              @error="onAvatarError(tile.heroId)"
+            />
+            <img
+              v-else-if="tile.icon"
+              :src="tile.icon"
+              :alt="tile.label"
+            />
+          </div>
+          <div class="summon-hit-meta">
+            <div class="summon-hit-label">{{ tile.label }}</div>
+            <div class="summon-hit-count">x{{ tile.count }}</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="summon-results-hint" v-if="latestResultsHint">
+        {{ latestResultsHint }}
       </p>
       <div v-else class="summon-pulls">
         <div
@@ -2377,7 +2734,7 @@ watch(
           </button>
         </div>
         <div class="rateup-config-extras">
-          <span>Rewards earned (0-5, 2 soulstones each)</span>
+          <span>Rewards earned (0-5, 2 Omni Soulstones each)</span>
           <input
             type="number"
             min="0"
@@ -2397,7 +2754,7 @@ watch(
         <div class="rateup-config-total">
           Baseline set to {{ rateUpQuestRewardsValue }}/{{ RATE_UP_QUEST_MAX_REWARDS }}
           rewards ({{ rateUpQuestRewardsValue * RATE_UP_QUEST_SOULSTONES }}
-          soulstones) and {{ rateUpQuestProgressValue }}/{{ RATE_UP_QUEST_TARGET }} summons.
+          Omni Soulstones) and {{ rateUpQuestProgressValue }}/{{ RATE_UP_QUEST_TARGET }} summons.
         </div>
         <div class="rateup-config-actions">
           <button type="button" class="btn btn-outline" @click="clearRateUpQuestExisting">
