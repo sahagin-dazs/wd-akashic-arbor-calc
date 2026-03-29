@@ -791,7 +791,7 @@ const summaryCards = computed<{ main: SummaryCard[]; bonus: SummaryCard[] }>(() 
           },
           {
             key: "non-rateup",
-            label: "Non-Rate-Up Mythic",
+            label: "Regular Mythic",
             value: nonRateUpValue,
             rarity: "mythic",
             rate: rates?.nonRateUp,
