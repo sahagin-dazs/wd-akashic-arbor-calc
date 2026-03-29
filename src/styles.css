@@ -3251,11 +3251,13 @@ body {
   align-items: center;
   justify-content: center;
   padding: 16px;
+  overflow-y: auto;
   z-index: 70;
 }
 
 .welcome-modal {
   width: min(720px, 96vw);
+  max-height: calc(100dvh - 32px);
   border-radius: 20px;
   border: 1px solid rgba(250, 204, 21, 0.25);
   background: linear-gradient(160deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.95));
@@ -3264,6 +3266,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
 }
 
 .welcome-kicker {
@@ -3285,6 +3288,7 @@ body {
 .welcome-modal p {
   margin: 0;
   color: #f8fafc;
+  font-size: 15px;
   line-height: 1.55;
 }
 
@@ -3320,14 +3324,14 @@ body {
 }
 
 .welcome-royalty-pill {
-  padding: 9px 14px;
+  padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(15, 23, 42, 0.65);
   color: #f8fafc;
-  font-size: 18px;
+  font-size: 13px;
   line-height: 1.1;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .welcome-actions {
@@ -3346,18 +3350,50 @@ body {
 }
 
 @media (max-width: 640px) {
+  .welcome-modal-backdrop {
+    align-items: flex-start;
+  }
+
   .welcome-modal {
     padding: 16px;
+    gap: 14px;
+    max-height: calc(100dvh - 20px);
+  }
+
+  .welcome-modal h2 {
+    font-size: 18px;
+  }
+
+  .welcome-modal p {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .welcome-royalty {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .welcome-royalty-list {
+    gap: 6px;
+  }
+
+  .welcome-royalty-pill {
+    padding: 5px 9px;
+    font-size: 12px;
   }
 
   .welcome-actions {
     flex-direction: column;
+    gap: 10px;
   }
 
   .welcome-actions .btn,
   .welcome-actions a {
     width: 100%;
     justify-content: center;
+    min-height: 40px;
+    font-size: 13px;
   }
 }
 
