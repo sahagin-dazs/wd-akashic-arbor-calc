@@ -409,6 +409,20 @@ const rateUpHeroes = computed(() =>
   props.heroes.filter((hero) => hero.isRateUpHero)
 );
 const rateUpPoolIds = computed(() => new Set(rateUpHeroes.value.map((hero) => hero.id)));
+const eligibleRateUpPoolIds = computed(() => {
+  const featuredId = state.value.rateUp.featuredHeroId;
+  if (!featuredId) return new Set<string>();
+  const featured = heroMap.value.get(featuredId);
+  return new Set(
+    rateUpHeroes.value
+      .filter((hero) => {
+        if (hero.id === featuredId) return false;
+        if (featured?.isSTier) return !hero.isSTier;
+        return true;
+      })
+      .map((hero) => hero.id)
+  );
+});
 const nonRateUpPoolIds = new Set(RATE_UP_DEFAULT_FALLBACK);
 
 const isWarriorReady = computed(() =>
@@ -510,7 +524,7 @@ function countRateUpPoolMythics() {
       sum +
       countOtherMythicInEntry(
         entry,
-        (heroId) => heroId !== featuredId && rateUpPoolIds.value.has(heroId)
+        (heroId) => heroId !== featuredId && eligibleRateUpPoolIds.value.has(heroId)
       ),
     0
   );
@@ -1222,7 +1236,7 @@ function rollRateUpOnce(): SummonResult {
     let mythicHero: HeroDef;
     if (rateUpFeaturedIsSTier.value) {
       const rateUpPool = rateUpHeroes.value.filter(
-        (hero) => hero.id !== featured.id
+        (hero) => hero.id !== featured.id && !hero.isSTier
       );
       const nonRateUpPool = RATE_UP_DEFAULT_FALLBACK.map((id) => heroMap.value.get(id)).filter(
         (hero): hero is HeroDef => Boolean(hero && hero.id !== featured.id)
@@ -2031,7 +2045,7 @@ const latestCompactHitTiles = computed<CompactHitTile[]>(() => {
       addHeroCount(heroId, count)
     );
     Object.entries(compactSummaryHeroCounts(summary, "otherMythic")).forEach(([heroId, count]) => {
-      if (rateUpPoolIds.value.has(heroId)) addHeroCount(heroId, count);
+      if (eligibleRateUpPoolIds.value.has(heroId)) addHeroCount(heroId, count);
     });
   } else {
     Object.entries(compactSummaryHeroCounts(summary, "rateup")).forEach(([heroId, count]) =>
