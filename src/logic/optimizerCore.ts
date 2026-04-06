@@ -76,25 +76,15 @@ interface PreparedHero {
   valueByNode: Map<string, number>; // key stringified NodeKey
 }
 
-interface FlowEdge {
-  to: number;
-  rev: number;
-  capacity: number;
-  cost: number;
-}
-
-type Graph = FlowEdge[][];
-
-interface AssignmentCandidate {
-  nodeKey: string;
-  nodeIndex: number;
-  edgeIndex: number;
-}
-
 const FLOW_EPSILON = 1e-9;
 
 function nodeKeyString(n: NodeKey): string {
   return `${n.type}:${n.value}`;
+}
+
+interface ExpandedSlot {
+  node: NodeKey;
+  nodeIndex: number;
 }
 
 function computeValueForHeroNode(
@@ -124,6 +114,78 @@ function computeValueForHeroNode(
     total += basePercent * scale * weight;
   }
   return total;
+}
+
+function solveMaximumWeightMatching(
+  weights: number[][],
+  progressCallback?: (value: number) => void
+) {
+  const size = weights.length;
+  if (size === 0) {
+    return [];
+  }
+
+  const u = new Array<number>(size + 1).fill(0);
+  const v = new Array<number>(size + 1).fill(0);
+  const p = new Array<number>(size + 1).fill(0);
+  const way = new Array<number>(size + 1).fill(0);
+
+  for (let row = 1; row <= size; row += 1) {
+    p[0] = row;
+    const minv = new Array<number>(size + 1).fill(Number.POSITIVE_INFINITY);
+    const used = new Array<boolean>(size + 1).fill(false);
+    let col0 = 0;
+
+    do {
+      used[col0] = true;
+      const row0 = p[col0];
+      let delta = Number.POSITIVE_INFINITY;
+      let col1 = 0;
+
+      for (let col = 1; col <= size; col += 1) {
+        if (used[col]) continue;
+        const current = -(weights[row0 - 1]?.[col - 1] ?? 0) - u[row0] - v[col];
+        if (current < minv[col]) {
+          minv[col] = current;
+          way[col] = col0;
+        }
+        if (minv[col] < delta) {
+          delta = minv[col];
+          col1 = col;
+        }
+      }
+
+      for (let col = 0; col <= size; col += 1) {
+        if (used[col]) {
+          u[p[col]] += delta;
+          v[col] -= delta;
+        } else {
+          minv[col] -= delta;
+        }
+      }
+
+      col0 = col1;
+    } while (p[col0] !== 0);
+
+    do {
+      const col1 = way[col0];
+      p[col0] = p[col1];
+      col0 = col1;
+    } while (col0 !== 0);
+
+    if (progressCallback) {
+      const ratio = 0.2 + (row / size) * 0.75;
+      progressCallback(Math.min(ratio, 0.95));
+    }
+  }
+
+  const assignment = new Array<number>(size).fill(-1);
+  for (let col = 1; col <= size; col += 1) {
+    if (p[col] > 0) {
+      assignment[p[col] - 1] = col - 1;
+    }
+  }
+  return assignment;
 }
 
 export function runOptimizationCore(
@@ -184,129 +246,40 @@ export function runOptimizationCore(
     return maxB - maxA;
   });
 
-  const nodeIndexByKey = new Map<string, number>();
-  nodes.forEach((node, index) => {
-    nodeIndexByKey.set(nodeKeyString(node.key), index);
-  });
-
-  const source = 0;
-  const heroOffset = 1;
-  const nodeOffset = heroOffset + prepared.length;
-  const sink = nodeOffset + nodes.length;
-  const graph: Graph = Array.from({ length: sink + 1 }, () => []);
-  const heroAssignments: AssignmentCandidate[][] = prepared.map(() => []);
-
-  function addEdge(from: number, to: number, capacity: number, cost: number) {
-    const forward: FlowEdge = {
-      to,
-      rev: graph[to].length,
-      capacity,
-      cost
-    };
-    const backward: FlowEdge = {
-      to: from,
-      rev: graph[from].length,
-      capacity: 0,
-      cost: -cost
-    };
-    graph[from].push(forward);
-    graph[to].push(backward);
-    return graph[from].length - 1;
-  }
-
-  prepared.forEach((prep, heroIndex) => {
-    const heroVertex = heroOffset + heroIndex;
-    addEdge(source, heroVertex, 1, 0);
-
-    for (const [nodeKey, value] of prep.valueByNode.entries()) {
-      const nodeIndex = nodeIndexByKey.get(nodeKey);
-      if (nodeIndex == null) continue;
-      const nodeVertex = nodeOffset + nodeIndex;
-      const edgeIndex = addEdge(heroVertex, nodeVertex, 1, -value);
-      heroAssignments[heroIndex].push({ nodeKey, nodeIndex, edgeIndex });
+  const expandedSlots: ExpandedSlot[] = [];
+  nodes.forEach((node, nodeIndex) => {
+    for (let slotIndex = 0; slotIndex < node.maxSlots; slotIndex += 1) {
+      expandedSlots.push({ node: node.key, nodeIndex });
     }
   });
 
-  nodes.forEach((node, index) => {
-    addEdge(nodeOffset + index, sink, node.maxSlots, 0);
-  });
-
-  const maxAssignments = Math.min(
-    prepared.length,
-    nodes.reduce((sum, node) => sum + node.maxSlots, 0)
+  const dimension = Math.max(prepared.length, expandedSlots.length);
+  const weights: number[][] = Array.from({ length: dimension }, () =>
+    new Array<number>(dimension).fill(0)
   );
-  let completedAssignments = 0;
 
-  while (completedAssignments < maxAssignments) {
-    const dist = new Array<number>(graph.length).fill(Number.POSITIVE_INFINITY);
-    const prevVertex = new Array<number>(graph.length).fill(-1);
-    const prevEdge = new Array<number>(graph.length).fill(-1);
-    const inQueue = new Array<boolean>(graph.length).fill(false);
-    const queue: number[] = [source];
-    let queueIndex = 0;
-
-    dist[source] = 0;
-    inQueue[source] = true;
-
-    while (queueIndex < queue.length) {
-      const from = queue[queueIndex++];
-      inQueue[from] = false;
-
-      if (!Number.isFinite(dist[from])) continue;
-
-      for (let edgeIndex = 0; edgeIndex < graph[from].length; edgeIndex += 1) {
-        const edge = graph[from][edgeIndex];
-        if (edge.capacity <= 0) continue;
-
-        const candidate = dist[from] + edge.cost;
-        if (candidate >= dist[edge.to] - FLOW_EPSILON) continue;
-
-        dist[edge.to] = candidate;
-        prevVertex[edge.to] = from;
-        prevEdge[edge.to] = edgeIndex;
-
-        if (!inQueue[edge.to]) {
-          queue.push(edge.to);
-          inQueue[edge.to] = true;
-        }
-      }
-    }
-
-    if (!Number.isFinite(dist[sink]) || prevVertex[sink] === -1) {
-      break;
-    }
-
-    if (dist[sink] >= -FLOW_EPSILON) {
-      break;
-    }
-
-    for (let vertex = sink; vertex !== source; vertex = prevVertex[vertex]) {
-      const from = prevVertex[vertex];
-      const edgeIndex = prevEdge[vertex];
-      const edge = graph[from][edgeIndex];
-      edge.capacity -= 1;
-      graph[vertex][edge.rev].capacity += 1;
-    }
-
-    completedAssignments += 1;
-    if (progressCallback && maxAssignments > 0) {
-      const ratio = 0.2 + (completedAssignments / maxAssignments) * 0.75;
-      progressCallback(Math.min(ratio, 0.95));
+  for (let heroIndex = 0; heroIndex < prepared.length; heroIndex += 1) {
+    const prep = prepared[heroIndex];
+    for (let slotIndex = 0; slotIndex < expandedSlots.length; slotIndex += 1) {
+      const value =
+        prep.valueByNode.get(nodeKeyString(expandedSlots[slotIndex].node)) ?? 0;
+      weights[heroIndex][slotIndex] = value;
     }
   }
+
+  const assignment = solveMaximumWeightMatching(weights, progressCallback);
 
   const bestAssignments: SlotAssignment[] = [];
-  prepared.forEach((prep, heroIndex) => {
-    for (const candidate of heroAssignments[heroIndex]) {
-      const edge = graph[heroOffset + heroIndex][candidate.edgeIndex];
-      if (edge.capacity > 0) continue;
-      bestAssignments.push({
-        heroId: prep.hero.id,
-        node: nodes[candidate.nodeIndex].key
-      });
-      break;
-    }
-  });
+  for (let heroIndex = 0; heroIndex < prepared.length; heroIndex += 1) {
+    const slotIndex = assignment[heroIndex];
+    if (slotIndex < 0 || slotIndex >= expandedSlots.length) continue;
+    const value = weights[heroIndex][slotIndex] ?? 0;
+    if (value <= FLOW_EPSILON) continue;
+    bestAssignments.push({
+      heroId: prepared[heroIndex].hero.id,
+      node: expandedSlots[slotIndex].node
+    });
+  }
 
   if (progressCallback) {
     progressCallback(1);
