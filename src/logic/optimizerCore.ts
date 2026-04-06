@@ -222,7 +222,7 @@ export function runOptimizationCore(
       const nodeIndex = nodeIndexByKey.get(nodeKey);
       if (nodeIndex == null) continue;
       const nodeVertex = nodeOffset + nodeIndex;
-      const edgeIndex = addEdge(heroVertex, nodeVertex, 1, value);
+      const edgeIndex = addEdge(heroVertex, nodeVertex, 1, -value);
       heroAssignments[heroIndex].push({ nodeKey, nodeIndex, edgeIndex });
     }
   });
@@ -238,30 +238,45 @@ export function runOptimizationCore(
   let completedAssignments = 0;
 
   while (completedAssignments < maxAssignments) {
-    const dist = new Array<number>(graph.length).fill(Number.NEGATIVE_INFINITY);
+    const dist = new Array<number>(graph.length).fill(Number.POSITIVE_INFINITY);
     const prevVertex = new Array<number>(graph.length).fill(-1);
     const prevEdge = new Array<number>(graph.length).fill(-1);
-    dist[source] = 0;
+    const inQueue = new Array<boolean>(graph.length).fill(false);
+    const queue: number[] = [source];
+    let queueIndex = 0;
 
-    for (let pass = 0; pass < graph.length - 1; pass += 1) {
-      let updated = false;
-      for (let from = 0; from < graph.length; from += 1) {
-        if (!Number.isFinite(dist[from])) continue;
-        for (let edgeIndex = 0; edgeIndex < graph[from].length; edgeIndex += 1) {
-          const edge = graph[from][edgeIndex];
-          if (edge.capacity <= 0) continue;
-          const candidate = dist[from] + edge.cost;
-          if (candidate <= dist[edge.to] + FLOW_EPSILON) continue;
-          dist[edge.to] = candidate;
-          prevVertex[edge.to] = from;
-          prevEdge[edge.to] = edgeIndex;
-          updated = true;
+    dist[source] = 0;
+    inQueue[source] = true;
+
+    while (queueIndex < queue.length) {
+      const from = queue[queueIndex++];
+      inQueue[from] = false;
+
+      if (!Number.isFinite(dist[from])) continue;
+
+      for (let edgeIndex = 0; edgeIndex < graph[from].length; edgeIndex += 1) {
+        const edge = graph[from][edgeIndex];
+        if (edge.capacity <= 0) continue;
+
+        const candidate = dist[from] + edge.cost;
+        if (candidate >= dist[edge.to] - FLOW_EPSILON) continue;
+
+        dist[edge.to] = candidate;
+        prevVertex[edge.to] = from;
+        prevEdge[edge.to] = edgeIndex;
+
+        if (!inQueue[edge.to]) {
+          queue.push(edge.to);
+          inQueue[edge.to] = true;
         }
       }
-      if (!updated) break;
     }
 
-    if (dist[sink] <= FLOW_EPSILON || prevVertex[sink] === -1) {
+    if (!Number.isFinite(dist[sink]) || prevVertex[sink] === -1) {
+      break;
+    }
+
+    if (dist[sink] >= -FLOW_EPSILON) {
       break;
     }
 
