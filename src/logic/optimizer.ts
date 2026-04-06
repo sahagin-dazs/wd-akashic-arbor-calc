@@ -12,6 +12,7 @@ type WorkerResponse =
   | { id: number; type: "error"; error: string };
 
 let jobCounter = 0;
+const OPTIMIZER_INACTIVITY_TIMEOUT_MS = 15000;
 
 function createAbortError() {
   return new DOMException("Optimization canceled", "AbortError");
@@ -38,8 +39,28 @@ export function runOptimization(
     const id = ++jobCounter;
     const worker = createWorker();
     let settled = false;
+    let inactivityTimer: number | null = null;
+
+    const resetInactivityTimer = () => {
+      if (inactivityTimer != null) {
+        window.clearTimeout(inactivityTimer);
+      }
+      inactivityTimer = window.setTimeout(() => {
+        console.error(`[akashic] run ${id} timed out waiting for worker activity`);
+        settle(
+          reject,
+          new Error(
+            `Optimizer stalled after ${OPTIMIZER_INACTIVITY_TIMEOUT_MS / 1000}s without worker activity`
+          )
+        );
+      }, OPTIMIZER_INACTIVITY_TIMEOUT_MS);
+    };
 
     const cleanup = () => {
+      if (inactivityTimer != null) {
+        window.clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+      }
       worker.onmessage = null;
       worker.onerror = null;
       worker.onmessageerror = null;
@@ -58,6 +79,7 @@ export function runOptimization(
     };
 
     const abortHandler = () => {
+      console.warn(`[akashic] run ${id} aborted`);
       settle(reject, createAbortError());
     };
 
@@ -68,17 +90,23 @@ export function runOptimization(
     worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const data = event.data;
       if (data.id !== id) return;
+      resetInactivityTimer();
 
       if (data.type === "progress") {
+        console.info(
+          `[akashic] run ${id} progress ${(Math.min(1, Math.max(0, data.progress)) * 100).toFixed(1)}%`
+        );
         onProgress?.(Math.min(1, Math.max(0, data.progress)));
         return;
       }
 
       if (data.type === "result") {
+        console.info(`[akashic] run ${id} completed`);
         settle(resolve, data.result);
         return;
       }
 
+      console.error(`[akashic] run ${id} failed`, data.error);
       settle(reject, new Error(data.error));
     };
 
@@ -87,15 +115,23 @@ export function runOptimization(
         event.error instanceof Error
           ? event.error
           : new Error(event.message || "Optimizer worker crashed");
+      console.error(`[akashic] run ${id} worker error`, error);
       settle(reject, error);
     };
 
     worker.onmessageerror = () => {
+      console.error(`[akashic] run ${id} unreadable worker response`);
       settle(reject, new Error("Optimizer worker returned an unreadable response"));
     };
 
     const payload: OptimizerInput = { ownedHeroes, lineup, nightmareLevel };
     const message: WorkerRequest = { id, payload };
+    console.info(`[akashic] run ${id} started`, {
+      nightmareLevel,
+      heroCount: ownedHeroes.length,
+      lineup: lineup.slots.map((slot) => slot.heroId)
+    });
+    resetInactivityTimer();
     worker.postMessage(message);
   });
 }

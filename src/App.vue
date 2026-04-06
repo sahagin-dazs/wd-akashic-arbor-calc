@@ -276,6 +276,7 @@ watch(
 );
 
 const lastResult = ref<OptimizationResult | null>(null);
+const optimizationError = ref<string | null>(null);
 const isCalculating = ref(false);
 const resultsRef = ref<HTMLElement | null>(null);
 const calcProgress = ref(0);
@@ -1131,6 +1132,7 @@ async function optimize() {
   const controller = new AbortController();
   optimizationAbortController = controller;
   isCalculating.value = true;
+  optimizationError.value = null;
   calcProgress.value = 0;
   calcProgressTarget.value = 0.15;
   startProgressInterval();
@@ -1171,6 +1173,10 @@ async function optimize() {
       wasCanceled = true;
     } else {
       console.error("Failed to optimize arbor", error);
+      optimizationError.value =
+        error instanceof Error
+          ? error.message
+          : "Optimization failed unexpectedly.";
     }
   } finally {
     optimizationAbortController = null;
@@ -1181,7 +1187,9 @@ async function optimize() {
     calcProgress.value = wasCanceled ? 0 : 1;
     calcPhrase.value = wasCanceled
       ? "Optimization canceled."
-      : "Arbor ready to deploy!";
+      : optimizationError.value
+        ? "Optimization failed."
+        : "Arbor ready to deploy!";
   }
 }
 
@@ -1504,13 +1512,16 @@ function openSupportFromWelcome() {
             @cancel="cancelOptimization"
           />
         </section>
-        <section class="panel" v-if="lastResult || isCalculating" ref="resultsRef" id="results">
+        <section class="panel" v-if="lastResult || isCalculating || optimizationError" ref="resultsRef" id="results">
           <div class="panel-header">
             <div class="panel-title">Results</div>
           </div>
           <div class="panel-body">
             <div v-if="isCalculating" class="calc-status-panel">
               Optimization in progress... check the overlay for live status.
+            </div>
+            <div v-else-if="optimizationError" class="calc-status-panel">
+              {{ optimizationError }}
             </div>
             <ResultsPanel
               v-else
