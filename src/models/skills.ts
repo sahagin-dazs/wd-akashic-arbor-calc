@@ -1,6 +1,60 @@
 import { HeroDef } from "./types";
 
 export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
+  SSeraph: {
+    base: {
+      name: "TBD",
+      effect: "TBD"
+    },
+    chain: {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "awakening-1": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "awakening-2": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "awakening-3": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "awakening-core": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "white-1": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "white-2": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "atk60-1": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "atk60-2": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "blue-1": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "blue-2": {
+      name: "TBD",
+      effect: "TBD"
+    },
+    "blue-3": {
+      name: "TBD",
+      effect: "TBD"
+    }
+  },
   Panda: {
     base: {
       name: "Summon: Panda Brewmaster",

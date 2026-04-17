@@ -102,6 +102,17 @@ const SUBLIME_HEROES: HeroDef[] = [
 
 const MYTHIC_HEROES: HeroDef[] = [
   {
+    id: "SSeraph",
+    name: "S-Hero Seraph",
+    rarity: "Mythic",
+    role: "Fighter",
+    element: "Electro",
+    percents: MYTHIC_PERCENTS,
+    isRateUpHero: true,
+    isWishlistHero: false,
+    isSTier: true
+  },
+  {
     id: "Panda",
     name: "Panda Brewmaster",
     rarity: "Mythic",
