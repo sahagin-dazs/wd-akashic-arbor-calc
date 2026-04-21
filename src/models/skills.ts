@@ -4,51 +4,51 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
   LA: {
     base: {
       name: "Summon: Levin Archangel",
-      effect: "TBD"
+      effect: "Lightning Twins: Wield twin blades to unleash lightning waves, attacking 2 times."
     },
     "awakening-1": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Sureblade",
+      effect: "[Lightning Twins] CRIT Rate increases."
     },
     "awakening-2": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Volt Charge",
+      effect: "[Lightning Twins] ATK SPD increases."
     },
     "awakening-3": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Graceblade",
+      effect: "When casting [Lightning Twins], restore own HP."
     },
     "awakening-core": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Arc Judicator",
+      effect: "Evolves into Arc Judicator: Attacks inflict [Storm Fracture], gain [Thunder Aura] granting team 10% DMG Boost."
     },
     "white-1": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Destiny Boon",
+      effect: "Allies under [Unity Grace] gain 8% increased CRIT Rate."
     },
     "white-2": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Keen Boon",
+      effect: "Allies under [Unity Grace] gain 24% increased CRIT DMG."
     },
     "atk60-1": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Firmament Ward",
+      effect: "[Lightning Twins] DMG +60%"
     },
     "atk60-2": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Firmament Ward",
+      effect: "[Lightning Twins] DMG +60%"
     },
     "blue-1": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Fate Eye",
+      effect: "Self and allies under [Unity Grace] gain 30% Hit Rate bonus."
     },
     "blue-2": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Storm Fracture+",
+      effect: "[Storm Fracture] also reduces enemy HP Regen and EX-Weapon Energy Regen by 30%"
     },
     "blue-3": {
-      name: "TBD",
-      effect: "TBD"
+      name: "Crushing Aura",
+      effect: "[Thunder Aura] reduces Final DMG Bonus of nearby enemy heroes by 50%."
     }
   },
   Panda: {
