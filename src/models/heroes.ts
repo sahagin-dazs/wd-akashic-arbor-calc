@@ -102,8 +102,8 @@ const SUBLIME_HEROES: HeroDef[] = [
 
 const MYTHIC_HEROES: HeroDef[] = [
   {
-    id: "Angel",
-    name: "Blazing Angel",
+    id: "LA",
+    name: "Levin Archangel",
     rarity: "Mythic",
     role: "Fighter",
     element: "Electro",

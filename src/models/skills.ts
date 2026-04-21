@@ -1,13 +1,9 @@
 import { HeroDef } from "./types";
 
 export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
-  Angel: {
+  LA: {
     base: {
-      name: "Summon: Blazing Angel",
-      effect: "TBD"
-    },
-    chain: {
-      name: "TBD",
+      name: "Summon: Levin Archangel",
       effect: "TBD"
     },
     "awakening-1": {
