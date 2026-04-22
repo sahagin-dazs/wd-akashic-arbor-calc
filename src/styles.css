@@ -5678,14 +5678,14 @@ body {
 .owned-export-levels {
   display: flex;
   flex-wrap: nowrap;
-  gap: 3px;
+  gap: 4px;
   justify-content: center;
   white-space: nowrap;
 }
 
 .owned-export-levels .level-icon {
-  width: 7px;
-  height: 7px;
+  width: 12px;
+  height: 12px;
 }
 
 .owned-export-card.is-not-owned {
