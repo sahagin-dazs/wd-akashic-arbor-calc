@@ -6065,6 +6065,24 @@ body {
   max-height: 100%;
   overflow: auto;
 }
+.tier-card .hero-add-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tier-card .hero-add-section + .hero-add-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+.tier-card .hero-add-section-title,
+.tier-card .hero-pool-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
 .tier-card .hero-add-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
@@ -6366,6 +6384,28 @@ body {
   gap: 8px;
   position: relative;
   }
+.tier-card .hero-pool-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tier-card .hero-pool-section + .hero-pool-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+.tier-card .animarch-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+.tier-card .animarch-card {
+  background: var(--hero-card-bg);
+}
+.tier-card .animarch-card .hero-stack {
+  width: 90px;
+  height: 90px;
+  align-self: center;
+  --stack-size: 90px;
+}
 .tier-card .hero-card-mini.assigned {
   border-color: var(--accent);
 }

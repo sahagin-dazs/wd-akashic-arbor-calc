@@ -2,6 +2,7 @@
 import { computed, onMounted, onBeforeUnmount, reactive, ref, onErrorCaptured, nextTick, watch } from "vue";
 import html2canvas from "html2canvas";
 import { HEROES } from "../models/heroes";
+import { ANIMARCHS, type AnimarchDef } from "../models/animarchs";
 import type { TierRow, TierAssignments, TierData, TierDocument, TierOrder } from "../models/tierList";
 import { createTierList, fetchTierList, updateTierList } from "../utils/tierApi";
 import { newId } from "../utils/ids";
@@ -64,7 +65,8 @@ type LinkedHeroView = LinkedHero & {
   linked: true;
 };
 
-type HeroEntry = (typeof HEROES)[number] | LinkedHeroView;
+type StandardHero = (typeof HEROES)[number];
+type HeroEntry = StandardHero | AnimarchDef | LinkedHeroView;
 
 const draft = reactive<DraftState>(normalizeDraft(loadDraft()));
 const loading = ref(false);
@@ -128,6 +130,10 @@ const tokens = ref(loadTokens());
 const localSavedLists = ref(loadLocalSaved());
 const ownedListsStore = ref(loadOwnedLists());
 const BASE_HERO_MAP = new Map(HEROES.map((h) => [h.id, h]));
+const ANIMARCH_MAP = new Map(ANIMARCHS.map((animarch) => [animarch.id, animarch]));
+const baseUrl =
+  typeof import.meta !== "undefined" ? import.meta.env.BASE_URL ?? "/" : "/";
+const baseSeparator = baseUrl.endsWith("/") ? "" : "/";
 const linkedHeroViews = computed(() => {
   return (draft.linkedHeroes || [])
     .map((link) => {
@@ -148,7 +154,7 @@ const linkedHeroViews = computed(() => {
     })
     .filter((link): link is { id: string; heroIds: string[]; name: string; linked: true } => Boolean(link));
 });
-const allHeroes = computed(() => [...HEROES, ...linkedHeroViews.value]);
+const allHeroes = computed(() => [...HEROES, ...ANIMARCHS, ...linkedHeroViews.value]);
 const heroMap = computed(() => new Map(allHeroes.value.map((hero) => [hero.id, hero])));
 const validHeroIds = computed(() => new Set(allHeroes.value.map((hero) => hero.id)));
 const rowsList = computed(() => normalizeRows(draft.rows));
@@ -193,13 +199,11 @@ const ownedLists = computed(() => {
   return Array.from(merged.values()).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 });
 
-const heroPool = computed(() =>
-  allHeroes.value.filter(Boolean).filter((hero) => {
-    if (!hero) return false;
-    if (isLinkedHero(hero)) return true;
-    return hero.rarity !== "Common" && hero.rarity !== "Epic";
-  })
+const standardHeroPool = computed(() =>
+  HEROES.filter((hero) => hero.rarity !== "Common" && hero.rarity !== "Epic")
 );
+const animarchPool = computed(() => ANIMARCHS);
+const heroPool = computed(() => [...standardHeroPool.value, ...animarchPool.value, ...linkedHeroViews.value]);
 
 const heroesFiltered = computed(() => {
   const term = search.value.trim().toLowerCase();
@@ -214,6 +218,8 @@ const heroesFiltered = computed(() => {
     );
   });
 });
+const standardHeroesFiltered = computed(() => heroesFiltered.value.filter((hero) => !isAnimarch(hero)));
+const animarchsFiltered = computed(() => heroesFiltered.value.filter((hero) => isAnimarch(hero)));
 
 const assignedSet = computed(() => new Set(Object.keys(draft.assignments || {})));
 const draftSnapshot = () => {
@@ -256,12 +262,16 @@ function isLinkedHero(hero?: HeroEntry | null): hero is LinkedHeroView {
   return Boolean(hero && (hero as LinkedHeroView).linked);
 }
 
+function isAnimarch(hero?: HeroEntry | null): hero is AnimarchDef {
+  return Boolean(hero && ANIMARCH_MAP.has(hero.id));
+}
+
 function heroStack(hero?: HeroEntry | null) {
   if (!hero) return [];
   if (isLinkedHero(hero)) {
     return hero.heroIds
       .map((id) => BASE_HERO_MAP.get(id))
-      .filter((h): h is (typeof HEROES)[number] => Boolean(h));
+      .filter((h): h is StandardHero => Boolean(h));
   }
   return [hero];
 }
@@ -278,11 +288,15 @@ function heroIdLabel(hero?: HeroEntry | null) {
     const ids = heroStack(hero).map((entry) => entry.id);
     return ids.length ? ids.join(" + ") : hero.id;
   }
+  if (isAnimarch(hero)) return hero.abbr || hero.id;
   return hero.id;
 }
 
-function heroImg(hero?: (typeof HEROES)[number]) {
+function heroImg(hero?: StandardHero | AnimarchDef) {
   if (!hero) return "";
+  if (isAnimarch(hero)) {
+    return `${baseUrl}${baseSeparator}animarchs/${hero.imageKey}.png`;
+  }
   return avatarUrl(hero.id, hero.name);
 }
 const rarityStyles: Record<string, { border: string; bg: string }> = {
@@ -430,9 +444,17 @@ function availableHeroesForRow() {
   const assignedIds = new Set(Object.keys(draft.assignments || {}));
   return allHeroes.value.filter(Boolean).filter((h) => {
     if (!h || assignedIds.has(h.id)) return false;
-    if (isLinkedHero(h)) return true;
+    if (isLinkedHero(h) || isAnimarch(h)) return true;
     return h.rarity !== "Common" && h.rarity !== "Epic";
   });
+}
+
+function availableStandardHeroesForRow() {
+  return availableHeroesForRow().filter((hero) => !isAnimarch(hero));
+}
+
+function availableAnimarchsForRow() {
+  return availableHeroesForRow().filter((hero) => isAnimarch(hero));
 }
 
 function linkedKey(ids: string[]) {
@@ -532,7 +554,11 @@ function normalizeDraft(state: DraftState): DraftState {
     : [];
 
   state.notes = typeof state.notes === "string" ? state.notes : "";
-  const validIds = new Set([...HEROES.map((hero) => hero.id), ...state.linkedHeroes.map((link) => link.id)]);
+  const validIds = new Set([
+    ...HEROES.map((hero) => hero.id),
+    ...ANIMARCHS.map((animarch) => animarch.id),
+    ...state.linkedHeroes.map((link) => link.id)
+  ]);
   const validRows = new Set(state.rows.map((r) => r.id));
   Object.keys(state.assignments).forEach((heroId) => {
     const rowId = state.assignments[heroId];
@@ -1386,31 +1412,63 @@ onErrorCaptured((err, instance, info) => {
                 @click="rowAddOpen[entry.rowId] = false"
               >
                 <div class="hero-add-popover" @click.stop>
-                  <div class="hero-add-grid">
-                    <button
-                      v-for="(hero, idx) in availableHeroesForRow()"
-                      :key="hero?.id || `add-hero-${idx}`"
-                    class="hero-add-card"
-                    type="button"
-                    :disabled="isLocked"
-                    :style="{ '--stack-count': heroStack(hero).length }"
-                    @click="() => { if (!isLocked && entry?.rowId && hero?.id) { assignHero(hero.id, entry.rowId); rowAddOpen[entry.rowId] = false; } }"
-                  >
-                    <div
-                      class="hero-stack"
-                      :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
-                      :style="{ '--stack-count': heroStack(hero).length }"
-                    >
-                      <img
-                        v-for="(stackHero, stackIdx) in heroStack(hero)"
-                        :key="stackHero.id"
-                        :src="heroImg(stackHero)"
-                        :alt="heroDisplayName(hero)"
-                        :style="{ '--stack-index': stackIdx }"
-                      />
+                  <div v-if="availableStandardHeroesForRow().length" class="hero-add-section">
+                    <div class="hero-add-section-title">Heroes</div>
+                    <div class="hero-add-grid">
+                      <button
+                        v-for="(hero, idx) in availableStandardHeroesForRow()"
+                        :key="hero?.id || `add-hero-${idx}`"
+                        class="hero-add-card"
+                        type="button"
+                        :disabled="isLocked"
+                        :style="{ '--stack-count': heroStack(hero).length }"
+                        @click="() => { if (!isLocked && entry?.rowId && hero?.id) { assignHero(hero.id, entry.rowId); rowAddOpen[entry.rowId] = false; } }"
+                      >
+                        <div
+                          class="hero-stack"
+                          :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
+                          :style="{ '--stack-count': heroStack(hero).length }"
+                        >
+                          <img
+                            v-for="(stackHero, stackIdx) in heroStack(hero)"
+                            :key="stackHero.id"
+                            :src="heroImg(stackHero)"
+                            :alt="heroDisplayName(hero)"
+                            :style="{ '--stack-index': stackIdx }"
+                          />
+                        </div>
+                        <span>{{ heroDisplayName(hero) }}</span>
+                      </button>
                     </div>
-                    <span>{{ heroDisplayName(hero) }}</span>
-                  </button>
+                  </div>
+                  <div v-if="availableAnimarchsForRow().length" class="hero-add-section">
+                    <div class="hero-add-section-title">Animarchs</div>
+                    <div class="hero-add-grid animarch-grid">
+                      <button
+                        v-for="(hero, idx) in availableAnimarchsForRow()"
+                        :key="hero?.id || `add-animarch-${idx}`"
+                        class="hero-add-card animarch-card"
+                        type="button"
+                        :disabled="isLocked"
+                        :style="{ '--stack-count': heroStack(hero).length }"
+                        @click="() => { if (!isLocked && entry?.rowId && hero?.id) { assignHero(hero.id, entry.rowId); rowAddOpen[entry.rowId] = false; } }"
+                      >
+                        <div
+                          class="hero-stack"
+                          :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
+                          :style="{ '--stack-count': heroStack(hero).length }"
+                        >
+                          <img
+                            v-for="(stackHero, stackIdx) in heroStack(hero)"
+                            :key="stackHero.id"
+                            :src="heroImg(stackHero)"
+                            :alt="heroDisplayName(hero)"
+                            :style="{ '--stack-index': stackIdx }"
+                          />
+                        </div>
+                        <span>{{ heroDisplayName(hero) }}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1627,45 +1685,92 @@ onErrorCaptured((err, instance, info) => {
             </div>
           </div>
         </div>
-        <div class="hero-grid">
-          <div
-            v-for="(hero, idx) in heroesFiltered"
-            :key="hero?.id || `hero-${idx}`"
-            class="hero-card-mini"
-            :class="[heroRarityClass(hero), { assigned: hero?.id ? assignedSet.has(hero.id) : false }]"
-            :title="heroDisplayName(hero)"
-          >
+        <div v-if="standardHeroesFiltered.length" class="hero-pool-section">
+          <div class="hero-pool-title">Heroes</div>
+          <div class="hero-grid">
             <div
-              class="hero-stack"
-              :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
-              :style="{ '--stack-count': heroStack(hero).length }"
+              v-for="(hero, idx) in standardHeroesFiltered"
+              :key="hero?.id || `hero-${idx}`"
+              class="hero-card-mini"
+              :class="[heroRarityClass(hero), { assigned: hero?.id ? assignedSet.has(hero.id) : false }]"
+              :title="heroDisplayName(hero)"
             >
-              <img
-                v-for="(stackHero, stackIdx) in heroStack(hero)"
-                :key="stackHero.id"
-                :src="heroImg(stackHero)"
-                :alt="heroDisplayName(hero)"
-                :style="{ '--stack-index': stackIdx }"
-              />
+              <div
+                class="hero-stack"
+                :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
+                :style="{ '--stack-count': heroStack(hero).length }"
+              >
+                <img
+                  v-for="(stackHero, stackIdx) in heroStack(hero)"
+                  :key="stackHero.id"
+                  :src="heroImg(stackHero)"
+                  :alt="heroDisplayName(hero)"
+                  :style="{ '--stack-index': stackIdx }"
+                />
+              </div>
+              <select
+                :value="hero?.id ? draft.assignments[hero.id] || '' : ''"
+                :disabled="isLocked"
+                @change="(e: any) => {
+                  const val = e.target.value;
+                  if (!hero?.id) return;
+                  if (!val) {
+                    unassignHero(hero.id);
+                  } else {
+                    assignHero(hero.id, val);
+                  }
+                }"
+              >
+                <option value="">Unassigned</option>
+                <option v-for="(row, idx) in rowsList.filter(Boolean)" :key="row?.id || `row-${idx}`" :value="row?.id || ''">
+                  {{ row?.label || 'Row' }}
+                </option>
+              </select>
             </div>
-            <select
-              :value="hero?.id ? draft.assignments[hero.id] || '' : ''"
-              :disabled="isLocked"
-              @change="(e: any) => {
-                const val = e.target.value;
-                if (!hero?.id) return;
-                if (!val) {
-                  unassignHero(hero.id);
-                } else {
-                  assignHero(hero.id, val);
-                }
-              }"
+          </div>
+        </div>
+        <div v-if="animarchsFiltered.length" class="hero-pool-section animarch-pool">
+          <div class="hero-pool-title">Animarchs</div>
+          <div class="hero-grid animarch-grid">
+            <div
+              v-for="(hero, idx) in animarchsFiltered"
+              :key="hero?.id || `animarch-${idx}`"
+              class="hero-card-mini animarch-card"
+              :class="{ assigned: hero?.id ? assignedSet.has(hero.id) : false }"
+              :title="heroDisplayName(hero)"
             >
-              <option value="">Unassigned</option>
-              <option v-for="(row, idx) in rowsList.filter(Boolean)" :key="row?.id || `row-${idx}`" :value="row?.id || ''">
-                {{ row?.label || 'Row' }}
-              </option>
-            </select>
+              <div
+                class="hero-stack"
+                :class="{ linked: isLinkedHero(hero), 'stier-badge': isSTierHero(hero) }"
+                :style="{ '--stack-count': heroStack(hero).length }"
+              >
+                <img
+                  v-for="(stackHero, stackIdx) in heroStack(hero)"
+                  :key="stackHero.id"
+                  :src="heroImg(stackHero)"
+                  :alt="heroDisplayName(hero)"
+                  :style="{ '--stack-index': stackIdx }"
+                />
+              </div>
+              <select
+                :value="hero?.id ? draft.assignments[hero.id] || '' : ''"
+                :disabled="isLocked"
+                @change="(e: any) => {
+                  const val = e.target.value;
+                  if (!hero?.id) return;
+                  if (!val) {
+                    unassignHero(hero.id);
+                  } else {
+                    assignHero(hero.id, val);
+                  }
+                }"
+              >
+                <option value="">Unassigned</option>
+                <option v-for="(row, idx) in rowsList.filter(Boolean)" :key="row?.id || `animarch-row-${idx}`" :value="row?.id || ''">
+                  {{ row?.label || 'Row' }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
