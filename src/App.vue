@@ -22,6 +22,7 @@ import { runOptimization } from "./logic/optimizer";
 import TierListBuilder from "./components/TierListBuilder.vue";
 import LineupBuilder from "./components/LineupBuilder.vue";
 import SkillsExplorer from "./components/SkillsExplorer.vue";
+import RuneRecommender from "./components/RuneRecommender.vue";
 import { avatarUrl } from "./utils/avatar";
 
 const HERO_STORAGE_KEY = "wd-akashic-owned-heroes";
@@ -44,6 +45,7 @@ const TOOL_TABS = [
   { id: "summons", label: "Summon Simulator" },
   { id: "lineups", label: "Lineups" },
   { id: "skills", label: "Skills Explorer" },
+  { id: "runes", label: "Rune Recommender" },
   { id: "tiers", label: "Tier Lists" }
 ] as const;
 type ToolTab = (typeof TOOL_TABS)[number]["id"];
@@ -55,6 +57,9 @@ const HASH_TOOL_MAP: Record<string, ToolTab> = {
   "#lineups": "lineups",
   "#skill": "skills",
   "#skills": "skills",
+  "#rune": "runes",
+  "#runes": "runes",
+  "#rune-recommender": "runes",
   "#tier": "tiers",
   "#tiers": "tiers",
   "#collection": "collection"
@@ -421,7 +426,8 @@ function loadActiveTool(): ToolTab {
     stored === "tiers" ||
     stored === "lineups" ||
     stored === "collection" ||
-    stored === "skills"
+    stored === "skills" ||
+    stored === "runes"
     ? (stored as ToolTab)
     : "arbor";
 }
@@ -456,6 +462,12 @@ function syncToolHash(value: ToolTab) {
   if (value === "skills") {
     if (window.location.hash !== "#skills") {
       window.location.hash = "#skills";
+    }
+    return;
+  }
+  if (value === "runes") {
+    if (window.location.hash !== "#runes") {
+      window.location.hash = "#runes";
     }
     return;
   }
@@ -513,6 +525,7 @@ const isArborView = computed(() => activeTool.value === "arbor");
 const isSummonView = computed(() => activeTool.value === "summons");
 const isLineupView = computed(() => activeTool.value === "lineups");
 const isSkillsView = computed(() => activeTool.value === "skills");
+const isRunesView = computed(() => activeTool.value === "runes");
 const isTierView = computed(() => activeTool.value === "tiers");
 const isCollectionView = computed(() => activeTool.value === "collection");
 const isTierDisabled = computed(() => {
@@ -1542,6 +1555,9 @@ function openSupportFromWelcome() {
       </div>
       <div v-else-if="isSkillsView" class="tool-view skills-view" id="skills">
         <SkillsExplorer :heroes="HEROES" />
+      </div>
+      <div v-else-if="isRunesView" class="tool-view runes-view" id="runes">
+        <RuneRecommender :heroes="HEROES" />
       </div>
       <div v-else-if="isSummonView" class="tool-view summon-view" id="summon">
         <section class="panel summon-panel-wrapper">
