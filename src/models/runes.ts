@@ -221,7 +221,7 @@ const ADVANCED_EXCEPTIONS: Record<string, RuneSetPiece[]> = {
   ],
   Panda: [
     { runeId: "TB", count: 4 },
-    { runeId: "GM", count: 2 }
+    { runeId: "DR", count: 2 }
   ],
   LA: [
     { runeId: "TO", count: 4 },
@@ -235,11 +235,16 @@ const ADVANCED_EXCEPTIONS: Record<string, RuneSetPiece[]> = {
 
 const DPS_SUBSTATS = ["ATK", "ATK%", "Crit DMG", "Crit Rate"];
 const SUPPORT_SUBSTATS = ["HP", "HP%", "Skill CD Reduction"];
+const PANDA_SUBSTATS = ["HP%", "HP", "Skill CD Reduction", "DEF%"];
 const HEALER_SUBSTATS = ["HP%", "Skill CD Reduction", "Healing Bonus", "HP"];
 const STARLIGHT_SUBSTATS = ["Skill CD Reduction", "HP%", "HP", "Healing Bonus"];
 
+function isTankRuneHero(hero: HeroDef) {
+  return hero.id === "Panda";
+}
+
 function isDamageHero(hero: HeroDef) {
-  return hero.role !== "Support";
+  return hero.role !== "Support" && !isTankRuneHero(hero);
 }
 
 function defaultSetPieces(hero: HeroDef, includeAdvancedRunes: boolean): RuneSetPiece[] {
@@ -287,6 +292,7 @@ function mainStatForSlot(hero: HeroDef, slot: RuneSlotNumber) {
 }
 
 function substatsForHero(hero: HeroDef) {
+  if (isTankRuneHero(hero)) return PANDA_SUBSTATS;
   if (isDamageHero(hero)) return DPS_SUBSTATS;
   if (hero.id === "SW") return STARLIGHT_SUBSTATS;
   if (hero.id === "Cheffy" || hero.id === "FL" || hero.id === "Seraph") {
@@ -301,7 +307,9 @@ function recommendationNotes(hero: HeroDef, includeAdvancedRunes: boolean) {
     notes.push("DPS rule: prioritize a 4-piece Godsbane Manifesto set.");
   }
 
-  if (isDamageHero(hero)) {
+  if (isTankRuneHero(hero)) {
+    notes.push("Panda Brewmaster should prioritize HP and cooldown-friendly substats.");
+  } else if (isDamageHero(hero)) {
     notes.push("Use Crit Rate in slot 4 only if the hero still needs crit consistency.");
   } else if (hero.id === "SW") {
     notes.push("Starlight Weaver values Skill CD Reduction more than other supports.");

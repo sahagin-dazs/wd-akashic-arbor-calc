@@ -47,8 +47,10 @@ function savedHeroId() {
 }
 
 function savedAdvancedPreference() {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(ADVANCED_STORAGE_KEY) === "true";
+  if (typeof window === "undefined") return true;
+  const saved = localStorage.getItem(ADVANCED_STORAGE_KEY);
+  if (saved === "true" || saved === "false") return saved === "true";
+  return true;
 }
 
 function savedHeroListCollapsed() {
