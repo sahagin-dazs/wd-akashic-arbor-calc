@@ -239,6 +239,18 @@ body {
   justify-content: space-between;
 }
 
+.site-header-centered-narrow .header-row,
+.site-header-centered-narrow .tool-nav-row {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+}
+
+.site-header-centered-wide .header-row,
+.site-header-centered-wide .tool-nav-row {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+}
+
 .tool-tabs {
   display: inline-flex;
   flex-wrap: wrap;

@@ -1308,7 +1308,13 @@ function openSupportFromWelcome() {
 
 <template>
   <div class="app-shell">
-    <header class="site-header">
+    <header
+      class="site-header"
+      :class="{
+        'site-header-centered-narrow': isRunesView,
+        'site-header-centered-wide': isTierView || isLineupView || isSkillsView
+      }"
+    >
       <div class="header-row">
         <div class="logo-block">
           <div class="app-title">WD Toolbox</div>
