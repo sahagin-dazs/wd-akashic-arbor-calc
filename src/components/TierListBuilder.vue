@@ -923,6 +923,146 @@ function openImageInNewTab(blob: Blob) {
   window.setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
+const TIER_EXPORT_CAPTURE_STYLES = `
+  .tier-export,
+  .tier-export * {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  }
+  .tier-export {
+    background: #0b1020;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+    max-width: 100%;
+    padding: 12px;
+    width: 100%;
+  }
+  .tier-export.exporting {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  }
+  .tier-export-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .tier-export-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .tier-export-row {
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 90px 1fr;
+    padding: 8px;
+    width: 100%;
+  }
+  .tier-export-label {
+    border-radius: 10px;
+    color: #0b1020;
+    font-weight: 600;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  .tier-export-heroes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tier-export-hero {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 10px;
+    display: inline-flex;
+    flex-direction: column;
+    height: 54px;
+    justify-content: center;
+    overflow: hidden;
+    width: 54px;
+  }
+  .tier-export.show-ids .tier-export-hero {
+    height: 66px;
+    padding-bottom: 4px;
+  }
+  .tier-export-hero.linked {
+    width: calc(54px + (var(--stack-count) - 1) * 18px);
+  }
+  .tier-export-hero .hero-stack {
+    --stack-size: 48px;
+    align-items: center;
+    display: flex;
+    gap: 4px;
+    height: 48px;
+    justify-content: center;
+    position: relative;
+    width: 48px;
+  }
+  .tier-export .hero-stack img {
+    border-radius: 50%;
+    height: 100%;
+    object-fit: cover;
+    position: relative;
+    width: 100%;
+    z-index: 1;
+  }
+  .tier-export .hero-stack.linked {
+    --stack-offset: 18px;
+    height: var(--stack-size, 58px);
+    justify-content: center;
+    overflow: visible;
+    position: relative;
+    width: calc(var(--stack-size, 58px) + (var(--stack-count) - 1) * var(--stack-offset));
+  }
+  .tier-export .hero-stack.linked img {
+    border: 2px solid rgba(7, 10, 20, 0.7);
+    height: calc(var(--stack-size, 58px) * 0.78);
+    left: 50%;
+    position: absolute;
+    top: 10%;
+    transform: translateX(calc(-50% + (var(--stack-index) - (var(--stack-count) - 1) / 2) * var(--stack-offset)));
+    width: calc(var(--stack-size, 58px) * 0.78);
+    z-index: calc(10 - var(--stack-index));
+  }
+  .tier-export-hero-id {
+    color: #e2e8f0;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin-top: 3px;
+  }
+  .tier-export-hero.rarity-legendary .tier-export-hero-id,
+  .tier-export-hero.rarity-sublime .tier-export-hero-id {
+    color: #0b1020;
+  }
+  .tier-export-notes {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 8px;
+  }
+  .tier-export-notes-title {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tier-export-notes-body {
+    font-size: 12px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+`;
+
 async function copyTierImage() {
   if (!exportRef.value) return;
   const exportWidth = 650;
@@ -938,6 +1078,11 @@ async function copyTierImage() {
     backgroundColor: null,
     scale: 2,
     useCORS: true,
+    onclone: (documentClone) => {
+      const style = documentClone.createElement("style");
+      style.textContent = TIER_EXPORT_CAPTURE_STYLES;
+      documentClone.head.appendChild(style);
+    },
     width: Math.ceil(bounds.width),
     height: Math.ceil(bounds.height)
   });

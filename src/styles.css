@@ -5959,6 +5959,167 @@ body {
 .tier-card .tier-export-hero-id.linked {
   font-weight: 700;
 }
+
+.tier-export {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  color: var(--text-main);
+}
+
+.tier-export.exporting {
+  box-shadow: var(--panel-shadow);
+}
+
+.tier-export-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.tier-export-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.tier-export-row {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.tier-export-label {
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-weight: 600;
+  text-align: center;
+  color: #0b1020;
+}
+
+.tier-export-heroes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tier-export-hero {
+  width: 54px;
+  height: 54px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.tier-export.show-ids .tier-export-hero {
+  height: 66px;
+  padding-bottom: 4px;
+}
+
+.tier-export-hero.linked {
+  width: calc(54px + (var(--stack-count) - 1) * var(--stack-offset));
+}
+
+.tier-export-hero .hero-stack {
+  width: 48px;
+  height: 48px;
+  --stack-size: 48px;
+}
+
+.tier-export .hero-stack {
+  --stack-count: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.tier-export .hero-stack img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  position: relative;
+  z-index: 1;
+}
+
+.tier-export .hero-stack.linked {
+  --stack-offset: 18px;
+  position: relative;
+  overflow: visible;
+  justify-content: center;
+  width: calc(var(--stack-size, 58px) + (var(--stack-count) - 1) * var(--stack-offset));
+  height: var(--stack-size, 58px);
+}
+
+.tier-export .hero-stack.linked img {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  width: calc(var(--stack-size, 58px) * 0.78);
+  height: calc(var(--stack-size, 58px) * 0.78);
+  transform: translateX(calc(-50% + (var(--stack-index) - (var(--stack-count) - 1) / 2) * var(--stack-offset)));
+  z-index: calc(10 - var(--stack-index));
+  border: 2px solid rgba(7, 10, 20, 0.7);
+}
+
+.tier-export-hero-id {
+  font-size: 9px;
+  line-height: 1;
+  margin-top: 3px;
+  color: #e2e8f0;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+
+.tier-export-hero.rarity-legendary .tier-export-hero-id,
+.tier-export-hero.rarity-sublime .tier-export-hero-id {
+  color: #0b1020;
+}
+
+.tier-export-hero-id.linked {
+  font-weight: 700;
+}
+
+.tier-export-notes {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tier-export-notes-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tier-export-notes-body {
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
 .tier-card .rows-list {
   display: flex;
   flex-direction: column;
