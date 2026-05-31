@@ -1,14 +1,10 @@
 import { HeroDef } from "./types";
 
 export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
-    SFire: {
+  SFire: {
     base: {
       name: "Summon: S Fire Mage",
       effect: "Dragonflame Pact: Summons a Flame Drake to assist in battle. The Flame Drake inherits partial ATK and breathes fire at enemies, dealing Fire DMG and igniting Burning Ground."
-    },
-    chain: {
-      name: "Draconic Embers",
-      effect: "Flame Drake and Fire Mage attacks spread Burning Ground."
     },
     "awakening-1": {
       name: "Kindled Familiar",
