@@ -1,6 +1,60 @@
 import { HeroDef } from "./types";
 
 export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
+    SFire: {
+    base: {
+      name: "Summon: S Fire Mage",
+      effect: "Dragonflame Pact: Summons a Flame Drake to assist in battle. The Flame Drake inherits partial ATK and breathes fire at enemies, dealing Fire DMG and igniting Burning Ground."
+    },
+    chain: {
+      name: "Draconic Embers",
+      effect: "Flame Drake and Fire Mage attacks spread Burning Ground."
+    },
+    "awakening-1": {
+      name: "Kindled Familiar",
+      effect: "Flame Drake ATK Count +1."
+    },
+    "awakening-2": {
+      name: "Twin Drake Pact",
+      effect: "Flame Drake Count +1, Summon CD +1s."
+    },
+    "awakening-3": {
+      name: "Rapid Invocation",
+      effect: "Summon CD -1s."
+    },
+    "awakening-core": {
+      name: "Infernal Dragon Queen",
+      effect: "Evolves into Infernal Dragon Queen: Flame Drake DMG and range increase. Additionally summons a Dragon Whelp that casts fire bursts in a target area."
+    },
+    "white-1": {
+      name: "Scorching Fang",
+      effect: "Flame Drake attacks reduce enemy Fire Element Resistance by 10% and inflict Burn."
+    },
+    "white-2": {
+      name: "Scorching Fang+",
+      effect: "Burning enemies take increased Fire DMG from Flame Drake and Dragon Whelp attacks."
+    },
+    "atk60-1": {
+      name: "Dragonflame Boost",
+      effect: "Flame Drake and own summoned unit DMG +60%."
+    },
+    "atk60-2": {
+      name: "Dragonflame Boost",
+      effect: "Flame Drake and own summoned unit DMG +60%."
+    },
+    "blue-1": {
+      name: "Dragonflame Master",
+      effect: "Flame Drake and own summoned unit DMG +100%."
+    },
+    "blue-2": {
+      name: "Wildfire Breath",
+      effect: "Flame Drake breath attacks create extra flame trails."
+    },
+    "blue-3": {
+      name: "Frenzied Brood",
+      effect: "Dragon Whelp fire burst Count +2. Attack interval reduces."
+    }
+  },
   LA: {
     base: {
       name: "Summon: Levin Archangel",

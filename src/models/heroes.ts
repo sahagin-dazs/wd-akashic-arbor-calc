@@ -102,6 +102,17 @@ const SUBLIME_HEROES: HeroDef[] = [
 
 const MYTHIC_HEROES: HeroDef[] = [
   {
+    id: "SFire",
+    name: "S Fire Mage",
+    rarity: "Mythic",
+    role: "Mage",
+    element: "Fire",
+    percents: MYTHIC_PERCENTS,
+    isRateUpHero: true,
+    isWishlistHero: false,
+    isSTier: true
+  },
+  {
     id: "LA",
     name: "Levin Archangel",
     rarity: "Mythic",
