@@ -7,48 +7,48 @@ export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"
       effect: "Summon an Inferno Wyrmling that flies toward the target, spraying flames along the way to deal AoE DMG."
     },
     "awakening-1": {
-      name: "Kindled Familiar",
-      effect: "TBD"
+      name: "Pyro Burst",
+      effect: "Inferno Wyrmling's attacks always CRIT."
     },
     "awakening-2": {
-      name: "Twin Drake Pact",
-      effect: "TBD"
+      name: "Gold Wyrmling",
+      effect: "Additionally summon Gold Wyrmling, increasing all allies' DMG by 15%."
     },
     "awakening-3": {
-      name: "Rapid Invocation",
-      effect: "TBD"
+      name: "Onyx Wyrmling",
+      effect: "Additionally summon Onyx Wyrmling, reducing the DMG dealt by enemies hit by 15%."
     },
     "awakening-core": {
-      name: "Infernal Dragon Queen",
-      effect: "TBD"
+      name: "Oblivion Flame",
+      effect: "Evolves into Oblivion Flame: After all Wyrmlings have flown out, additionally summon three-colored dragons in sequence that sweep across the field, dealing massive AoE DMG."
     },
     "white-1": {
-      name: "Scorching Fang",
-      effect: "TBD"
+      name: "Flame Unfading",
+      effect: "Wyrmling's flames ignite the ground, dealing DoT."
     },
     "white-2": {
-      name: "Scorching Fang+",
-      effect: "TBD"
+      name: "Searing Agony",
+      effect: "Reduce healing received by enemies in the burning area by 50%"
     },
     "atk60-1": {
-      name: "Dragonflame Boost",
-      effect: "TBD"
+      name: "Empress's Decree",
+      effect: "[Empress's Decress] DMG +60%"
     },
     "atk60-2": {
-      name: "Dragonflame Boost",
-      effect: "TBD"
+      name: "Empress's Decree",
+      effect: "[Empress's Decress] DMG +60%"
     },
     "blue-1": {
-      name: "Dragonflame Master",
-      effect: "TBD"
+      name: "Draconic Blaze",
+      effect: "[Empress's Decree] DMG +100%"
     },
     "blue-2": {
-      name: "Wildfire Breath",
-      effect: "TBD"
+      name: "Regal Aurum",
+      effect: "Gold Dragon's Fire DMG bonus for all allies double to +25%"
     },
     "blue-3": {
-      name: "Frenzied Brood",
-      effect: "TBD"
+      name: "Terror Obsidian",
+      effect: "Onyx Dragon's Fire RES reduction doubled to -20%."
     }
   },
   LA: {
