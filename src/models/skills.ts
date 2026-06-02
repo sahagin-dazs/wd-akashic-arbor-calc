@@ -1,10 +1,10 @@
 import { HeroDef } from "./types";
 
 export const SKILL_META_SCAFFOLD: Record<string, NonNullable<HeroDef["skillMeta"]>> = {
-  SFire: {
+  DE: {
     base: {
-      name: "Summon: S Fire Mage",
-      effect: "TBD"
+      name: "Summon: Draconic Empress",
+      effect: "Summon an Inferno Wyrmling that flies toward the target, spraying flames along the way to deal AoE DMG."
     },
     "awakening-1": {
       name: "Kindled Familiar",

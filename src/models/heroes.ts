@@ -102,8 +102,8 @@ const SUBLIME_HEROES: HeroDef[] = [
 
 const MYTHIC_HEROES: HeroDef[] = [
   {
-    id: "SFire",
-    name: "S Fire Mage",
+    id: "DE",
+    name: "Draconic Empress",
     rarity: "Mythic",
     role: "Mage",
     element: "Fire",
