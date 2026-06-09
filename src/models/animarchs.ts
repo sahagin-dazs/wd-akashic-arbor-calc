@@ -38,6 +38,13 @@ export const ANIMARCHS: AnimarchDef[] = [
     imageKey: "InfernalDemon"
   },
   {
+    id: "animarch-pharaoh-serpent",
+    abbr: "Snake",
+    name: "Pharaoh Serpent",
+    rarity: "Mythic",
+    imageKey: "PharaohSerpent"
+  },
+  {
     id: "animarch-raging-centaur",
     abbr: "Centaur",
     name: "Raging Centaur",
