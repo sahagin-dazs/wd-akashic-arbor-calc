@@ -1777,13 +1777,16 @@ function dismissWelcomePopup() {
         <p class="welcome-kicker">A note from Sahagin</p>
         <h2 id="welcome-modal-title">WD Toolbox is end of life</h2>
         <p>
-          WD Toolbox is no longer going to receive updates. I am leaving it here as a memorial to a fun time, but the game is no longer fun to me and I am directing my efforts toward more productive things.
+          WD Toolbox is no longer going to receive updates. I am leaving this site here as a memorial to a special time, but the game is no longer fun to me and I am directing my efforts toward more productive things.
         </p>
         <p>
-          Thank you to the Wittle Defender community for the jokes, testing, theorycrafting, and support along the way.
+          Thank you to the community for the jokes, testing, theorycrafting, and support along the way.
         </p>
         <p>
-          There is a wonderful world out there waiting for you. Maybe do not devote your time toward a company whose goals and incentives feel exploitative in nature and designed to milk money from you.
+          No game is truly "free to play." The real currency is your time, your attention, and ultimately <b>your lifespan</b>. Habby has <b>not</b> earned that from you. 
+        </p>
+        <p>
+            They do not listen to the community, they do not respect player feedback, and their incentives are built around keeping you engaged just long enough to exploit your time, attention, and money. <i>Do not drain your life on something designed to take more from you than it gives back.</i>
         </p>
         <p>
           I recommend watching
@@ -1796,11 +1799,8 @@ function dismissWelcomePopup() {
           <span class="welcome-signoff">Much <i class="fa-solid fa-heart welcome-heart" aria-hidden="true"></i>, <br />Sahagin Dazs</span>
         </p>
         <div class="welcome-actions">
-          <a class="btn btn-sm btn-secondary" href="https://www.youtube.com/watch?v=xNjI03CGkb4" target="_blank" rel="noreferrer">
-            Watch the Video
-          </a>
-          <button class="btn btn-sm btn-ghost" type="button" @click="dismissWelcomePopup">
-            I understand
+          <button class="btn btn-sm btn-secondary" type="button" @click="dismissWelcomePopup">
+            Close popup
           </button>
         </div>
       </div>
