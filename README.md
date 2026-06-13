@@ -19,7 +19,7 @@ If you want to track usage with Google Analytics 4, set your measurement ID befo
 2. Restart `npm run dev` (if it was running) or run `npm run build`. The app automatically loads GA when the env variable is defined.
 
 ### What is the Akashic Arbor?
-- In Wittle Defenders, the Akashic Arbor unlocks once your account reaches level 35 and is at least eight days old. The tool surfaces that info in-app so new players know when to expect it.
+- In Wittle Defender, the Akashic Arbor unlocks once your account reaches level 35 and is at least eight days old. The tool surfaces that info in-app so new players know when to expect it.
 - Every node on the tree represents either a role or an element and contains up to three slots. A hero can only occupy one slot at a time (role *or* element).
 - Slotting a hero grants ATK/DEF/HP bonuses based on the value printed in-game: lineup heroes that match the node receive **3×** the listed percentage while all other heroes receive **1×** that value. Stacking multiple nodes multiplies the effect.
 - Nightmare progress controls how many slots are available for each node - this calculator mirrors those thresholds so you never plan for a slot you have not unlocked yet.
@@ -108,6 +108,3 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that builds 
 
 ### Hero Art
 Avatar PNGs live in `public/avatars/`. Each file should be named after the hero abbreviation with punctuation removed, for example `SR.png` for Scarlet Reaper or `UnyieldingLancer.png` for Unyielding Lancer. Transparent 100x100 circles look best.
-
-### Support This Tool
-If the calculator saves you time, consider supporting its development: [Support this tool](https://www.buymeacoffee.com/sahagin). Contributions help cover maintenance and future feature work.

@@ -30,7 +30,7 @@ const NIGHTMARE_STORAGE_KEY = "wd-akashic-nightmare-level";
 const LINEUP_STORAGE_KEY = "wd-akashic-lineup";
 const OWNERSHIP_FILTER_STORAGE_KEY = "wd-akashic-ownership-filter";
 const INTRO_STORAGE_KEY = "wd-akashic-intro-hidden";
-const WELCOME_POPUP_DISMISSED_KEY = "wd-tools-welcome-popup-dismissed";
+const EOL_POPUP_LAST_SEEN_KEY = "wd-tools-eol-popup-last-seen";
 const THEME_STORAGE_KEY = "wd-akashic-theme";
 const ACTIVE_TOOL_STORAGE_KEY = "wd-tools-active-view";
 const SCREEN_NAME_STORAGE_KEY = "wd-tools-screen-name";
@@ -66,15 +66,6 @@ const HASH_TOOL_MAP: Record<string, ToolTab> = {
 };
 const LEGACY_HOST = "sahagin-dazs.github.io";
 const LEGACY_PATH = "/wd-akashic-arbor-calc";
-const SUPPORTER_ROYALTY = [
-  "Harkshaw",
-  "Joseph",
-  "Honey Bradger",
-  "Fray",
-  "Alt+F4",
-  "Zinzar"
-] as const;
-
 type OwnershipFilter = "all" | "owned" | "not-owned" | "untracked" | "lineup";
 type ThemeMode = "dark" | "light";
 
@@ -219,9 +210,17 @@ function loadTheme(): ThemeMode {
   return "dark";
 }
 
-function loadWelcomePopupDismissed(): boolean {
+function currentLocalDateKey(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function loadEolPopupSeenToday(): boolean {
   if (typeof window === "undefined") return true;
-  return localStorage.getItem(WELCOME_POPUP_DISMISSED_KEY) === "true";
+  return localStorage.getItem(EOL_POPUP_LAST_SEEN_KEY) === currentLocalDateKey();
 }
 
 const ownedHeroes = ref<OwnedHero[]>(loadOwnedHeroes());
@@ -232,7 +231,7 @@ const screenName = ref(loadScreenName());
 const ownedExportDate = ref("");
 const isResetCollectionOpen = ref(false);
 const isClearArborLineupOpen = ref(false);
-const showWelcomePopup = ref(!loadWelcomePopupDismissed());
+const showWelcomePopup = ref(!loadEolPopupSeenToday());
 
 type LevelIconType = "star" | "moon" | "diamond" | "sublime";
 const LEVEL_ICON_SRC_MAP: Record<LevelIconType, string> = {
@@ -1297,12 +1296,8 @@ function toggleTheme() {
 function dismissWelcomePopup() {
   showWelcomePopup.value = false;
   if (typeof window !== "undefined") {
-    localStorage.setItem(WELCOME_POPUP_DISMISSED_KEY, "true");
+    localStorage.setItem(EOL_POPUP_LAST_SEEN_KEY, currentLocalDateKey());
   }
-}
-
-function openSupportFromWelcome() {
-  dismissWelcomePopup();
 }
 </script>
 
@@ -1318,7 +1313,7 @@ function openSupportFromWelcome() {
       <div class="header-row">
         <div class="logo-block">
           <div class="app-title">WD Toolbox</div>
-          <p class="app-tagline">Various tools and utilities for Wittle Defenders</p>
+          <p class="app-tagline">Various tools and utilities for Wittle Defender</p>
           <div v-if="hasPendingHeroes" class="pending-chip">
             <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             <span>
@@ -1344,14 +1339,6 @@ function openSupportFromWelcome() {
           >
             <i class="fa-brands fa-discord" aria-hidden="true"></i>
             Join Discord
-          </a>
-          <a
-            class="btn btn-sm btn-support header-support"
-            href="https://www.buymeacoffee.com/sahagin"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Support this Project
           </a>
           <button
             class="nav-toggle"
@@ -1441,15 +1428,6 @@ function openSupportFromWelcome() {
           <i class="fa-brands fa-discord" aria-hidden="true"></i>
           Join Discord
         </button>
-        <a
-          class="btn btn-sm btn-support"
-          href="https://www.buymeacoffee.com/sahagin"
-          target="_blank"
-          rel="noreferrer"
-          @click="handleNavLink"
-        >
-          Support this Project
-        </a>
         <button
           class="btn btn-sm btn-ghost theme-toggle"
           type="button"
@@ -1484,7 +1462,7 @@ function openSupportFromWelcome() {
               Save hero levels, set your nightmare progress, prioritize lineups, and let the optimizer handle the math.
             </p>
             <p>
-              Akashic Arbor unlocks for Wittle Defenders players at account level 35, eight days after
+              Akashic Arbor unlocks for Wittle Defender players at account level 35, eight days after
               the account is created. Each role and element node contains up to three slots. A hero can
               be placed in either its role node or its element node, and every slot grants stat bonuses
               to the lineup: matching heroes receive <strong>3×</strong> the listed ATK/DEF/HP %, while
@@ -1563,6 +1541,17 @@ function openSupportFromWelcome() {
         <SkillsExplorer :heroes="HEROES" />
       </div>
       <div v-else-if="isRunesView" class="tool-view runes-view" id="runes">
+        <section class="panel runes-eol-panel">
+          <div class="panel-body runes-eol-notice">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <div>
+              <strong>Rune data is no longer maintained.</strong>
+              <span>
+                Seasonal content has changed the game since these recommendations were written, so this data is out of date and may no longer be accurate.
+              </span>
+            </div>
+          </div>
+        </section>
         <RuneRecommender :heroes="HEROES" />
       </div>
       <div v-else-if="isSummonView" class="tool-view summon-view" id="summon">
@@ -1754,35 +1743,16 @@ function openSupportFromWelcome() {
       </div>
     </div>
     <footer class="app-footer">
-      <div class="footer-royal-callout">
-        <span class="footer-supporters-title">Royal Court of Supporters</span>
-        <div class="footer-supporters-list">
-          <span
-            v-for="supporter in SUPPORTER_ROYALTY"
-            :key="supporter"
-            class="footer-supporter-pill"
-          >
-            {{ supporter }}
-          </span>
-        </div>
-        <hr class="footer-royal-divider" />
-        <p class="footer-royal-cta">
-          Want to join this SUBLIME group of supporters?
-        </p>
-        <a class="btn btn-sm btn-support" href="https://www.buymeacoffee.com/sahagin" target="_blank" rel="noreferrer">
-          Support this Project
-        </a>
-      </div>
       <div class="footer-meta">
         <span>
-          Wittle Defenders is ©
+          Wittle Defender is ©
           <a href="https://www.habby.com/" target="_blank" rel="noreferrer">Habby</a>.
           Tool created by Sahagin Dazs.
         </span>
         <span>Last updated {{ lastUpdated }}</span>
         <span>Version v{{ APP_VERSION }} • <a href="/changelog.html" target="_blank" rel="noreferrer">Changelog</a></span>
         <span class="footer-support-note">
-          Hosting and development are funded out of pocket. If this tool helps you, please consider supporting the costs to keep it online.
+          This site is no longer maintained and remains online as a memorial to a fun time.
         </span>
       </div>
       <div class="footer-actions">
@@ -1804,43 +1774,34 @@ function openSupportFromWelcome() {
         aria-labelledby="welcome-modal-title"
         @click.stop
       >
-        <p class="welcome-kicker">Welcome to WD Toolbox</p>
-        <h2 id="welcome-modal-title">Community-powered and proudly player-funded</h2>
+        <p class="welcome-kicker">A note from Sahagin</p>
+        <h2 id="welcome-modal-title">WD Toolbox is end of life</h2>
         <p>
-          Thanks for stopping by and using WD Toolbox!
+          WD Toolbox is no longer going to receive updates. I am leaving it here as a memorial to a fun time, but the game is no longer fun to me and I am directing my efforts toward more productive things.
         </p>
-        <p>This project is 100% community built and funded. We rely on players just like you keep everything running.</p>
         <p>
-          If you find this site helpful, please consider donating to keep it alive. Every bit of support helps.
-          <br/><br/>
-          <span class="welcome-signoff">Much <i class="fa-solid fa-heart welcome-heart" aria-hidden="true"></i>, <br/>Sahagin Dazs
-          </span>
+          Thank you to the Wittle Defender community for the jokes, testing, theorycrafting, and support along the way.
         </p>
-        <div class="welcome-royalty">
-          <div class="welcome-royalty-title">Royal Court of Supporters</div>
-          <div class="welcome-royalty-list">
-            <span
-              v-for="supporter in SUPPORTER_ROYALTY"
-              :key="`welcome-${supporter}`"
-              class="welcome-royalty-pill"
-            >
-              {{ supporter }}
-            </span>
-          </div>
-        </div>
-        <div class="welcome-actions">
-          <button class="btn btn-sm btn-secondary" type="button" @click="dismissWelcomePopup">
-            Maybe later
-          </button>
-          <a
-            class="btn btn-sm btn-support"
-            href="https://www.buymeacoffee.com/sahagin"
-            target="_blank"
-            rel="noreferrer"
-            @click="openSupportFromWelcome"
-          >
-            Support this Project
+        <p>
+          There is a wonderful world out there waiting for you. Maybe do not devote your time toward a company whose goals and incentives feel exploitative in nature and designed to milk money from you.
+        </p>
+        <p>
+          I recommend watching
+          <a href="https://www.youtube.com/watch?v=xNjI03CGkb4" target="_blank" rel="noreferrer">
+            this video
           </a>
+          too.
+        </p>
+        <p>
+          <span class="welcome-signoff">Much <i class="fa-solid fa-heart welcome-heart" aria-hidden="true"></i>, <br />Sahagin Dazs</span>
+        </p>
+        <div class="welcome-actions">
+          <a class="btn btn-sm btn-secondary" href="https://www.youtube.com/watch?v=xNjI03CGkb4" target="_blank" rel="noreferrer">
+            Watch the Video
+          </a>
+          <button class="btn btn-sm btn-ghost" type="button" @click="dismissWelcomePopup">
+            I understand
+          </button>
         </div>
       </div>
     </div>

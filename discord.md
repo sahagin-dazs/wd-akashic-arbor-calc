@@ -1,5 +1,5 @@
 ## **What is WD Toolbox?**
-Free, player-built tools for Wittle Defenders: optimize Arbor, track heroes, simulate summons, share lineups/tier lists.  
+Free, player-built tools for Wittle Defender: optimize Arbor, track heroes, simulate summons, share lineups/tier lists.  
 Main site: **https://wdtoolbox.com**
 
 ---
